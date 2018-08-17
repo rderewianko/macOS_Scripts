@@ -181,6 +181,8 @@ else
 
 amendPermissions
 
+checkRemoteMacPostCommands
+
 fi
 
 # Remove the temp file
