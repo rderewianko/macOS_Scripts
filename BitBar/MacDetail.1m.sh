@@ -54,7 +54,7 @@ fi
 }
 
 function uptimeCheck() {
-#Check Machine Uptime
+#Check Machine Uptime - Method 1
 
 timecheck=$(uptime | awk {'print $4'})
 
@@ -85,13 +85,16 @@ fi
 }
 
 function uptimeCheck2() {
+#Check Machine Uptime - Method 2
 timeNow=$(date +"%s")
 upTimeSecs=$(sysctl kern.boottime | awk -F'[= |,]' '{print $6}')
 upTimeHours=$(($((timeNow-upTimeSecs))/60/60))
   echo "Uptime: $upTimeHours Hours"
+  
 }
 
 function uptimeCheck3() {
+#Check Machine Uptime - Method 3
 daysVal="86400"
 hrsVal="3600"
 minsVal="60"
@@ -119,6 +122,7 @@ elif [[ $DaysUp == "0" ]]; then
 else
 	echo "$DaysUp"d" $HrsUp"h" $MinsUp"m""
 fi
+
 }
 
 
