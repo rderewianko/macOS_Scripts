@@ -9,7 +9,7 @@ hostName=`/usr/local/jamf/bin/jamf getComputerName | sed -E 's/^[^>]+>//;s/<[^>]
 theSerial=`system_profiler SPHardwareDataType | awk '/Serial/ {print $4}'`
 theUser="********"									# Username for AD bind account
 thePass="*********"								# password for the AD account
-theDomain="bauer-uk.bauermedia.group"				# AD forest for bind
+theDomain="YOUR_AD_DOMAIN_HERE"				# AD forest for bind
 check4AD=`/usr/bin/dscl localhost -list . | grep "Active Directory"`
 model=$(system_profiler SPHardwareDataType | awk '/Model Name/ {print $3}')
 if [ "$model" == "MacBook" ]; then

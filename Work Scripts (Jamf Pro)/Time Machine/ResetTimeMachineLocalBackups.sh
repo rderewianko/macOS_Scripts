@@ -15,11 +15,8 @@ fi
 #Disable local backups - This removes the data that has been created automatically
 tmutil disablelocal
 
-LocalBackups=`ls -1 / | grep ".MobileBackups"`
-while [[ "$LocalBackups" = ".MobileBackups" ]]
-do
-  echo "Cleaning up local Time Machine backups...."
-done
+echo "Cleaning up local Time Machine backups...."
+
 #Enable local backups again
 tmutil enablelocal
 
