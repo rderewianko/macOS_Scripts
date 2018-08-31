@@ -156,12 +156,12 @@ if [[ $Mac_Model = *"MacBook"* ]]; then
         FVEncryptionStatus=$(fdesetup status | grep "Encryption")
         FVDecryptionStatus=$(fdesetup status | grep "Decryption")
         if [[ "$FVStatus" == "FileVault is On." ]]; then
-                echo "✅ $FVStatus |color=green"
+                echo "✅ Encryption On |color=green"
                 if [[ -n "⌛️ $FVEncryptionStatus" ]]; then
                                 echo "$FVEncryptionStatus"
                 fi
         else
-                echo "⚠️ $FVStatus |color=red"
+                echo "⚠️ Encryption Off |color=red"
                 if [[ -n "⌛️ $FVDecryptionStatus" ]]; then
                         echo "$FVDecryptionStatus"
                 fi
