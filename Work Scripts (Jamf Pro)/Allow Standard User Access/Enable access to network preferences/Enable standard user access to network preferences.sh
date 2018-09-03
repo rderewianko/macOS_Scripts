@@ -1,6 +1,8 @@
 #!/bin/bash
 
-# Grant standard users access to network preferences
+######################################################
+# Grant standard users access to network preferences #
+######################################################
 
 # If the original files are already existing then apply the changes
 
@@ -27,7 +29,9 @@ else
 
 fi
 
+# Check the changes have been applied
 
+# populate variables to check the values set
 USER_AUTH_PREF=$(/usr/libexec/PlistBuddy -c "print authenticate-user" /usr/local/Network_Prefs/system.preferences.network)
 USER_AUTH_SERV=$(/usr/libexec/PlistBuddy -c "print authenticate-user" /usr/local/Network_Prefs/system.services.systemconfiguration.network)
 

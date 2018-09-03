@@ -1,6 +1,12 @@
 #!/bin/bash
 
-# Grant standard users access to Date and Time preferences
+############################################################
+# Grant standard users access to Date and Time preferences #
+############################################################
+
+##########################
+#   script starts here   #
+##########################
 
 # If the original files are already existing then apply the changes
 
@@ -23,7 +29,9 @@ else
 
 fi
 
+# Check the changes have been applied
 
+# populate variable to check the values set
 USER_AUTH=$(/usr/libexec/PlistBuddy -c "print authenticate-user" /usr/local/DateTime_Prefs/system.preferences.datetime)
 
 if [[ $USER_AUTH == "true" ]]; then
