@@ -18,8 +18,8 @@ LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyCons
 #########################
 
 function preCheck() {
-#Read the value set for com.apple.swipescrolldirection. Local variable used so that it can only be used within the function.
-local PREF=$(/usr/libexec/PlistBuddy -c "print com.apple.swipescrolldirection" /Users/$LoggedInUser/Library/Preferences/.GlobalPreferences.plist)
+#Read the value set for com.apple.swipescrolldirection.
+local PREF=$(/usr/libexec/PlistBuddy -c "print com.apple.swipescrolldirection" /Users/$LoggedInUser/Library/Preferences/.GlobalPreferences.plist 2>/dev/null)
 #Confirm that the value has been set successfully
 if [[ $PREF == "false" ]]; then
   echo "Natural Mouse scroll direction already turned off, nothing to do"
@@ -32,8 +32,8 @@ fi
 
 function postCheck() {
 #Check that the value has been set for com.apple.swipescrolldirection successfully
-#Read the value set for com.apple.swipescrolldirection. Local variable used so that it can only be used within the function.
-local PLIST=$(/usr/libexec/PlistBuddy -c "print com.apple.swipescrolldirection" /Users/$LoggedInUser/Library/Preferences/.GlobalPreferences.plist)
+#Read the value set for com.apple.swipescrolldirection.
+local PLIST=$(/usr/libexec/PlistBuddy -c "print com.apple.swipescrolldirection" /Users/$LoggedInUser/Library/Preferences/.GlobalPreferences.plist 2>/dev/null)
 #Confirm that the value has been set successfully
 if [[ $PLIST == "false" ]]; then
   echo "Natural Mouse scroll direction successfully turned off"
