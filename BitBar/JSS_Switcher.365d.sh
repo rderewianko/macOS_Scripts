@@ -1,7 +1,10 @@
 #!/bin/bash
 
+#Get the logged in user
+LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+
 #Get the current JSS url from the JAMf plist and add to a variable
-jssURL=$(defaults read /Users/philwalker/Library/Preferences/com.jamfsoftware.jss.plist url)
+jssURL=$(defaults read /Users/$LoggedInUser/Library/Preferences/com.jamfsoftware.jss.plist url)
 #Check which URL is configured and set the name that appears in the menu bar
 if [[ $jssURL == "https://casper.bauerservices.co.uk:443" ]] || [[ $jssURL == "https://casper.bauerservices.co.uk" ]] ; then
 	echo "Prod JSS | color=blue"
