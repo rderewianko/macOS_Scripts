@@ -16,6 +16,7 @@ security authorizationdb read system.preferences.datetime > /tmp/system.preferen
 
 # Populate variable to check the values set
 USER_AUTH=$(/usr/libexec/PlistBuddy -c "print rule" /tmp/system.preferences.datetime.modified | sed '2q;d' | sed 's/\ //g')
+
 if [[ $USER_AUTH == "allow" ]]; then
 
 	echo "Standard user granted access to Date & Time preferences"
