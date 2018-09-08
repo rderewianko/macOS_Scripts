@@ -3,7 +3,7 @@
 #####################################################################################################
 ############ Create hidden local admin account, setup Remote Management, enable SSH, ################
 ####################### hide Other from login window and enable root user ###########################
-################################## Script Created by Phil Walker ####################################
+################################## Script created by Phil Walker ####################################
 #####################################################################################################
 
 #replace all variable assignments with username and passwords of your choice
