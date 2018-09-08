@@ -42,7 +42,7 @@ fi
 function accessPermissions() {
 #Find all directories and files within the current user's home directory and set the correct access permissions
 chmod 755 /Users/$getuser1
-find /Users/$getuser1 -type d -mindepth 1 -maxdepth 1 -not -name "Applications" -not -name "Public" -not -name "jnlp-applet" -not -name "cupit" -not -name "Creative Cloud Files" -not -name "Bauer Group" -print0 | xargs -0 chmod 700
+find /Users/$getuser1 -type d -mindepth 1 -maxdepth 1 -not -name "*.*" -not -name "Library" -not -name "Applications" -not -name "Public" -not -name "jnlp-applet" -not -name "cupit" -not -name "Creative Cloud Files" -not -name "OneDrive - Bauer Group" -print0 | xargs -0 chmod 700
 find /Users/$getuser1 -type d -mindepth 2 -print0 | xargs -0 chmod 755
 if [ $? = 0 ]; then
   echo "Correct access permissions set for all directories"
