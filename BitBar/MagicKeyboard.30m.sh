@@ -1,9 +1,9 @@
 #!/bin/bash
-# <bitbar.title>Apple Wireless/Magic Keyboard Status</bitbar.title>
+# <bitbar.title>Apple Wireless or Magic Keyboard Status</bitbar.title>
 # <bitbar.version>2.0</bitbar.version>
 # <bitbar.author>Phil Walker</bitbar.author>
 # <bitbar.author.github>pwalker1485</bitbar.author.github>
-# <bitbar.desc>Displays battery percentage for an Apple Wireless/Magic Keyboard</bitbar.desc>
+# <bitbar.desc>Displays battery percentage for an Apple Wireless or Magic Keyboard</bitbar.desc>
 # <bitbar.image>http://i.imgur.com/CtqV89Y.jpg</bitbar.image>
 
 # Works with the Apple Wireless Keyboard or Apple Magic Keyboard
