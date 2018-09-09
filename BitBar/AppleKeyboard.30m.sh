@@ -3,40 +3,42 @@
 # <bitbar.version>2.0</bitbar.version>
 # <bitbar.author>Phil Walker</bitbar.author>
 # <bitbar.author.github>pwalker1485</bitbar.author.github>
-# <bitbar.desc>Displays battery percentage for an Apple Wireless or Magic Keyboard</bitbar.desc>
+# <bitbar.desc>Displays battery level or charge status (Magic Keyboard only) for an Apple Wireless or Magic Keyboard</bitbar.desc>
 # <bitbar.image>http://i.imgur.com/CtqV89Y.jpg</bitbar.image>
 
-# Works with the Apple Wireless Keyboard or Apple Magic Keyboard
-
+#Apple Wireless Keyboard battery level
 WIRELESS_KEYBOARD=$(ioreg -c AppleBluetoothHIDKeyboard | grep "BatteryPercent" | grep -F -v \{ | sed 's/[^[:digit:]]//g')
+#Apple Magic Keyboard battery level
 MAGIC_KEYBOARD=$(system_profiler SPBluetoothDataType | grep -A 6 "Magic Keyboard" | grep "Battery Level" | awk '{print $3}' | sed 's/%//g')
+#Check if a Magic Keyboard is connected via USB
 CHARGE=$(ioreg -p IOUSB -w0 | sed 's/[^o]*o //; s/@.*$//' | grep -v '^Root.*' | grep "Magic*")
 
 function chargeStatus() {
-#display lightning icon if Magic Keyboard is charging
+#Display lightning icon if Magic Keyboard is connected via USB
 if [[ $CHARGE == "Magic Keyboard" ]]; then
   echo "⌨️⚡️"
 fi
 }
 
 function appleKeyboard() {
-#Wireless/Magic Keyboard Battery Percentage
-  if [ $WIRELESS_KEYBOARD ]; then
-    if [ $WIRELESS_KEYBOARD -le 20 ]; then
-      echo "⌨️$WIRELESS_KEYBOARD% | color=red"
-    else
-      echo "⌨️$WIRELESS_KEYBOARD%"
-    fi
+#Set the colour based on the remaining charge for either keyboard
+if [ $WIRELESS_KEYBOARD ]; then
+  if [ $WIRELESS_KEYBOARD -le 20 ]; then
+    echo "⌨️$WIRELESS_KEYBOARD% | color=red"
+  else
+    echo "⌨️$WIRELESS_KEYBOARD%"
+  fi
 elif [ $MAGIC_KEYBOARD ]; then
-    if [ $MAGIC_KEYBOARD -le 20 ]; then
-      echo "⌨️$MAGIC_KEYBOARD% | color=red"
-    else
-      echo "⌨️$MAGIC_KEYBOARD%"
-    fi
+  if [ $MAGIC_KEYBOARD -le 20 ]; then
+    echo "⌨️$MAGIC_KEYBOARD% | color=red"
+  else
+    echo "⌨️$MAGIC_KEYBOARD%"
+  fi
 fi
 }
 
 function chargeRequired() {
+#If using an Apple Magic Keyboard show additional info if the battery level is low
 if [ $MAGIC_KEYBOARD ]; then
   if [ $MAGIC_KEYBOARD -le 20 -a $MAGIC_KEYBOARD -ge 11 ]; then
   echo "🔋Level Low | color=red"
