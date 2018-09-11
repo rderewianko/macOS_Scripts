@@ -13,6 +13,10 @@
 MacModel=`ioreg -rd1 -c IOPlatformExpertDevice | awk -F'["|"]' '/model/{print $4}' | sed 's/[0-9]*//g;s/,//g'`
 #Identify current network service
 currentservice=$(networksetup -listallhardwareports | grep -C1 $(route get default | grep interface | awk '{print $2}') | grep "Hardware Port" | sed 's/Hardware Port: //')
+#or
+#currentservice=$(networksetup -listallhardwareports | grep -C1 $(route get default | grep interface | awk '{print $2}') | grep "Hardware Port" | sed 's/.*: //g')
+#or
+#currentservice=$(networksetup -listallhardwareports | grep -C1 $(route get default | grep interface | awk '{print $2}') | grep "Hardware Port" | sed 's/.*:[[:blank:]]//g')
 
 #Get the IP
 theLoc=`ifconfig | awk '/inet[^6]/{split($2,ip,".");theip=ip[1] "." ip[2] ".";$0=theip}
