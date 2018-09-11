@@ -90,7 +90,7 @@ timeNow=$(date +"%s")
 upTimeSecs=$(sysctl kern.boottime | awk -F'[= |,]' '{print $6}')
 upTimeHours=$(($((timeNow-upTimeSecs))/60/60))
   echo "Uptime: $upTimeHours Hours"
-  
+
 }
 
 function uptimeCheck3() {
