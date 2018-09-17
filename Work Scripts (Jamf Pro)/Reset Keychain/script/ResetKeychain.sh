@@ -1,12 +1,12 @@
 #!/bin/bash
 
 ######################################################################
-#### Reset Local Items and Login Keychain for the logged in user #####
+#    Reset Local Items and Login Keychain for the logged in user     #
 ############### Written by Phil Walker May 2018 ######################
 ######################################################################
 
 #########################
-####### Variables #######
+#       Variables       #
 #########################
 
 #Get the logged in user
@@ -32,7 +32,7 @@ LocalKeychain=$(ls "${UserHomeDirectory}"/Library/Keychains/ | egrep '([A-Z0-9]{
 KeychainBackup="${UserHomeDirectory}/Library/Keychains/KeychainBackup"
 
 #########################
-###### Functions ########
+#      Functions        #
 #########################
 
 function createBackupDirectory() {
@@ -155,7 +155,7 @@ fi
 }
 
 ##########################
-### script starts here ###
+#   script starts here   #
 ##########################
 
 echo "Default Login Keychain: $CurrentLoginKeychain"
@@ -181,5 +181,9 @@ jamfHelper_KeychainReset
 sleep 5
 
 killall jamfHelper
+
+#include restart in policy for script results to be written to JSS
+#or force a restart (results will not be written to JSS)
+#shutdown -r now
 
 exit 0
