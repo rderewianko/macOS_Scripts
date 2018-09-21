@@ -147,8 +147,6 @@ function amendPermissions() {
 ssh -t "$LoggedInUser"admin@$remotemac "/usr/bin/sudo bash -c 'chmod -R 777 /Users/$ProfTarg/;
 mv /Users/$ProfTarg/ /Users/Leaver-$ProfTarg;'"
 
-checkRemoteMacPostCommands
-
 }
 
 ##########################
@@ -181,6 +179,9 @@ else
 
 amendPermissions
 
+echo
+echo "Checking profile has been renamed and permissions have been changed..."
+echo
 checkRemoteMacPostCommands
 
 fi
