@@ -2,11 +2,15 @@
 
 #This script checks if BitBar is present, stops the Launch Agent and deletes any existing script for the Magic Keyboard and Mouse
 
-#######################
-###### Variables ######
-#######################
+########################################################################
+#                            Variables                                 #
+########################################################################
 
 MagicKeyboardandMouse=$(ls /Library/Application\ Support/JAMF/bitbar/BitBarDistro.app/Contents/MacOS/Magic* 2>/dev/null | wc -l)
+
+########################################################################
+#                         Script starts here                           #
+########################################################################
 
 if [[ -d /Library/Application\ Support/JAMF/bitbar/ ]]; then
         echo "BitBar application found"

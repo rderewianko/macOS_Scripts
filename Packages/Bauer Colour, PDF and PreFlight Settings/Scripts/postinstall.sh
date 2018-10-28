@@ -1,15 +1,15 @@
 #!/bin/bash
 
-#####################################################################
-######### Install Bauer PDF Preset and PreFlight Settings ###########
-############### Written by Phil Walker Mar 2018 #####################
-#####################################################################
+########################################################################
+#         Install Bauer PDF Preset and PreFlight Settings              #
+################ Written by Phil Walker Mar 2018 #######################
+########################################################################
 
 # Postinstall script
 
-#########################
-####### Variables #######
-#########################
+########################################################################
+#                            Variables                                 #
+########################################################################
 
 #Get the logged in user
 LoggedInUser=`python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");'`
@@ -19,9 +19,9 @@ echo "Current user is $LoggedInUser"
 tmp="/usr/local/Adobe/"
 PreFlight="/usr/local/Adobe/PreFlight"
 
-#########################
-####### Functions #######
-#########################
+########################################################################
+#                            Functions                                 #
+########################################################################
 
 function copySettings() {
 #Copy the PDF Preset and PreFlight settings for the logged in user
@@ -59,9 +59,9 @@ fi
 
 }
 
-###############################################
-#              script starts here             #
-###############################################
+########################################################################
+#                         Script starts here                           #
+########################################################################
 
 
 copySettings
