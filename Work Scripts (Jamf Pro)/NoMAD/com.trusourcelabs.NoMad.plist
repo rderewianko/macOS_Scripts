@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+	<key>ADDomain</key>
+	<string>YOUDOMAIN</string>
+	<key>ChangePasswordCommand</key>
+	<string>/usr/local/KillNoMAD.sh</string>
+	<key>KerberosRealm</key>
+	<string>YOUDOMAIN</string>
+	<key>UseKeychain</key>
+	<true/>
+	<key>LocalPasswordSync</key>
+	<true/>
+	<key>LocalPasswordSyncOnMatchOnly</key>
+	<true/>
+	<key>DontShowWelcome</key>
+	<true/>
+	<key>HideAbout</key>
+	<true/>
+	<key>HideQuit</key>
+	<true/>
+	<key>HideSignOut</key>
+	<true />
+	<key>HidePrefs</key>
+	<true/>
+	<key>UPCAlert</key>
+	<true/>
+	<key>CleanCerts</key>
+	<true/>
+	<key>SignInWindowOnLaunch</key>
+	<true/>
+	<key>GetHelpOptions</key>
+	<string>https://customURL</string>
+	<key>GetHelpType</key>
+	<string>URL</string>
+	<key>MessageNotConnected</key>
+  <string>No Connection to YOURDOMAIN</string>
+	<key>MessageUPCAlert</key>
+	<string>Please enter your YOURDOMAIN login details..</string>
+	<key>TitleSignIn</key>
+	<string>Please enter your YOURDOMAIN login details..</string>
+	<key>MessageNotConnected</key>
+	<string></string>
+</dict>
+</plist>
