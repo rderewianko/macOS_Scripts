@@ -1,22 +1,18 @@
 #!/bin/sh
 
-##############################################
-########## Add Bauer Search Domains ##########
-########### Written by Phil Walker ###########
-##############################################
+########################################################################
+#                   Add Bauer Search Domains                           #
+#################### Written by Phil Walker ############################
+########################################################################
 
-###################
-#### Variables ####
-###################
+########################################################################
+#                            Variables                                 #
+########################################################################
 
 #Identify Hardware
-MacModel=`ioreg -rd1 -c IOPlatformExpertDevice | awk -F'["|"]' '/model/{print $4}' | sed 's/[0-9]*//g;s/,//g'`
+MacModel=$(ioreg -rd1 -c IOPlatformExpertDevice | awk -F'["|"]' '/model/{print $4}' | sed 's/[0-9]*//g;s/,//g')
 #Identify current network service
-currentservice=$(networksetup -listallhardwareports | grep -C1 $(route get default | grep interface | awk '{print $2}') | grep "Hardware Port" | sed 's/Hardware Port: //')
-#or
-#currentservice=$(networksetup -listallhardwareports | grep -C1 $(route get default | grep interface | awk '{print $2}') | grep "Hardware Port" | sed 's/.*: //g')
-#or
-#currentservice=$(networksetup -listallhardwareports | grep -C1 $(route get default | grep interface | awk '{print $2}') | grep "Hardware Port" | sed 's/.*:[[:blank:]]//g')
+currentService=$(networksetup -listallhardwareports | grep -C1 $(route get default | grep interface | awk '{print $2}') | grep "Hardware Port" | sed 's/Hardware Port: //')
 
 #Get the IP
 theLoc=`ifconfig | awk '/inet[^6]/{split($2,ip,".");theip=ip[1] "." ip[2] ".";$0=theip}
@@ -33,27 +29,37 @@ theLoc=`ifconfig | awk '/inet[^6]/{split($2,ip,".");theip=ip[1] "." ip[2] ".";$0
 
 ' | head -n 1`
 
-if [ $theLoc == "London" ]; then
+#Set DNS suffix based on location
+if [[ "$theLoc" == "London" ]]; then
 	DNSSuffix="aca.bauer-uk.bauermedia.group"
-elif [ $theLoc == "Peterborough" ]; then
+elif [[ "$theLoc" == "Peterborough" ]]; then
 	DNSSuffix="med.bauer-uk.bauermedia.group"
 else
 	DNSSuffix=""
 fi
 
-###################
-#### Functions ####
-###################
+#Set total search domain integer based on DNS suffix value
+if [[ $DNSSuffix == "" ]]; then
+	DomainCount="1"
+else
+	DomainCount="2"
+fi
+
+########################################################################
+#                            Functions                                 #
+########################################################################
 
 
 function EthernetDomainsMacPro() {
 
-DomainsEthernet1=`/usr/sbin/networksetup -getsearchdomains "Ethernet 1" | grep "bauer" | wc -l`
-DomainsEthernet2=`/usr/sbin/networksetup -getsearchdomains "Ethernet 2" | grep "bauer" | wc -l`
-if [[ $DomainsEthernet1 -eq "2" ]] && [[ $DomainsEthernet2 -eq "2" ]]; then
-	echo "Ethernet 1 and Ethernet 2 interface search domains correct, nothing to add"
+DomainsEthernet1=$(/usr/sbin/networksetup -getsearchdomains "Ethernet 1" | grep "bauer" | wc -l)
+DomainsEthernet2=$(/usr/sbin/networksetup -getsearchdomains "Ethernet 2" | grep "bauer" | wc -l)
+
+echo "Checking search domains..."
+if [[ $DomainsEthernet1 -eq "$DomainCount" ]] && [[ $DomainsEthernet2 -eq "$DomainCount" ]]; then
+	echo "Ethernet 1 and 2 interfaces search domains correct, nothing to add"
 else
-	echo "Adding search domains for Ethernet 1 and Ethernet 2 interfaces"
+	echo "Adding search domains for Ethernet 1 and 2 interfaces"
   /usr/sbin/networksetup -setsearchdomains "Ethernet 1" $DNSSuffix bauer-uk.bauermedia.group
   /usr/sbin/networksetup -setsearchdomains "Ethernet 2" $DNSSuffix bauer-uk.bauermedia.group
 fi
@@ -62,20 +68,24 @@ fi
 
 function currentServiceDomains() {
 
-DomainsCurrentService=`/usr/sbin/networksetup -getsearchdomains "$currentservice" | grep "bauer" | wc -l`
-if [[ "$DomainsCurrentService" -eq "2" ]]; then
-  echo "$currentservice interface search domains correct, nothing to add"
+DomainsCurrentService=$(/usr/sbin/networksetup -getsearchdomains "$currentService" | grep "bauer" | wc -l)
+
+echo "Checking search domains..."
+if [[ "$DomainsCurrentService" -eq "$DomainCount" ]]; then
+  echo "$currentService interface search domains correct, nothing to add"
 else
-  echo "Adding search domains for $currentservice interface"
-  /usr/sbin/networksetup -setsearchdomains "$currentservice" $DNSSuffix bauer-uk.bauermedia.group
+  echo "Adding search domains for $currentService interface"
+	 /usr/sbin/networksetup -setsearchdomains "$currentService" $DNSSuffix bauer-uk.bauermedia.group
 fi
 
 }
 
 function wifiDomains() {
 
-DomainsWiFi=`/usr/sbin/networksetup -getsearchdomains "Wi-Fi" | grep "bauer" | wc -l`
-if [[ "$DomainsWiFi" -eq "2" ]]; then
+DomainsWiFi=$(/usr/sbin/networksetup -getsearchdomains "Wi-Fi" | grep "bauer" | wc -l)
+
+echo "Checking search domains..."
+if [[ "$DomainsWiFi" -eq "$DomainCount" ]]; then
   echo "Wi-Fi interface search domains correct, nothing to add"
 else
   echo "Adding search domains for Wi-Fi interface"
@@ -86,16 +96,16 @@ fi
 
 function confirmDomainsMacPro() {
 
-DomainsEthernet1=`/usr/sbin/networksetup -getsearchdomains "Ethernet 1" | grep "bauer" | wc -l`
-DomainsEthernet2=`/usr/sbin/networksetup -getsearchdomains "Ethernet 2" | grep "bauer" | wc -l`
+DomainsEthernet1=$(/usr/sbin/networksetup -getsearchdomains "Ethernet 1" | grep "bauer" | wc -l)
+DomainsEthernet2=$(/usr/sbin/networksetup -getsearchdomains "Ethernet 2" | grep "bauer" | wc -l)
 
-if [[ $MacModel = "MacPro" ]]; then
-  if [[ $DomainsEthernet1 -eq "2" ]] && [[ $DomainsEthernet2 -eq "2" ]]; then
-    echo "Ethernet interfaces search domains added successfully"
+if [[ $MacModel == "MacPro" ]]; then
+  if [[ $DomainsEthernet1 -eq "$DomainCount" ]] && [[ $DomainsEthernet2 -eq "$DomainCount" ]]; then
+    echo "RESULT: Ethernet interfaces search domains correct"
 else
-    echo "Ethernet interfaces search domains not added"
+    echo "RESULT: Ethernet interfaces search domains not added"
     exit 1
-  fi
+	fi
 fi
 
 }
@@ -103,12 +113,12 @@ fi
 
 function confirmWiFiDomains() {
 
-DomainsWiFi=`/usr/sbin/networksetup -getsearchdomains "Wi-Fi" | grep "bauer" | wc -l`
+DomainsWiFi=$(/usr/sbin/networksetup -getsearchdomains "Wi-Fi" | grep "bauer" | wc -l)
 
-if [[ $DomainsWiFi -eq "2" ]]; then
-	echo "Wi-Fi interface search domains set correctly"
+if [[ $DomainsWiFi -eq "$DomainCount" ]]; then
+	echo "RESULT: Wi-Fi interface search domains correct"
 else
-  echo "Wi-Fi interface search domains not added"
+  echo "RESULT: Wi-Fi interface search domains not added"
   exit 1
 fi
 
@@ -116,25 +126,26 @@ fi
 
 function confirmCurrentServiceDomains() {
 
-DomainsEthernet=`/usr/sbin/networksetup -getsearchdomains "$currentservice" | grep "bauer" | wc -l`
+DomainsCurrent=$(/usr/sbin/networksetup -getsearchdomains "$currentService" | grep "bauer" | wc -l)
 
-if [[ $DomainsEthernet -eq "2" ]]; then
-	echo "Ethernet interface search domains set correctly"
+if [[ $DomainsCurrent -eq "$DomainCount" ]]; then
+	echo "RESULT: $currentService search domains correct"
 else
-	echo "Ethernet interface search domains not added"
+	echo "RESULT: $currentService search domains not added"
 	exit 1
 fi
 
 }
 
-##########################
-### script starts here ###
-##########################
+########################################################################
+#                         Script starts here                           #
+########################################################################
 
-echo "Mac model: $MacModel with the location of $theLoc"
-echo "Network Connected via $currentservice"
+echo "$MacModel with the location of $theLoc"
+echo "Connected to network via $currentService"
+echo "Search Domains Count: $DomainCount"
 
-if [[ $MacModel = *"MacBook"* ]] && [[ "$currentservice" = *"Ethernet"* ]]; then
+if [[ $MacModel = *"MacBook"* ]] && [[ "$currentService" = *"Ethernet"* ]]; then
 
 	currentServiceDomains
 	wifiDomains
@@ -144,7 +155,7 @@ if [[ $MacModel = *"MacBook"* ]] && [[ "$currentservice" = *"Ethernet"* ]]; then
 	confirmCurrentServiceDomains
 	confirmWiFiDomains
 
-elif [[ $MacModel = *"MacBook"* ]] && [[ "$currentservice" = *"Wi-Fi"* ]]; then
+elif [[ $MacModel = *"MacBook"* ]] && [[ "$currentService" = *"Wi-Fi"* ]]; then
 
 	wifiDomains
 
