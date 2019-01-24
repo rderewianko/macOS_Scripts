@@ -13,20 +13,20 @@ LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyCons
 echo setting Finder preferences...
 
 # Display Disks/Drives/Servers on Desktop
-su "$LoggedInUser" -c 'defaults write com.apple.finder ShowExternalHardDrivesOnDesktop -bool true'
-su "$LoggedInUser" -c 'defaults write com.apple.finder ShowHardDrivesOnDesktop -bool true'
-su "$LoggedInUser" -c 'defaults write com.apple.finder ShowMountedServersOnDesktop -bool true'
-su "$LoggedInUser" -c 'defaults write com.apple.finder ShowRemovableMediaOnDesktop -bool true'
+su -l "$LoggedInUser" -c 'defaults write com.apple.finder ShowExternalHardDrivesOnDesktop -bool true'
+su -l "$LoggedInUser" -c 'defaults write com.apple.finder ShowHardDrivesOnDesktop -bool true'
+su -l "$LoggedInUser" -c 'defaults write com.apple.finder ShowMountedServersOnDesktop -bool true'
+su -l "$LoggedInUser" -c 'defaults write com.apple.finder ShowRemovableMediaOnDesktop -bool true'
 
 # Show Status Bar
-su "$LoggedInUser" -c 'defaults write com.apple.finder ShowStatusBar -bool true'
+su -l "$LoggedInUser" -c 'defaults write com.apple.finder ShowStatusBar -bool true'
 
 # Show Path Bar
-su "$LoggedInUser" -c 'defaults write com.apple.finder ShowPathbar -bool true'
+su -l "$LoggedInUser" -c 'defaults write com.apple.finder ShowPathbar -bool true'
 
 # Show Side Bar
-su "$LoggedInUser" -c 'defaults write com.apple.finder ShowSidebar -bool true'
-su "$LoggedInUser" -c 'defaults write com.apple.finder ShowSideBar -bool true'
+su -l "$LoggedInUser" -c 'defaults write com.apple.finder ShowSidebar -bool true'
+su -l "$LoggedInUser" -c 'defaults write com.apple.finder ShowSideBar -bool true'
 
 # Restart Finder
 killall Finder
