@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-#       Set OneDrive to Insiders Rings for the logged in user          #
+# Set OneDrive to Insiders Ring update channel for the logged in user  #
 ################ Written by Phil Walker Dec 2018 #######################
 ########################################################################
 
@@ -16,7 +16,7 @@ LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyCons
 LoggedInUserGroupID=$(dscl . read /Users/$LoggedInUser | grep "PrimaryGroupID" | awk '{print $2}')
 echo "DEBUG : $LoggedInUserGroupID"
 
-if [ "$LoggedInUserGroupID" -eq "1116074086" ]; then
+if [[ "$LoggedInUserGroupID" -eq "1116074086" ]]; then
   LoggedInUserGroup="BAUER-UK\Domain Users"
 else
   LoggedInUserGroup="staff"
@@ -26,7 +26,7 @@ fi
 #                         Script starts here                           #
 ########################################################################
 
-echo "Setting OneDrive to via the Insiders Ring"
+echo "Setting OneDrive to the Insiders Ring update channel"
 Defaults write /Users/$LoggedInUser/Library/Preferences/com.microsoft.OneDriveUpdater Tier Insiders
 chown "$LoggedInUser":"$LoggedInUserGroupID" /Users/$LoggedInUser/Library/Preferences/com.microsoft.OneDriveUpdater.plist
 chmod 600 /Users/$LoggedInUser/Library/Preferences/com.microsoft.OneDriveUpdater.plist
