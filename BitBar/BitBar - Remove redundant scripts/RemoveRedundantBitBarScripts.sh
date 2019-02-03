@@ -1,7 +1,8 @@
 #!/bin/sh
 
 ########################################################################
-#        Remove BitBar ADPassword script - Mojave and above only       #
+#                Remove Redundant BitBar scripts                       #
+#                   (Mojave and above only)                            #
 ############### Written by Phil Walker Jan 2019 ########################
 ########################################################################
 
@@ -13,32 +14,37 @@
 OSShort=$(sw_vers -productVersion | awk -F. '{print $2}')
 OSFull=$(sw_vers -productVersion)
 
-#BitBar ADPassword script location
+#ADPassword and launchSysPrefstoUserPane script locations
 BitBarAD="/Library/Application Support/JAMF/bitbar/BitBarDistro.app/Contents/MacOS/ADPassword.1d.sh"
+LaunchSysPrefs="/usr/local/launchSysPrefstoUserPane.sh"
 
 ########################################################################
 #                            Functions                                 #
 ########################################################################
 
 #Double check if the policy should be run
-function checkOS() {
+function checkOS ()
+{
+
 if [[ "$OSShort" -lt "14" ]]; then
   echo "OS Version is $OSFull, nothing will be removed"
   echo "Exiting script......."
   exit 0
 else
-  echo "OS Version is $OSFull, checking for BitBar ADPassword script..."
+  echo "OS Version is $OSFull, checking for ADPassword and LaunchSysPrefs scripts..."
 fi
+
 }
 
-function checkADScript() {
+function checkScripts ()
+{
 
-if [[ ! -a "$BitBarAD" ]]; then
-  echo "ADPassword.1d.sh not found, nothing to do"
+if [[ ! -a "$BitBarAD" ]] && [[ ! -a $LaunchSysPrefs ]]; then
+  echo "ADPassword.1d.sh and launchSysPrefstoUserPane.sh not found, nothing to do"
   echo "Exiting script......."
   exit 0
 else
-  echo "ADPassword.1d.sh found so will be removed"
+  echo "ADPassword.1d.sh and launchSysPrefstoUserPane.sh found, both will be removed"
 fi
 
 }
@@ -49,23 +55,25 @@ fi
 
 #Check OS is 10.14 or above
 checkOS
-#Check ADPassword script is present
-checkADScript
+#Check ADPassword and LaunchSysPrefs scripts are present
+checkScripts
 
-echo "Removing file ADPassword.1d.sh..."
+echo "Removing ADPassword.1d.sh and launchSysPrefstoUserPane.sh..."
 
 #Remove ADPassword script
 rm -f "$BitBarAD"
+#Remove LaunchSysPrefs script
+rm -f "$LaunchSysPrefs"
 
 #Check removal was successful
 echo "Checking removal was successful"
-if [[ ! -a "$BitBarAD" ]]; then
+if [[ ! -a "$BitBarAD" ]] && [[ ! -a $LaunchSysPrefs ]]; then
 
-  echo "ADPassword script deleted successfully"
+  echo "ADPassword and LaunchSysPrefs scripts deleted successfully"
 
 else
 
-  echo "ADPassword script removal FAILED"
+  echo "ADPassword and LaunchSysPrefs scripts removal FAILED"
   exit 1
 
 fi

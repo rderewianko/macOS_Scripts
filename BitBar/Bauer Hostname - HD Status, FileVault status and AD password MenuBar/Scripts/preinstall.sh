@@ -1,12 +1,12 @@
 #!/bin/bash
 
-#This script removes the Bauer menu bar application and lauchagents
+#This script removes the Bauer menu bar application and launch agents
 
 if [[ -d /Library/Application\ Support/JAMF/bitbar/ ]]; then
         rm -rf /Library/Application\ Support/JAMF/bitbar/
-        echo "Bitbar application removed"
+        echo "BitBar application removed"
 else
-        echo "bitbar not found in JAMF folder"
+        echo "BitBar not found in JAMF folder"
 fi
 
 if [[ -a /Library/LaunchAgents/com.hostname.menubar.plist ]]; then
@@ -15,10 +15,10 @@ if [[ -a /Library/LaunchAgents/com.hostname.menubar.plist ]]; then
         rm /Library/LaunchAgents/com.hostname.menubar.plist
         echo "menubar hostname launch agent stopped and removed"
 else
-        "menubar hostname launch agent not found"
+        echo "menubar hostname launch agent not found"
 fi
 
-#Killthe bitbar app now
+#Kill the bitbar app now
 killall BitBarDistro
 echo " BitBar app killed"
 
