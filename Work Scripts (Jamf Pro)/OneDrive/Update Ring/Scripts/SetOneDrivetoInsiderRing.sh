@@ -5,6 +5,8 @@
 ################ Written by Phil Walker Feb 2019 #######################
 ########################################################################
 
+#Below can be set via Configuration Profile instead if using Jamf Pro
+
 ########################################################################
 #                            Variables                                 #
 ########################################################################
@@ -24,7 +26,7 @@ UpdateRingSettings="/Users/$LoggedInUser/Library/Caches/OneDrive/UpdateRingSetti
 
 function checkOneDriveTier ()
 {
-echo "Checking if OneDrive update ring is set to Insider..."
+echo "Checking OneDrive update ring settings..."
  if [[ "$OneDriveTier" == "Insiders" ]]; then
   echo "OneDrive already set to Insider update ring, nothing to do"
   exit 0
@@ -54,9 +56,9 @@ fi
 #echo "DEBUG: $UpdateRingSettings"
 
 checkOneDriveTier
-echo "Restarting Defaults Cache"
+echo "Restarting defaults cache"
 su -l "$LoggedInUser" -c "killall cfprefsd"
-echo "Refreshing Update Rings..."
+echo "Refreshing update rings..."
 su -l "$LoggedInUser" -c "rm "$UpdateRingSettings""
 confirmCacheCleared
 echo "All set, launching OneDrive..."
