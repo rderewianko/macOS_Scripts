@@ -2,39 +2,50 @@
 
 #######################################################################
 #            Create a Virtual Machine for VMware Fusion               #
-#        (OS DMG create with AutoDMG, vfuse and qemu required)        #
+#       (OS DMG created with AutoDMG, vfuse and qemu required)        #
 ######################### written by Phil Walker ######################
 #######################################################################
 
+########################################################################
+#                            Variables                                 #
+########################################################################
+
 #Check VMware Fusion is installed
-VMware_Fusion=$(ls -1 /Applications/ | grep -i "vmware" | wc -l)
+VMwareFusion="/Applications/VMware Fusion.app"
 #Check VMware Fusion version
-VMware_Version=$(defaults read /Applications/VMware\ Fusion.app/Contents/Info CFBundleShortVersionString | cut -c -2)
+VMwareFusionVersion=$(defaults read /Applications/VMware\ Fusion.app/Contents/Info CFBundleShortVersionString | cut -c -2)
 #Vfuse directory
-vfuse_Loc="/usr/local/vfuse"
+vfuseDir="/usr/local/vfuse"
 #Vfuse binary
 vfuse="/usr/local/vfuse/bin/vfuse"
 #AutoDMG Image Location
 DMGs=(/Users/philwalker/Desktop/AutoDMG_Images/*)
+#Script location
+ScriptDirectory="$(cd "$(dirname "$0")"; pwd)"
 
-#function checkVMwareFusion() {
-#if [[  ]]
-#}
+########################################################################
+#                            Functions                                 #
+########################################################################
 
 function checkDependencies() {
-if [[ $VMware_Fusion -lt "1" ]]; then
+if [[ ! -d "$VMwareFusion" ]]; then
   echo "VMware Fusion not installed, install VMware Fusion before running again. Exiting script..."
-  exit 1
+  exit 0
 else
-  if [[ ! -d "$vfuse_Loc" ]]; then
+  if [[ ! -d "$vfuseDir" ]]; then
     echo "vfuse not installed, install vfuse from https://github.com/chilcote/vfuse/releases. Exiting script..."
-    exit 1
+    exit 0
   else
     echo "Dependencies all installed"
   fi
 fi
 }
 
+########################################################################
+#                         Script starts here                           #
+########################################################################
+
+echo "$ScriptDirectory"
 checkDependencies
 
 read -p "Enter the VM name: " NAME
@@ -64,10 +75,10 @@ echo    # (optional) move to a new line
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
     echo "Details entered incorrect, exiting script..."
-    exit 1
+    exit 0
 fi
 
-if [[ $VMware_Version -ge "11" ]]; then
+if [[ $VMwareFusionVersion -ge "11" ]]; then
   echo "VMware Fusion 11 installed, qemu will need to be used"
       if [[ $SERIAL == "" ]]; then
         "$vfuse" -i "$Selected_DMG" --hw-model iMac16,2 --use-qemu -n "$NAME"
@@ -84,5 +95,5 @@ else
 fi
 
 echo "Moving "$NAME" to Virtual Machines directory...."
-mv -v "/Users/philwalker/Desktop/$NAME.vmwarevm" "/Users/philwalker/Virtual Machines/"
+mv "$ScriptDirectory/$NAME.vmwarevm" "/Users/philwalker/Virtual Machines/"
 echo "Virtual Machine created and moved to the correct directory"
