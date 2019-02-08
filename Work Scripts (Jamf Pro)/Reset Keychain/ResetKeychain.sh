@@ -44,8 +44,8 @@ fi
 
 function backupLoginKeychains ()
 {
-echo "Checking for Login Keychains..."
 #Check for all Login keychains
+echo "Checking for Login Keychains..."
 for login in $(ls "${UserHomeDirectory}"/Library/Keychains/*.keychain* | grep -v "metadata")
   do
     echo "Login Keychain: $login"
@@ -56,12 +56,12 @@ for login in $(ls "${UserHomeDirectory}"/Library/Keychains/*.keychain* | grep -v
 
 function backupLocalKeychain ()
 {
-echo "Checking for Local Keychains..."
 #Check for all Local keychains
+echo "Checking for Local Keychains..."
 for local in $(ls "${UserHomeDirectory}"/Library/Keychains/ | egrep '([A-Z0-9]{8})((-)([A-Z0-9]{4})){3}(-)([A-Z0-9]{12})')
   do
     echo "Local Keychain: $local"
-    su -l "$LoggedInUser" -c "mv "${UserHomeDirectory}"/Library/Keychains/"$local" "$KeychainBackup""
+    su -l "$LoggedInUser" -c "mv ""${UserHomeDirectory}"/Library/Keychains/"$local"" "$KeychainBackup""
   done
 
 }
@@ -106,9 +106,9 @@ jamfHelper_keychainresetfailed
 function confirmKeychainDeletion ()
 {
 #Check for existence of any login keychains (Only the login keychain is checked post deletion as the local items keychain is sometimes recreated too quickly)
-AllLoginKeychains=$(ls "${UserHomeDirectory}"/Library/Keychains/*.keychain* | grep -v "metadata")
+AllLoginKeychains=$(ls "${UserHomeDirectory}"/Library/Keychains/ | grep ".keychain" | grep -v "metadata" | wc -l)
 
-if [[ "$AllLoginKeychains" == "" ]]; then
+if [[ "$AllLoginKeychains" -eq "0" ]]; then
     echo "Keychain reset successfully. A reboot is required to complete the process"
 else
   echo "Keychain reset FAILED"
