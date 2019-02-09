@@ -1,4 +1,11 @@
 #!/bin/bash
+# <bitbar.title>JSS Switcher</bitbar.title>
+# <bitbar.version>1.0</bitbar.version>
+# <bitbar.author>Phil Walker</bitbar.author>
+# <bitbar.author.github>pwalker1485</bitbar.author.github>
+# <bitbar.desc>Displays JSS URL and allows user to switch between multiple servers</bitbar.desc>
+# <bitbar.dependencies>Bash scripts stored locally to write value to plist</bitbar.dependencies>
+# <bitbar.abouturl>https://github.com/pwalker1485</bitbar.abouturl>
 
 #Get the logged in user
 LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
