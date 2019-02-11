@@ -5,7 +5,7 @@
 # <bitbar.author>Ben Carter & Phil Walker August 2017</bitbar.author>
 # <bitbar.author.github>retrac81</bitbar.author.github>
 # <bitbar.desc>Creates a menu listing macOS details, IP addresses, FileVault status and a link to Self Service</bitbar.desc>
-  # <bitbar.image>base64 encoded for Self Service graphic</bitbar.image>
+# <bitbar.image>base64 encoded for Self Service graphic</bitbar.image>
 # <bitbar.dependencies>JSS Binary</bitbar.dependencies>
 # <bitbar.abouturl>https://github.com/retrac81</bitbar.abouturl>
 
