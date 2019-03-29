@@ -9,14 +9,14 @@
 #Apple Wireless Keyboard battery level
 WIRELESS_KEYBOARD=$(ioreg -c AppleBluetoothHIDKeyboard | grep "BatteryPercent" | grep -F -v \{ | sed 's/[^[:digit:]]//g')
 #Apple Magic Keyboard battery level
-MAGIC_KEYBOARD=$(system_profiler SPBluetoothDataType | grep -A 6 "Magic Keyboard" | grep "Battery Level" | awk '{print $3}' | sed 's/%//g')
+MAGIC_KEYBOARD=$(ioreg -c AppleDeviceManagementHIDEventService -r -l | grep -i "Keyboard" -A 20 | grep "BatteryPercent" | grep -F -v \{ | sed 's/[^[:digit:]]//g')
 #Check if a Magic Keyboard is connected via USB
 CHARGE=$(ioreg -p IOUSB -w0 | sed 's/[^o]*o //; s/@.*$//' | grep -v '^Root.*' | grep "Magic*")
 
 function chargeStatus() {
 #Display lightning icon if Magic Keyboard is connected via USB
 if [[ $CHARGE == "Magic Keyboard" ]]; then
-  echo "⌨️⚡️"
+  echo "⚡️"
 fi
 }
 

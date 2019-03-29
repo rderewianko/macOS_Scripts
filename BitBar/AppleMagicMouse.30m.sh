@@ -9,16 +9,16 @@
 # Works with Magic Mouse and Magic Mouse 2
 
 #Magic Mouse battery level
-MAGIC_MOUSE=$(ioreg -n BNBMouseDevice | grep "BatteryPercent" | grep -F -v \{ | sed 's/[^[:digit:]]//g')
+MAGIC_MOUSE=$(ioreg -c BNBMouseDevice |grep '"BatteryPercent" =' | grep -F -v \{ | sed 's/[^[:digit:]]//g')
 #Magic Mouse 2 battery level
-MAGIC_MOUSE2=$(system_profiler SPBluetoothDataType | grep -A 6 "Magic Mouse 2" | grep "Battery Level" | awk '{print $3}' | sed 's/%//g')
+MAGIC_MOUSE2=$(ioreg -c AppleDeviceManagementHIDEventService -r -l | grep -i "Mouse" -A 20 | grep "BatteryPercent" | grep -F -v \{ | sed 's/[^[:digit:]]//g')
 #Check if a Magic Mouse 2 is connected via USB
 CHARGE=$(ioreg -p IOUSB -w0 | sed 's/[^o]*o //; s/@.*$//' | grep -v '^Root.*' | grep "Magic*")
 
 function chargeStatus() {
 #display lightning icon if Magic Mouse 2 is connected via USB
 if [[ $CHARGE == "Magic Mouse 2" ]]; then
-  echo "🖱⚡️"
+  echo "⚡️"
 fi
 }
 
