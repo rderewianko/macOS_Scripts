@@ -1,30 +1,24 @@
 #!/bin/bash
 
 ########################################################################
-#################### Variables to pulled in from policy ################
+#                  Grant Temporary Admin Privileges                    #
+####################### written by Phil Walker #########################
 ########################################################################
-
-#PolicyTrigger="$4" #What unique policy trigger actually installs the package
-#deferralOption1="$5" #deferral time option 1 e.g 0, 300, 3600, 21600 (Now, 5 minutes, 1 hour, 6 hours)
-#deferralOption2="$6" #deferral time option 2 e.g 0, 300, 3600, 21600 (Now, 5 minutes, 1 hour, 6 hours)
-#deferralOption3="$7" #deferral time option 3 e.g 0, 300, 3600, 21600 (Now, 5 minutes, 1 hour, 6 hours)
-#deferralOption4="$8" #deferral time option 4 e.g 0, 300, 3600, 21600 (Now, 5 minutes, 1 hour, 6 hours)
-
-
-#DEBUG
-deferralOption1="600"
-deferralOption2="3600"
-deferralOption3="10800"
-deferralOption4="21600"
 
 ########################################################################
 #                            Variables                                 #
 ########################################################################
 
+#Deferral Options
+deferralOption1="600"
+deferralOption2="3600"
+deferralOption3="10800"
+deferralOption4="21600"
+
 #Get the logged in user
-LoggedInUser=`python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");'`
+LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 #Get the hostname
-hostName=`scutil --get HostName`
+hostName=$(scutil --get HostName)
 #Get the logged in user's real name
 RealName=$(dscl . -read /Users/$LoggedInUser | grep -A1 "RealName:" | sed -n '2p' | awk '{print $2, $1}' | sed s/,//)
 

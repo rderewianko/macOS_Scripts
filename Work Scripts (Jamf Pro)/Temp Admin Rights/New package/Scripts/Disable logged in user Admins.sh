@@ -1,25 +1,35 @@
-#!/bin/sh
+#!/bin/bash
+
+#######################################################################
+#                 Revoke Temporary Admin Privileges                   #
+###################### written by Phil Walker #########################
+#######################################################################
+
+########################################################################
+#                            Variables                                 #
+########################################################################
 
 #Get the logged in user
-LoggedInUser=`python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");'`
+LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 
 #Get the logged in user's real name
 RealName=$(dscl . -read /Users/$LoggedInUser | grep -A1 "RealName:" | sed -n '2p' | awk '{print $2, $1}' | sed s/,//)
 
 #Get the hostname
-hostName=`scutil --get HostName`
+hostName=$(scutil --get HostName)
 
 #Get a list of users who are in the admin group
 adminUsers=$(dscl . -read Groups/admin GroupMembership | cut -c 18-)
 
-#Get a list of local users
-localUsers=$(dscl . list /Users UniqueID | awk '$2 > 501 && $2 < 1000 {print $1}')
+########################################################################
+#                            Functions                                 #
+########################################################################
 
 function removeTempAdminRights() {
 #Loop through each account found, excludes root and any account with admin in the name - this stops casadmin, admin and any ADadmin accounts from being removed from the admin group
 for user in $adminUsers
 do
-    if [[ "$user" != "root" && "$user" != *"admin"* ]];
+    if [[ "$user" != "root" && "$user" != "admin" && "$user" != "casadmin" ]];
     then
         dseditgroup -o edit -d $user -t user admin
         if [ $? = 0 ]; then echo "Removed user $user from admin group"; fi
@@ -27,19 +37,6 @@ do
         echo "Admin user $user left alone"
     fi
 done >> /usr/local/bin/RemoveAdmin.txt
-}
-
-function removeLocalUserAdmin() {
-#Loop through each local account found and remove it from the admin group
-for user in $localUsers; do
-  if [[ "$user" == *"admin"* ]]; then
-  dseditgroup -o edit -d $user -t user admin
-    if [ $? = 0 ]; then echo "Removed user $user from admin group"
-  else
-      echo "Admin user $user left alone"
-    fi
-  fi
-done >> /usr/local/bin/RemoveLocalAccountsadmin.txt
 }
 
 function jamfHelperAdminRemoved() {
@@ -68,12 +65,11 @@ fi
 
 }
 
-######################
-# script starts here #
-######################
+########################################################################
+#                         Script starts here                           #
+########################################################################
 
 removeTempAdminRights
-removeLocalUserAdmin
 jamfHelperAdminRemoved
 removeLDAndScript
 
