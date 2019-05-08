@@ -1,21 +1,22 @@
 #!/bin/bash
 
-###############################################
-# This script sets the mouse scroll direction #
-###############################################
+########################################################################
+#            Turn naturnal mouse scroll direction off                  #
+##################### Written by Phil Walker ###########################
+########################################################################
+
+########################################################################
+#                            Variables                                 #
+########################################################################
 
 # IF a change is made it does not apply until the next logon session
-
-#########################
-#       Variables       #
-#########################
 
 #Get the logged in user
 LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 
-#########################
-#       Functions       #
-#########################
+########################################################################
+#                            Functions                                 #
+########################################################################
 
 function preCheck() {
 #Read the value set for com.apple.swipescrolldirection.
@@ -44,9 +45,9 @@ fi
 
 }
 
-##########################
-#   script starts here   #
-##########################
+########################################################################
+#                         Script starts here                           #
+########################################################################
 
 #Check to see if a change needs to be made
 preCheck

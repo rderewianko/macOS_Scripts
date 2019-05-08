@@ -26,7 +26,7 @@ adminUsers=$(dscl . -read Groups/admin GroupMembership | cut -c 18-)
 ########################################################################
 
 function removeTempAdminRights() {
-#Loop through each account found, excludes root and any account with admin in the name - this stops casadmin, admin and any ADadmin accounts from being removed from the admin group
+#Loop through each account found and remove from the admin group (excluding root, admin and casadmin).
 for user in $adminUsers
 do
     if [[ "$user" != "root" && "$user" != "admin" && "$user" != "casadmin" ]];
