@@ -13,7 +13,7 @@
 deferralOption1="600"
 deferralOption2="3600"
 deferralOption3="10800"
-deferralOption4="21600"
+deferralOption4="28800"
 
 #Get the logged in user
 LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
