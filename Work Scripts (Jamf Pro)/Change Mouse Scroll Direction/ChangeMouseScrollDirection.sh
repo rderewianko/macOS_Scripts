@@ -21,6 +21,8 @@ LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyCons
 function preCheck() {
 #Read the value set for com.apple.swipescrolldirection.
 PREF=$(/usr/libexec/PlistBuddy -c "print com.apple.swipescrolldirection" /Users/$LoggedInUser/Library/Preferences/.GlobalPreferences.plist 2>/dev/null)
+#or the below but function would need to check for a 0 instead of false. Found that PlistBuddy was quicker
+#PREF=$(su $LoggedInUser -c "defaults read .GlobalPreferences com.apple.swipescrolldirection")
 #Confirm that the value has been set successfully
 if [[ $PREF == "false" ]]; then
   echo "Natural Mouse scroll direction already turned off, nothing to do"
