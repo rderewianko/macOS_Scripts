@@ -46,11 +46,11 @@ jamfHelperApplyUpdate ()
 #Prompt user to update Microsoft Teams with deferral options supplied by the policy
 {
 HELPER=$(
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Installer.app/Contents/Resources/Installer.icns -title "Message from Bauer IT" -heading "An important update for $ApplicationName is waiting to be installed" -alignHeading center -description "The update brings new features, bug fixes and security patches.
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Installer.app/Contents/Resources/Installer.icns -title "Message from Bauer IT" -heading "An important update for ${ApplicationName} is waiting to be installed" -alignHeading center -description "The update brings new features, bug fixes and security patches.
 
-You may choose to install the update now or select one of the deferral times if you currently require the use of $ApplicationName. After the deferral time lapses the update will be automatically installed and $ApplicationName will be closed during the process.
+You may choose to install the update now or select one of the deferral times if you currently require the use of ${ApplicationName}. After the deferral time lapses the update will be automatically installed and ${ApplicationName} will be closed during the process.
 
-Please make sure you do not need to use $ApplicationName before the update starts!" -lockHUD -showDelayOptions "$deferralOption1, $deferralOption2, $deferralOption3, $deferralOption4"  -button1 "Select"
+Please make sure you do not need to use ${ApplicationName} before the update starts!" -lockHUD -showDelayOptions "$deferralOption1, $deferralOption2, $deferralOption3, $deferralOption4"  -button1 "Select"
 
 )
 }
@@ -59,9 +59,9 @@ jamfHelperUpdateConfirm ()
 {
 #Show a message via Jamf Helper that the update is ready, this is after it has been deferred
 HELPER_CONFIRM=$(
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Installer.app/Contents/Resources/Installer.icns -title "Message from Bauer IT" -heading "    An important update for $ApplicationName is now ready to be installed     " -description "The update brings new features, bug fixes and security patches.
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Installer.app/Contents/Resources/Installer.icns -title "Message from Bauer IT" -heading "    An important update for ${ApplicationName} is now ready to be installed     " -description "The update brings new features, bug fixes and security patches.
 
-$ApplicationName will be closed automatically during the update process." -lockHUD -timeout 21600 -button1 "Install" -defaultButton 1
+${ApplicationName} will be closed automatically during the update process." -lockHUD -timeout 21600 -button1 "Install" -defaultButton 1
 )
 }
 
@@ -73,7 +73,7 @@ local T=$DeferralTime;
 local D=$((T/60/60/24));
 local H=$((T/60/60%24));
 local M=$((T/60%60));
-timeChosenHuman=$(printf '%s' "An update for $ApplicationName will be installed in: "; [[ $D > 0 ]] && printf '%d days ' $D; [[ $H -eq 1 ]] && printf '%d hour' $H; [[ $H -ge 2 ]] && printf '%d hours' $H; [[ $M > 0 ]] && printf '%d minutes' $M; [[ $D > 0 || $H > 0 || $M > 0 ]] )
+timeChosenHuman=$(printf '%s' "An update for ${ApplicationName} will be installed in: "; [[ $D > 0 ]] && printf '%d days ' $D; [[ $H -eq 1 ]] && printf '%d hour' $H; [[ $H -ge 2 ]] && printf '%d hours' $H; [[ $M > 0 ]] && printf '%d minutes' $M; [[ $D > 0 || $H > 0 || $M > 0 ]] )
 #Show a message via Jamf Helper that the update will be installed after the deferral time chosen
 HELPER_DEFERRAL_CONFIRM=$(
 /Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    $timeChosenHuman      " -description "If you would like to install the update sooner please open Self Service and navigate to the Applications section." -timeout 10  -button1 "Ok" -defaultButton 1 &
@@ -84,7 +84,7 @@ jamfHelperUpdateInProgress ()
 {
 #Show a message via Jamf Helper that the update has started
 su - $LoggedInUser <<'jamfmsg2'
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    Update in Progress     " -description "$ApplicationName will be closed automatically during the update process" &
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    Update in Progress     " -description "${ApplicationName} will be closed automatically during the update process" &
 jamfmsg2
 }
 
@@ -92,7 +92,7 @@ function jamfHelperUpdateComplete ()
 {
 #Show a message via Jamf Helper that the update is complete, only shows for 10 seconds then closes.
 su - $LoggedInUser <<'jamfmsg3'
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    Update Complete     " -description "$ApplicationName update successfully installed." -button1 "Ok" -defaultButton "1"
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    Update Complete     " -description "${ApplicationName} update successfully installed." -button1 "Ok" -defaultButton "1"
 jamfmsg3
 }
 
@@ -137,7 +137,7 @@ fi
 ########################################################################
 
 if [ "$LoggedInUser" == "" ]; then
-    echo "No logged in user, apply $ApplicationName update."
+    echo "No logged in user, apply ${ApplicationName} update."
     #Call jamf Helper to show message update has started - catches logout trigger
     performUpdate
   else
