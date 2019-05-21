@@ -16,9 +16,9 @@ loggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyCons
 userGUID=$(dscl . list /Users GeneratedUID | grep "$loggedInUser" | head -n 1 | awk '{print $2}')
 # Check if the logged in user is FileVault enabled already
 userFVEnabled=$(fdesetup list | grep "$loggedInUser" | sed 's/.*,//g')
-# Admin username
+# Admin username. Value set in Parameter 4 in the policy
 adminUser=$4
-# Admin Password
+# Admin Password. Value set in Parameter 5 in the policy
 adminUserPassword=$5
 # Check local admin account has been created
 adminAccount=$(dscl . list /Users | grep -v "_\|casadmin" | grep "admin" | sed -n 1p)
@@ -147,6 +147,7 @@ userSecureTokenStatus=$(/usr/sbin/sysadminctl -secureTokenStatus "$loggedInUser"
 if [[ "$userFVEnabled" == "$userGUID" ]] && [[ "$userSecureTokenStatus" =~ "ENABLED" ]]; then
 	echo "$loggedInUser has a SecureToken and is a FileVault enabled user"
 		#fdesetup remove -user "$adminUser"
+		#trigger FileVault policy via a custom trigger
 		jamf policy -trigger EnableFileVaultIndividualUser
 		killall loginwindow
 		exit 0
