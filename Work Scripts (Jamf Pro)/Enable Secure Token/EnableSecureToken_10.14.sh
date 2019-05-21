@@ -1,4 +1,4 @@
-com ap#!/bin/bash
+#!/bin/bash
 
 ########################################################################
 #               Grant a SecureToken to the logged in user              #
