@@ -13,7 +13,7 @@
 # Get the logged in user
 loggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 # Get the logged in users GUID
-userGUID=$(dscl . list /Users GeneratedUID | grep "$loggedInUser" | head -n 1 | awk '{print $2}')
+userGUID=$(dscl . -read /Users/$loggedInUser GeneratedUID | awk '{print $2}')
 # Check if the logged in user is FileVault enabled already
 userFVEnabled=$(fdesetup list | grep "$loggedInUser" | sed 's/.*,//g')
 # Admin username. Value set in Parameter 4 in the policy
@@ -43,7 +43,7 @@ fi
 function checkAdminAccount()
 {
 # Confirm that the local admin account exists and is an administrator
-localAdmin=$(/usr/sbin/dseditgroup -o checkmember -m "$adminUser" admin | awk '/yes/ { print $1 }')
+localAdmin=$(/usr/sbin/dseditgroup -o checkmember -m "$adminUser" admin | awk '/yes/ {print $1}')
 if [[ "$adminAccount" != "admin" ]];then
 	echo "Local admin account not found, exiting script..."
 	exit 1
@@ -68,7 +68,7 @@ function checkAdminSecureToken()
 adminSecureTokenStatus=$(/usr/sbin/sysadminctl -secureTokenStatus "$adminUser" 2>&1)
 if [[ "$adminSecureTokenStatus" =~ "ENABLED" ]]; then
 	localAdminSecureToken="Token"
-	echo "Local admin account already has a SecureToken"
+	echo "Local admin account has a SecureToken"
 else
 	localAdminSecureToken="NoToken"
 	echo "Local admin account does NOT have a SecureToken"
@@ -81,7 +81,7 @@ function checkUserSecureToken()
 userSecureTokenStatus=$(/usr/sbin/sysadminctl -secureTokenStatus "$loggedInUser" 2>&1)
 if [[ "$userSecureTokenStatus" =~ "ENABLED" ]]; then
 	userSecureToken="Token"
-	echo "$loggedInUser already has a SecureToken"
+	echo "$loggedInUser has a SecureToken"
 else
 	userSecureToken="NoToken"
 	echo "$loggedInUser does NOT have a SecureToken"
@@ -196,7 +196,7 @@ while [[ "$passDSCLCheck" != "0" ]]; do
 
 # Neither the local admin account or the logged in user have a SecureToken.
 
-# This will only work on a new Mac! If FIleVault has already been enabled by another user
+# This will only work on a new Mac/rebuilt Mac! If FileVault has already been enabled by another user
 # and the local admin account has had the SecureToken revoked to remove the account from
 # preBoot, only the account with a SecureToken can grant further tokens. That account will
 # need to have elevated privileges to do so.
