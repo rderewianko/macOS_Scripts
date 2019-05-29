@@ -145,7 +145,7 @@ echo "$MacModel with the location of $theLoc"
 echo "Connected to network via $currentService"
 echo "Search Domains Count: $DomainCount"
 
-if [[ $MacModel = *"MacBook"* ]] && [[ "$currentService" = *"Ethernet"* ]]; then
+if [[ $MacModel = *"MacBook"* ]] && [[ "$currentService" = *"Ethernet"* || "$currentService" == "USB 10/100/1000 LAN" ]]; then
 
 	currentServiceDomains
 	wifiDomains
