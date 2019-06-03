@@ -9,7 +9,7 @@
 #                            Variables                                 #
 ########################################################################
 
-CHROME="/Applications/Google Chrome.app"
+googleChrome="/Applications/Google Chrome.app"
 
 ########################################################################
 #                            Functions                                 #
@@ -18,9 +18,9 @@ CHROME="/Applications/Google Chrome.app"
 function postCheck()
 {
 
-CHROME="/Applications/Google Chrome.app"
+localGoogleChrome="/Applications/Google Chrome.app"
 
-if [[ ! -d "$CHROME" ]]; then
+if [[ ! -d "$googleChrome" ]]; then
 
   echo "Google Chrome removed successfully"
   exit 0
@@ -38,11 +38,11 @@ fi
 #                         Script starts here                           #
 ########################################################################
 
-if [[ -d "$CHROME" ]]; then
+if [[ -d "$googleChrome" ]]; then
 
   echo "Cleaning up old version of Google Chrome..."
 
-  rm -rf "$CHROME"
+  rm -rf "$googleChrome"
 
   postCheck
 
