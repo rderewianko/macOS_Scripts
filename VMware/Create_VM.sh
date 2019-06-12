@@ -10,6 +10,8 @@
 #                            Variables                                 #
 ########################################################################
 
+# Get the logged in user
+loggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 #Check VMware Fusion is installed
 VMwareFusion="/Applications/VMware Fusion.app"
 #Check VMware Fusion version
@@ -19,7 +21,7 @@ vfuseDir="/usr/local/vfuse"
 #Vfuse binary
 vfuse="/usr/local/vfuse/bin/vfuse"
 #AutoDMG Image Location
-DMGs=(/Users/philwalker/Desktop/AutoDMG_Images/*)
+DMGs=(/Users/$loggedInUser/Desktop/AutoDMG_Images/*)
 #Script location
 ScriptDirectory="$(cd "$(dirname "$0")"; pwd)"
 
@@ -95,5 +97,5 @@ else
 fi
 
 echo "Moving "$NAME" to Virtual Machines directory...."
-mv "$ScriptDirectory/$NAME.vmwarevm" "/Users/philwalker/Virtual Machines/"
+mv -v "$ScriptDirectory/$NAME.vmwarevm" "/Users/$loggedInUser/Virtual Machines.localized/"
 echo "Virtual Machine created and moved to the correct directory"

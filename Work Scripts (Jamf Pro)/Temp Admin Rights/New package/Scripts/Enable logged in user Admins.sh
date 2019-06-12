@@ -69,7 +69,7 @@ launchctl start /Library/LaunchDaemons/com.bauer.tempadmin.plist
 adminUsers=$(dscl . -read Groups/admin GroupMembership | cut -c 18-)
 
 #Check if the logged in user is in the admin group and show jamfHelper message
-if [[ "$adminUsers" == *"$LoggedInUser" ]]; then
+if [[ "$adminUsers" =~ "$LoggedInUser" ]]; then
   echo "$LoggedInUser is now an admin"
   #Kill bitbar to read to hostname
   killall BitBarDistro
@@ -77,7 +77,7 @@ if [[ "$adminUsers" == *"$LoggedInUser" ]]; then
 #Show jamfHelper message to advise admin rights given and how long the privileges will be in place for
 /Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "🔓 Administrator Privileges Granted" -description "$RealName now has admin rights on $hostName for $timeChosenHuman
 
-After $timeChosenHuman, admin privileges will be automatically removed and you will not be able to request them again for 24 hours.
+After $timeChosenHuman, admin privileges will be automatically removed.
 
 During the $timeChosenHuman of elevated privileges please remember....
 
