@@ -17,7 +17,7 @@
 # Get the logged in user
 loggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 #Get the logged user's real name
-RealName=$(dscl . -read /Users/$loggedInUser | grep -A1 "RealName:" | sed -n '2p' | awk '{print $2, $1}' | sed s/,//)
+RealName=$(dscl . -read /Users/$loggedInUser | grep -A1 "RealName:" | sed -n '2p' | awk '{print $1, $2}' | sed s/,//)
 # FileVault status
 fileVaultStatus=$(/usr/bin/fdesetup status | grep "FileVault" | head -n 1)
 
@@ -293,7 +293,7 @@ adminUsers=$(dscl . -read Groups/admin GroupMembership | cut -c 18-)
 
 		jamfHelperEnterCreds
 
-		sleep 180
+		sleep 60
 
 		removeTempAdminRights
 
@@ -303,7 +303,7 @@ UserGUID=$(/usr/bin/dscl . -read /Users/$loggedInUser GeneratedUID | awk '{print
 UserFVStatus=$(/usr/bin/fdesetup list | grep "$loggedInUser" | sed 's/.*,//g')
 
 		if [[ "$UserGUID" == "$UserFVStatus" ]]; then
-			echo "$loggedInUser now as a SecureToken and is a FileVault enabled user"
+			echo "$loggedInUser now has a SecureToken and is a FileVault enabled user"
 				jamfHelperComplete
 				exit 0
 		else
