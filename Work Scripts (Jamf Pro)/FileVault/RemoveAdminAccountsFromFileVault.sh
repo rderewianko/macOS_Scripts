@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-#               Remove FileVault enabled admin accounts                #
+#                Remove admin accounts from FileVault                  #
 ################## Written by Phil Walker June 2019 ####################
 ########################################################################
 
