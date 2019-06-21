@@ -5,12 +5,29 @@
 ################## Written by Phil Walker June 2019 ####################
 ########################################################################
 
-JDK_Check=$(ls /Library/Java/JavaVirtualMachines/ | grep "jdk1.8")
+jdkCheck=$(ls /Library/Java/JavaVirtualMachines/ | grep "jdk1.8")
 
-if [[ "$JDK_Check" == "" ]]; then
+if [[ "$jdkCheck" == "" ]]; then
+
   echo "<result>Not Installed</result>"
+
 else
-  JDK=$(ls /Library/Java/JavaVirtualMachines/ | grep "jdk1.8" | sed -e 's/jdk//' -e 's/.jdk//')
-  JDK_Version=$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion $JDK" /Library/Java/JavaVirtualMachines/$JDK_Check/Contents/Info.plist)
-  echo "<result>$JDK_Version</result>"
+
+  jdkCheck=$(ls /Library/Java/JavaVirtualMachines/ | grep "jdk1.8" > /tmp/JDK_Versions.txt)
+
+  while read -r line || [[ -n "$line" ]]; do
+
+    jdkShort=$(echo $line | sed -e 's/jdk//' -e 's/.jdk//')
+    jdkVersion=$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion $jdkShort" /Library/Java/JavaVirtualMachines/$line/Contents/Info.plist)
+
+		    echo "<result>$jdkVersion</result>"
+
+	done < /tmp/JDK_Versions.txt
+
+  sleep 2
+
+      rm -f /tmp/JDK_Versions.txt
+
 fi
+
+exit 0
