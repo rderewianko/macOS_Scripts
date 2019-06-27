@@ -1,20 +1,26 @@
 #!/bin/bash
 
-#########################################################
-#######################Variables#########################
-#########################################################
+########################################################################
+#                      One Drive User Adoption                         #
+############# Written by Suleyman Twana and Phil Walker ################
+########################################################################
+
+########################################################################
+#                            Variables                                 #
+########################################################################
 
 LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 ScreenSaverStatus=$(ps ax | grep [S]creenSaverEngine)
 LockScreenStatus=$(python -c 'import sys,Quartz; d=Quartz.CGSessionCopyCurrentDictionary(); print d' | grep -i "locked" | head -n1 | awk '{print $3}' | sed 's/;//g')
 ODAppPath=$(ls -l /Applications/ | grep -i "onedrive" | grep -v "OneDrive for Business" | awk '{print $9}' | sed 's/.app//g')
-ODFolderPath="/Users/"${LoggedInUser}"/OneDrive - Bauer Group/"
-ODFolderSize=$(du -ks "/Users/"${LoggedInUser}"/OneDrive - Bauer Group/" | awk '{print $1}')
+#OneDrive folder paths. Previous and latest path.
+OldTenantName="/Users/"${LoggedInUser}"/OneDrive - Bauer Group"
+NewTenantName="/Users/"${LoggedInUser}"/OneDrive - Bauer Media Group"
 SIZE="1000"
 
-#########################################################
-#######################Functions#########################
-#########################################################
+########################################################################
+#                            Functions                                 #
+########################################################################
 
 function checkloginstatus ()
 {
@@ -60,13 +66,25 @@ else
 fi
 }
 
-function checkonedrivefolder ()
+function checkonedrivefolder()
 {
-# Check if OneDrive users folder exists
-	if [[ -d "${ODFolderPath}" ]]; then
-		echo "${ODFolderPath} folder exists"
-else
-		echo "${ODFolderPath} folder does not exist"
+# Check if the users OneDrive folder exists and which tenant name its onfigured to use
+	if [[ -d "$OldTenantName" ]] && [[ ! -d "$NewTenantName" ]]; then
+		ODFolderPath="/Users/"${LoggedInUser}"/OneDrive - Bauer Group"
+			echo "${ODFolderPath} folder exists"
+			ODFolderSize=$(du -ks "$ODFolderPath" | awk '{print $1}')
+	elif [[ ! -d "$OldTenantName" ]] && [[ -d "$NewTenantName" ]]; then
+		ODFolderPath="/Users/"${LoggedInUser}"/OneDrive - Bauer Media Group"
+			echo "${ODFolderPath} folder exists"
+			ODFolderSize=$(du -ks "$ODFolderPath" | awk '{print $1}')
+  elif [[ -d "$OldTenantName" ]] && [[ -d "$NewTenantName" ]]; then
+		ODFolderPath="/Users/"${LoggedInUser}"/OneDrive - Bauer Media Group"
+			echo "${ODFolderPath} folder exists"
+			ODFolderSize=$(du -ks "$ODFolderPath" | awk '{print $1}')
+	else
+		ODFolderPath="/Users/"${LoggedInUser}"/OneDrive - Bauer Media Group"
+			echo "${ODFolderPath} folder does not exist"
+			ODFolderSize=""
 fi
 }
 
@@ -77,8 +95,8 @@ if [[ "${ODFolderSize}" -gt "${SIZE}" ]]; then
 		echo "${ODFolderPath} folder is not empty"
 exit 0
 else
-	if [[ "${ODFolderSize}" -lt "${SIZE}" ]]; then
-		echo "${ODFolderPath} folder is empty"
+	if [[ "${ODFolderSize}" -lt "${SIZE}" ]] || [[ "${ODFolderSize}" == "" ]]; then
+		echo "OneDrive sync folder is empty or does not exist"
 # If OneDrivefolder is empty then prompt user to setup OneDrive
 HELPER=$(/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Applications/OneDrive.app/Contents/Resources/OneDrive.icns -title "Microsoft OneDrive" -heading "Have you heard about OneDrive?" -description "Did you know that as an Office 365 user you have
 1000 GB of cloud storage available!
@@ -90,26 +108,21 @@ Giving you the flexibility to access your documents on your Mac, smartphone/tabl
 	if [[ "${HELPER}" == "0" ]]; then
 		echo "Opening OneDrive"
 # Launch OneDrive client for user to setup
-	#open -F /Applications/OneDrive.app
-osascript <<EOF
-	tell application "OneDrive"
-		activate
-	end tell
-EOF
+su -l "$LoggedInUser" -c "open -a /Applications/OneDrive.app"
 # If OneDrive folder is found but empty open it for the user
-	if [[ -d "${ODFolderPath}" ]]; then
+	if [[ "${OldFolderSize}" != "" ]]; then
 	open "${ODFolderPath}"
 else
-		echo "OneDrive folder has not been created yet"
+		echo "OneDrive sync folder has not been created yet"
 			fi
 		fi
 	fi
 fi
 }
 
-#############################################################
-#####################Script Execution########################
-#############################################################
+########################################################################
+#                         Script starts here                           #
+########################################################################
 
 	checkloginstatus
 	checkscreensaver

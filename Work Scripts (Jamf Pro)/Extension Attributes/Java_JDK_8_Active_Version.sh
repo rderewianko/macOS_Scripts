@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-#              Active Version of Java Development Kit 8                #
+#           Active version of Oracle Java Development Kit 8            #
 ################## Written by Phil Walker June 2019 ####################
 ########################################################################
 

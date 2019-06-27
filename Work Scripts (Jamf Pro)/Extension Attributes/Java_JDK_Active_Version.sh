@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-#           Current Active Version of Java Development Kit             #
+#       Current active version of Oracle Java Development Kit          #
 ################## Written by Phil Walker June 2019 ####################
 ########################################################################
 

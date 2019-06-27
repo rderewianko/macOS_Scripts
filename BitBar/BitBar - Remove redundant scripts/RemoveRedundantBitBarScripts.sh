@@ -2,7 +2,6 @@
 
 ########################################################################
 #                Remove Redundant BitBar scripts                       #
-#                   (Mojave and above only)                            #
 ############### Written by Phil Walker Jan 2019 ########################
 ########################################################################
 
@@ -10,28 +9,25 @@
 #                            Variables                                 #
 ########################################################################
 
-#Get the OS version
-OSShort=$(sw_vers -productVersion | awk -F. '{print $2}')
-OSFull=$(sw_vers -productVersion)
-
-#ADPassword and launchSysPrefstoUserPane script locations
+# ADPassword and launchSysPrefstoUserPane script locations
 BitBarAD="/Library/Application Support/JAMF/bitbar/BitBarDistro.app/Contents/MacOS/ADPassword.1d.sh"
 LaunchSysPrefs="/usr/local/launchSysPrefstoUserPane.sh"
+
+# Path to NoMAD Login AD bundle
+noLoADBundle="/Library/Security/SecurityAgentPlugins/NoMADLoginAD.bundle"
 
 ########################################################################
 #                            Functions                                 #
 ########################################################################
 
-#Double check if the policy should be run
-function checkOS ()
+function noMADLoginAD ()
 {
 
-if [[ "$OSShort" -lt "14" ]]; then
-  echo "OS Version is $OSFull, nothing will be removed"
-  echo "Exiting script......."
+if [[ ! -d "$noLoADBundle" ]]; then
+  echo "NoMAD Login AD not installed, nothing to do"
   exit 0
 else
-  echo "OS Version is $OSFull, checking for ADPassword and LaunchSysPrefs scripts..."
+  echo "NoMAD Login AD installed"
 fi
 
 }
@@ -44,7 +40,7 @@ if [[ ! -a "$BitBarAD" ]] && [[ ! -a $LaunchSysPrefs ]]; then
   echo "Exiting script......."
   exit 0
 else
-  echo "ADPassword.1d.sh and launchSysPrefstoUserPane.sh found, both will be removed"
+  echo "ADPassword.1d.sh and launchSysPrefstoUserPane.sh found, will both be removed"
 fi
 
 }
@@ -53,19 +49,20 @@ fi
 #                         Script starts here                           #
 ########################################################################
 
-#Check OS is 10.14 or above
-checkOS
-#Check ADPassword and LaunchSysPrefs scripts are present
+# Check that NoMAD Login AD is installed
+noMADLoginAD
+
+# Check ADPassword and LaunchSysPrefs scripts are present
 checkScripts
 
 echo "Removing ADPassword.1d.sh and launchSysPrefstoUserPane.sh..."
 
-#Remove ADPassword script
+# Remove ADPassword script
 rm -f "$BitBarAD"
-#Remove LaunchSysPrefs script
+# Remove LaunchSysPrefs script
 rm -f "$LaunchSysPrefs"
 
-#Check removal was successful
+# Check removal was successful
 echo "Checking removal was successful"
 if [[ ! -a "$BitBarAD" ]] && [[ ! -a $LaunchSysPrefs ]]; then
 
