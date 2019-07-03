@@ -42,14 +42,14 @@ zeroRun="00"
 function calcPassWD ()
 {
 pwPolicy=180
-user=`python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");'`
-lastpwdMS=`dscl /Active\ Directory/BAUER-UK/bauer-uk.bauermedia.group -read /Users/$user | grep SMBPasswordLastSet | cut -d' ' -f 2`
-expirepwdMS=`dscl /Active\ Directory/BAUER-UK/bauer-uk.bauermedia.group -read /Users/$user | grep userAccountControl | awk '{print $2}'`
-todayUnix=`date "+%s"`
-lastpwdUnix=`expr $lastpwdMS / 10000000 - 11644473600`
-diffUnix=`expr $todayUnix - $lastpwdUnix`
-diffdays=`expr $diffUnix / 86400`
-daysremaining=`expr $pwPolicy - $diffdays`
+user=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+lastpwdMS=$(dscl /Active\ Directory/BAUER-UK/bauer-uk.bauermedia.group -read /Users/$user | grep SMBPasswordLastSet | cut -d' ' -f 2)
+expirepwdMS=$(dscl /Active\ Directory/BAUER-UK/bauer-uk.bauermedia.group -read /Users/$user | grep userAccountControl | awk '{print $2}')
+todayUnix=$(date "+%s")
+lastpwdUnix=$(expr $lastpwdMS / 10000000 - 11644473600)
+diffUnix=$(expr $todayUnix - $lastpwdUnix)
+diffdays=$(expr $diffUnix / 86400)
+daysremaining=$(expr $pwPolicy - $diffdays)
 #Check if the logged in user account has password never expired ticked. AD attribute userAccountControl value of 66048 defines a no expiry password
 if [ "$expirepwdMS" == "66048" ] || [ "$user" == "root" ] || [ "$user" == "admin" ]; then
 daysremaining="999"
@@ -73,12 +73,12 @@ EOD
 
 function jamfHelperPasswordExpiry ()
 {
-  HELPER=`"$jamfHelper" -windowType utility -icon "$icon" -heading "$heading" -title "$title" -description "Your login password is due to expire in $daysremaining days. Please update your password." -button1 "Update Now" -button2 "Later" -defaultButton "1" `
+  HELPER=$("$jamfHelper" -windowType utility -icon "$icon" -heading "$heading" -title "$title" -description "Your login password is due to expire in $daysremaining days. Please update your password." -button1 "Update Now" -button2 "Later" -defaultButton "1" )
 }
 
 function jamfHelperPasswordExpiry1DayLeft ()
 {
-  HELPER=`"$jamfHelper" -windowType utility -icon "$iconwarning" -heading "$heading1day" -title "$title" -description "Your login password is due to expire tomorrow. Please update your password immediately!" -button1 "Update Now" -defaultButton "1" `
+  HELPER=$("$jamfHelper" -windowType utility -icon "$iconwarning" -heading "$heading1day" -title "$title" -description "Your login password is due to expire tomorrow. Please update your password immediately!" -button1 "Update Now" -defaultButton "1" )
 }
 
 function buildMenuBar ()
@@ -116,7 +116,7 @@ if [ $? -ne 0 ]; then
         echo ""
 else
     #Check that Mac is bound to AD
-    check4AD=`/usr/bin/dscl localhost -list . | grep "Active Directory"`
+    check4AD=$(/usr/bin/dscl localhost -list . | grep "Active Directory")
     if [[ "${check4AD}" != "Active Directory" ]]; then
       #Call funtion to build the menu bar with a warning and message of not bound to AD
       buildMenuBarNoAD
