@@ -1,5 +1,9 @@
 #!/bin/bash
 
+########################################################################
+#                  Reset Local Time Machine Backups                    #
+########################################################################
+
 #TimeMachine local backups get created when the specified backup disk is not available.
 #This can cause local disks to get bloated with TM data.
 

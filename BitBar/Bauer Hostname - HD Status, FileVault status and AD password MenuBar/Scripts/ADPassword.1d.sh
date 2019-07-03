@@ -18,7 +18,7 @@
 # # # # # # # # # # # # # # # # # # #
 
 #How many days left of password before warnings start
-pwPolicyWarning=14
+pwPolicyWarning=21
 
 #Applescript to launch sys prefs to user pane from dropdown menubar
 launchsyspref="/usr/local/launchSysPrefstoUserPane.sh"
