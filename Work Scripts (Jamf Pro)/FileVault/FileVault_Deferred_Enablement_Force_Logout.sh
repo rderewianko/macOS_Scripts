@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-#            FileVault enablement deferred forced logout               #
+#            FileVault deferred enablement forced logout               #
 ################## Written by Phil Walker July 2019 ####################
 ########################################################################
 
