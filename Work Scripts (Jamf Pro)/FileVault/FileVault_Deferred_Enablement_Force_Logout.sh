@@ -48,7 +48,7 @@ fi
 function fileVaultDeferral ()
 {
 #Check if the logged in user matches the FileVault enablement deferal user
-if [[ "$FV2Deferred" == "" ]]; then
+if [[ "$FV2Deferred" == "" ]] || [[ "$FV2Deferred" =~ "Encryption in progress" ]]; then
   echo "FileVault enablement not currently deferred, nothing to do"
   exit 0
 else
@@ -79,7 +79,7 @@ function jamfHelperLogoutDeferral ()
 HELPER=$(
 /Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/FileVaultIcon.icns -title "Message from Bauer IT" -heading "Disk encryption is waiting to be enabled" -alignHeading center -description "Please select the most convenient time to logout from the drop down menu.
 
-Make sure to save all of your work before the time selected has elapsed, you will automatically be logged out at that time." -lockHUD -showDelayOptions "$deferralOption1, $deferralOption2, $deferralOption3, $deferralOption4"  -button1 "Select"
+Make sure to save all of your work as you will be logged out automatically after the time selected has elapsed." -lockHUD -showDelayOptions "$deferralOption1, $deferralOption2, $deferralOption3, $deferralOption4"  -button1 "Select"
 
 )
 }

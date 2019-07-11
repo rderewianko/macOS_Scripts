@@ -7,7 +7,7 @@
 
 FV2Deferred=$(fdesetup status | sed -n 2p)
 
-if [[ "$FV2Deferred" == "" ]]; then
+if [[ "$FV2Deferred" == "" ]] || [[ "$FV2Deferred" =~ "Encryption in progress" ]]; then
   echo "<result>Not deferred</result>"
 else
   FV2DeferralUser=$(fdesetup status | sed -n 2p | awk '{print $9}' | cut -d "'" -f2)
