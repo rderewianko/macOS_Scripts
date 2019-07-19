@@ -16,17 +16,32 @@ deferralOption3="10800"
 deferralOption4="28800"
 
 #Get the logged in user
-LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+loggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 #Get the hostname
 hostName=$(scutil --get HostName)
-#Get the logged in user's real name
-RealName=$(dscl . -read /Users/$LoggedInUser | grep -A1 "RealName:" | sed -n '2p' | awk '{print $2, $1}' | sed s/,//)
 
 ########################################################################
 #                            Functions                                 #
 ########################################################################
 
-jamfHelperAdminPeriod ()
+function getRealName()
+{
+#Find correct format for real name of logged in user
+loggedInUserUID=$(dscl . -read /Users/$loggedInUser UniqueID | awk '{print $2}')
+
+if [[ "$loggedInUser" =~ "admin" ]];then
+    userRealName=$(dscl . -read /Users/$loggedInUser | grep -A1 "RealName:" | sed -n '2p' | awk '{print $1, $2, $3}' | sed s/,//)
+else
+  if [[ "$loggedInUserUID" -lt "1000" ]]; then
+    userRealName=$(dscl . -read /Users/$loggedInUser | grep -A1 "RealName:" | sed -n '2p' | awk '{print $1, $2}' | sed s/,//)
+  else
+    userRealName=$(dscl . -read /Users/$loggedInUser | grep -A1 "RealName:" | sed -n '2p' | awk '{print $2, $1}' | sed s/,//)
+  fi
+fi
+
+}
+
+function jamfHelperAdminPeriod ()
 #Prompt the user to select the time period they which to have admin rights for
 {
 HELPER=$(
@@ -37,7 +52,7 @@ HELPER=$(
 )
 }
 
-convertTimePeriod ()
+function convertTimePeriod ()
 {
 #Convert the seconds chosen to human readable minutes, hours. No Seconds are calulated
 local T=$timeChosen;
@@ -51,12 +66,13 @@ timeChosenHuman=$(printf '%s';[[ $H -eq 1 ]] && printf '%d hour' $H; [[ $H -ge 2
 #                         Script starts here                           #
 ########################################################################
 
+getRealName
 jamfHelperAdminPeriod
 timeChosen="${HELPER%?}" #Removes the 1 added to the time period chosen
 convertTimePeriod
 
 #Promote the logged in user to an admin
-dseditgroup -o edit -a "$LoggedInUser" -t user admin
+dseditgroup -o edit -a "$loggedInUser" -t user admin
 
 #Add time period to LaunchDaemon
 /usr/libexec/PlistBuddy -c "Set StartInterval $timeChosen" /Library/LaunchDaemons/com.bauer.tempadmin.plist
@@ -69,13 +85,13 @@ launchctl start /Library/LaunchDaemons/com.bauer.tempadmin.plist
 adminUsers=$(dscl . -read Groups/admin GroupMembership | cut -c 18-)
 
 #Check if the logged in user is in the admin group and show jamfHelper message
-if [[ "$adminUsers" =~ "$LoggedInUser" ]]; then
-  echo "$LoggedInUser is now an admin"
+if [[ "$adminUsers" =~ "$loggedInUser" ]]; then
+  echo "$loggedInUser is now an admin"
   #Kill bitbar to read to hostname
   killall BitBarDistro
 
 #Show jamfHelper message to advise admin rights given and how long the privileges will be in place for
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "🔓 Administrator Privileges Granted" -description "$RealName now has admin rights on $hostName for $timeChosenHuman
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "🔓 Administrator Privileges Granted" -description "$userRealName now has admin rights on $hostName for $timeChosenHuman
 
 After $timeChosenHuman, admin privileges will be automatically removed.
 
@@ -88,7 +104,7 @@ During the $timeChosenHuman of elevated privileges please remember....
 exit 0
 
 else
-  echo "Somthing went wrong - $LoggedInUser is not an admin"
+  echo "Something went wrong - $loggedInUser is not an admin"
   /Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "Administrator Priviliges failed" -description "It looks like something went wrong when trying to change your account priviliges.
 
   Please contact the IT Service Desk for assistance" -button1 "Ok" -defaultButton 1

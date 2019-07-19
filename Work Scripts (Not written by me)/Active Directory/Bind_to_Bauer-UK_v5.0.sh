@@ -2,23 +2,23 @@
 
 ########################################################
 # Bind a Mac to AD if the following conditions are met:#
-# 1) The Mac is not already bound					   #
-# 2) The hostname is coorectly formatted with wks*****   #
+# 1) The Mac is not already bound					             #
+# 2) The hostname is coorectly formatted with wks***** #
 ########################################################
-hostName=`/usr/local/jamf/bin/jamf getComputerName | sed -E 's/^[^>]+>//;s/<[^>]+>//;s/_.*$//'`	# the hostname for this Mac
-theSerial=`system_profiler SPHardwareDataType | awk '/Serial/ {print $4}'`
+hostName=$(/usr/local/jamf/bin/jamf getComputerName | sed -E 's/^[^>]+>//;s/<[^>]+>//;s/_.*$//')	# the hostname for this Mac
+theSerial=$(ioreg -c IOPlatformExpertDevice -d 2 | awk -F\" '/IOPlatformSerialNumber/{print $(NF-1)}')
 theUser="********"									# Username for AD bind account
 thePass="*********"								# password for the AD account
 theDomain="YOUR_AD_DOMAIN_HERE"				# AD forest for bind
-check4AD=`/usr/bin/dscl localhost -list . | grep "Active Directory"`
-model=$(system_profiler SPHardwareDataType | awk '/Model Name/ {print $3}')
-if [ "$model" == "MacBook" ]; then
+check4AD=$(/usr/bin/dscl localhost -list . | grep "Active Directory")
+model=$(sysctl -n hw.model)
+if [ "$model" =~ "MacBook" ]; then
   macModel="Laptop"
 else
   macModel="Desktop"
 fi
   #statements
-DomainPing=$(ping -c1 -W5 -q bauer-uk.bauermedia.group | head -n1 | sed 's/.*(\(.*\))/\1/;s/:.*//')
+DomainPing=$(ping -c1 -W5 -q "DOMAIN FQDN" | head -n1 | sed 's/.*(\(.*\))/\1/;s/:.*//')
 
 function unBindFromAD ()
 {
@@ -28,7 +28,7 @@ function unBindFromAD ()
 }
 function bindtoAD ()
 {
-  hostName=`/usr/local/jamf/bin/jamf getComputerName | sed -E 's/^[^>]+>//;s/<[^>]+>//;s/_.*$//'`	# the hostname for this Mac
+  hostName=$(/usr/local/jamf/bin/jamf getComputerName | sed -E 's/^[^>]+>//;s/<[^>]+>//;s/_.*$//')	# the hostname for this Mac
 
     #Set the OU based on model for the computer record to be added into
     theOU="OU=$macModel,OU=Macs,OU=uk,OU=bauer,DC=bauer-uk,DC=bauermedia,DC=group"
@@ -42,7 +42,7 @@ function bindtoAD ()
 
 function getcomputerOU ()
 {
-  ad_computer_ou=`dscl /Search read /Computers/$hostName$ | \
+  ad_computer_ou=$(dscl /Search read /Computers/$hostName$ | \
   grep -A 1 dsAttrTypeNative:distinguishedName | \
   cut -d, -f2- | sed -n 's/OU\=//gp' | \
   sed -n 's/\(.*\),DC\=/\1./gp' | \
@@ -56,7 +56,7 @@ function getcomputerOU ()
   }
 
   printf "%s",$1
-  }'`
+  }')
   if [[ "$ad_computer_ou" == *"Error"* ]]; then
       echo "$hostName not in AD as no OU found"
   else
@@ -135,7 +135,7 @@ else
   echo "This $model $hostName is NOT bound to Active Directory"
 
   #Get the hostname
-  hostName=`/usr/local/jamf/bin/jamf getComputerName | sed -E 's/^[^>]+>//;s/<[^>]+>//;s/_.*$//'`	# the hostname for this Mac
+  hostName=$(/usr/local/jamf/bin/jamf getComputerName | sed -E 's/^[^>]+>//;s/<[^>]+>//;s/_.*$//')	# the hostname for this Mac
   echo "Hostname is currently $hostName"
     #############################################################
     #Check if the hostname contains wks and bind accordingly
@@ -159,7 +159,7 @@ else
       /usr/sbin/scutil --set HostName "$theSerial"
 
       #Get the hostname
-      hostName=`/usr/local/jamf/bin/jamf getComputerName | sed -E 's/^[^>]+>//;s/<[^>]+>//;s/_.*$//'`	# the hostname for this Mac
+      hostName=$(/usr/local/jamf/bin/jamf getComputerName | sed -E 's/^[^>]+>//;s/<[^>]+>//;s/_.*$//')	# the hostname for this Mac
       echo "Hostname set to $hostName"
 
       #Now bind using using the hostname set based on the serial number

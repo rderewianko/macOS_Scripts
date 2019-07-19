@@ -10,10 +10,7 @@
 ########################################################################
 
 #Get the logged in user
-LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-
-#Get the logged in user's real name
-RealName=$(dscl . -read /Users/$LoggedInUser | grep -A1 "RealName:" | sed -n '2p' | awk '{print $2, $1}' | sed s/,//)
+loggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 
 #Get the hostname
 hostName=$(scutil --get HostName)
@@ -24,6 +21,23 @@ adminUsers=$(dscl . -read Groups/admin GroupMembership | cut -c 18-)
 ########################################################################
 #                            Functions                                 #
 ########################################################################
+
+function getRealName()
+{
+#Find correct format for real name of logged in user
+loggedInUserUID=$(dscl . -read /Users/$loggedInUser UniqueID | awk '{print $2}')
+
+if [[ "$loggedInUser" =~ "admin" ]];then
+    userRealName=$(dscl . -read /Users/$loggedInUser | grep -A1 "RealName:" | sed -n '2p' | awk '{print $1, $2, $3}' | sed s/,//)
+else
+  if [[ "$loggedInUserUID" -lt "1000" ]]; then
+    userRealName=$(dscl . -read /Users/$loggedInUser | grep -A1 "RealName:" | sed -n '2p' | awk '{print $1, $2}' | sed s/,//)
+  else
+    userRealName=$(dscl . -read /Users/$loggedInUser | grep -A1 "RealName:" | sed -n '2p' | awk '{print $2, $1}' | sed s/,//)
+  fi
+fi
+
+}
 
 function removeTempAdminRights() {
 #Loop through each account found and remove from the admin group (excluding root, admin and casadmin).
@@ -42,7 +56,7 @@ done >> /usr/local/bin/RemoveAdmin.txt
 function jamfHelperAdminRemoved() {
 
 #Show jamfHelper message to advise admin rights removed
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "🔓 Administrator Privileges Revoked" -description "$RealName's admin rights on $hostName have now been revoked" -button1 "Ok" -defaultButton 1
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "🔓 Administrator Privileges Revoked" -description "$userRealName's admin rights on $hostName have now been revoked" -button1 "Ok" -defaultButton 1
 #Kill bitbar to read to new user rights when holding alt key
 killall BitBarDistro
 
@@ -69,6 +83,7 @@ fi
 #                         Script starts here                           #
 ########################################################################
 
+getRealName
 removeTempAdminRights
 jamfHelperAdminRemoved
 removeLDAndScript
