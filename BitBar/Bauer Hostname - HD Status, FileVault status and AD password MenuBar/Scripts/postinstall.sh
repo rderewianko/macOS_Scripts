@@ -1,10 +1,14 @@
 #!/bin/bash
-##Remove redundant content based on model/OS version and NoMAD status
-##Then load the launch agent, so that BitBar works after the package install
+
+#Remove redundant content based on model/OS version and NoMAD status
+#Load the launch agent so that BitBar works after the package install
 
 ########################################################################
 #                            Variables                                 #
 ########################################################################
+
+#Get the logged in user
+loggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 
 #ADPassword and launchSysPrefstoUserPane script locations
 BitBarAD="/Library/Application Support/JAMF/bitbar/BitBarDistro.app/Contents/MacOS/ADPassword.1d.sh"
@@ -45,6 +49,18 @@ else
 fi
 }
 
+function launchAgentStatus()
+{
+#Get the status of the Bauer menu bar Launch Agent
+launchAgent=$(su -l "$loggedInUser" -c "launchctl list | grep "hostname" | cut -f3")
+
+if [[ "$launchAgent" == "com.hostname.menubar" ]]; then
+  /bin/echo "Bauer menu bar Launch Agent running"
+else
+  /bin/echo "Bauer menu bar Launch Agent currently stopped/unloaded"
+fi
+}
+
 ########################################################################
 #                         Script starts here                           #
 ########################################################################
@@ -70,7 +86,10 @@ elif [[ "$OSShort" -ge "14" ]]; then
     checkScriptRemoval
 fi
 
-launchctl load /Library/LaunchAgents/com.hostname.menubar.plist
-launchctl start /Library/LaunchAgents/com.hostname.menubar.plist
+su -l "$loggedInUser" -c "launchctl load /Library/LaunchAgents/com.hostname.menubar.plist"
+su -l "$loggedInUser" -c "launchctl start /Library/LaunchAgents/com.hostname.menubar.plist"
+
+sleep 2
+launchAgentStatus
 
 exit 0
