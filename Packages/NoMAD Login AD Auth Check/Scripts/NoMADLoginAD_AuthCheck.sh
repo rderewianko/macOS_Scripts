@@ -9,12 +9,14 @@
 #                            Variables                                 #
 ########################################################################
 
-# Path to NoMAD Login AD bundle
+#Path to NoMAD Login AD bundle
 noLoADBundle="/Library/Security/SecurityAgentPlugins/NoMADLoginAD.bundle"
-# Login console AD auth mechanism
+#Login console AD auth mechanism
 systemLoginConsole=$(security authorizationdb read system.login.console | grep "CheckAD" | awk -F"[><]" '{print $3}')
-# Log
+#Log
 logFile="/var/tmp/NoLoADAuth.log"
+#Date and time
+datetime=$(date +%d-%m-%Y\ %T)
 
 ########################################################################
 #                         Script starts here                           #
@@ -26,7 +28,7 @@ if [[ -d "$noLoADBundle" ]]; then
       echo "NoMAD Login AD already set as the login window AD auth mechanism, nothing to do"
       exit 0
     else
-      echo "$(date): Resetting auth to use NoMAD Login AD as the login window AD auth mechanism" >> "$logFile"
+      echo "$datetime :Resetting auth to use NoMAD Login AD as the login window AD auth mechanism" >> "$logFile"
       /usr/local/bin/authchanger -reset -AD
     fi
 else
@@ -34,14 +36,14 @@ else
   exit 0
 fi
 
-# Re-populate system login console variable
+#Re-populate system login console variable
 systemLoginConsole=$(security authorizationdb read system.login.console | grep "CheckAD" | awk -F"[><]" '{print $3}')
 
 if [[ "$systemLoginConsole" =~ "NoMADLoginAD" ]]; then
-  echo "$(date): NoMAD Login AD now set as the login window AD auth mechanism" >> "$logFile"
+  echo "$datetime :NoMAD Login AD now set as the login window AD auth mechanism" >> "$logFile"
   exit 0
 else
-  echo "$(date): Auth reset FAILED!" >> "$logFile"
+  echo "$datetime :Auth reset FAILED!" >> "$logFile"
   exit 1
 fi
 
