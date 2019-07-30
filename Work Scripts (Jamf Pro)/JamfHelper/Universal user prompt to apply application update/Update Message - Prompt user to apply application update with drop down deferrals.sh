@@ -42,7 +42,7 @@ fi
 #                            Functions                                 #
 ########################################################################
 
-jamfHelperApplyUpdate ()
+function jamfHelperApplyUpdate ()
 #Prompt user to update Microsoft Teams with deferral options supplied by the policy
 {
 HELPER=$(
@@ -55,7 +55,7 @@ Please make sure you do not need to use ${ApplicationName} before the update sta
 )
 }
 
-jamfHelperUpdateConfirm ()
+function jamfHelperUpdateConfirm ()
 {
 #Show a message via Jamf Helper that the update is ready, this is after it has been deferred
 HELPER_CONFIRM=$(
@@ -65,7 +65,7 @@ ${ApplicationName} will be closed automatically during the update process." -loc
 )
 }
 
-jamfHelperUpdateDeferralConfirm ()
+function jamfHelperUpdateDeferralConfirm ()
 {
 #Advise the user of the selected deferral
 #Convert the seconds chosen to human readable days, minutes, hours. No Seconds are calulated
@@ -80,22 +80,17 @@ HELPER_DEFERRAL_CONFIRM=$(
 )
 }
 
-jamfHelperUpdateInProgress ()
+function jamfHelperUpdateInProgress ()
 {
-#Show a message via Jamf Helper that the update has started
-su - $LoggedInUser <<'jamfmsg2'
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    Update in Progress     " -description "${ApplicationName} will be closed automatically during the update process" &
-jamfmsg2
+#Show a message via Jamf Helper that the update is ready, this is after it has been deferred
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    ${ApplicationName} update in progress     " -description "${ApplicationName} will be closed automatically during the update process" &
 }
 
 function jamfHelperUpdateComplete ()
 {
-#Show a message via Jamf Helper that the update is complete, only shows for 10 seconds then closes.
-su - $LoggedInUser <<'jamfmsg3'
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    Update Complete     " -description "${ApplicationName} update successfully installed." -button1 "Ok" -defaultButton "1"
-jamfmsg3
+#Show a message via Jamf Helper that the update is ready, this is after it has been deferred
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    ${ApplicationName} update complete     " -description "${ApplicationName} update successfully installed." -button1 "Ok" -defaultButton "1"
 }
-
 
 function installerWhile ()
 {
@@ -116,7 +111,7 @@ function performUpdate ()
 jamfHelperUpdateInProgress
 
 #Call the policy to run the update
-/usr/local/jamf/bin/jamf policy -trigger $PolicyTrigger
+/usr/local/jamf/bin/jamf policy -trigger "$PolicyTrigger"
 
 #Call while loop to check when the installer process is finished so jamf helper can be killed
 installerWhile
