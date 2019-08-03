@@ -18,7 +18,7 @@ googleChrome="/Applications/Google Chrome.app"
 function postCheck()
 {
 
-localGoogleChrome="/Applications/Google Chrome.app"
+local GoogleChrome="/Applications/Google Chrome.app"
 
 if [[ ! -d "$googleChrome" ]]; then
 
