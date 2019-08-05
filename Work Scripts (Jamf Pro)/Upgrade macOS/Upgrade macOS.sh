@@ -121,7 +121,7 @@ function addReconOnBoot ()
   #Check if recon has already been added to the startup script - the startup script gets overwirtten during a jamf manage.
   if [ ! -z $(grep "/usr/local/jamf/bin/jamf recon" "/Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh") ];
   then
-      /bin/echo "Rccon already entered in startup script"
+      /bin/echo "Recon already entered in startup script"
   else
       # code if not found
       /bin/echo "Recon not found in startup script adding..."
