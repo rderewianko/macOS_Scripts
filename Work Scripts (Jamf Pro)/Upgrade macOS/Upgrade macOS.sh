@@ -101,7 +101,7 @@ function jamfHelperNoMADLoginADMissing ()
 function jamfHelperMobileAccount ()
 {
 
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Problem\ Reporter.app/Contents/Resources/ProblemReporter.icns -title "Message from Bauer IT" -heading "Mobile account detected - upgrade cannot continue!" -description "Please contact the IT Service Desk on 0345 058 4444 before attempting this upgrade again." -button1 "Close" -defaultButton 1
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Problem\ Reporter.app/Contents/Resources/ProblemReporter.icns -title "Message from Bauer IT" -heading "Mobile account detected - upgrade cannot continue!" -description "Please logout and back in before attempting the upgrade again. Any further issues contact the IT Service Desk on 0345 058 4444." -button1 "Close" -defaultButton 1
 }
 
 function jamfHelperNoSpace ()
@@ -209,6 +209,7 @@ if [[ "$macModel" =~ "MacBook" ]] && [[ "$OSShort" == "12" ]]; then
       /bin/echo "$LoggedInUser has a local account, carry on with OS Upgrade"
     else
       /bin/echo "$LoggedInUser has a mobile account, Aborting OS Upgrade"
+      /bin/echo "Advising $LoggedInUser via a jamfHelper message to logout and back in before attempting the upgrade again"
       jamfHelperMobileAccount
       exit 0
     fi
