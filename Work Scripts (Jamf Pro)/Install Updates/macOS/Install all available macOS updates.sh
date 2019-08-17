@@ -8,7 +8,7 @@
 #This script is designed to be used with JamfPro
 #A check for updates policy will call this script via a custom trigger
 
-macOSUpdate=$(softwareupdate -l | grep -i "macOS" | sed -n 1p | sed -e 's/*//g' -e 's/^[ \t]*//')
+macOSUpdate=$(softwareupdate -l | grep -vi "Command" | grep -i "macOS" | sed -n 1p | sed -e 's/*//g' -e 's/^[ \t]*//')
 macOSUpdateShort=$(echo $macOSUpdate | sed 's/.$//')
 
 # Check Apple CDN for latest macOS updates and download them

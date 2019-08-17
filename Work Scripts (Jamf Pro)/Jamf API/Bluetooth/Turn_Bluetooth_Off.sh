@@ -1,8 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-#              Turn Bluetooth on via management command                #
-#                       (Self Service policy)                          #
+#             Turn Bluetooth off via management command                #
 ################## Written by Phil Walker July 2019 ####################
 ########################################################################
 
@@ -32,52 +31,30 @@ serialNumber=$(ioreg -c IOPlatformExpertDevice -d 2 | awk -F\" '/IOPlatformSeria
 btPowerStatus=$(/usr/libexec/PlistBuddy -c "print ControllerPowerState" /Library/Preferences/com.apple.Bluetooth.plist)
 
 ########################################################################
-#                            Functions                                 #
-########################################################################
-
-function jamfHelperBTOn()
-{
-su - $loggedInUser <<'jamfmsg1'
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/PreferencePanes/Bluetooth.prefPane/Contents/Resources/AppIcon.icns -title "Message from Bauer IT" -heading "Enable Bluetooth" -description "Bluetooth has now been enabled.
-
-The status of Bluetooth can be found in the menu bar." &
-jamfmsg1
-}
-
-########################################################################
 #                         Script starts here                           #
 ########################################################################
 
-if [[ "$btPowerStatus" -eq "1" ]] || [[ "$btPowerStatus" == "true" ]]; then
+if [[ "$btPowerStatus" -eq "0" ]] || [[ "$btPowerStatus" == "false" ]]; then
 
-  echo "Bluetooth already turned on"
-  su -l $loggedInUser -c "open '/System/Library/CoreServices/Menu Extras/Bluetooth.menu/'"
-  echo "Bluetooth enabled in the menu bar"
-  jamfHelperBTOn
-  sleep 10
-  killall jamfHelper
+  echo "Bluetooth already turned off, nothing to do"
   exit 0
 
 else
 
-  echo "Turning Bluetooth on..."
+  echo "Turning Bluetooth off..."
   #Getting the computer ID
   ComputerID=$(curl -X GET "${6}/JSSResource/computers/serialnumber/$serialNumber" -H "accept: application/xml" -sku "${4}:${5}" | xmllint --format --xpath /computer/general/id - | awk -F '>|<' '{print $3}')
 
   #Send Enable Bluetooth command
-  curl -X POST "${6}/JSSResource/computercommands/command/SettingsEnableBluetooth/id/$ComputerID" -H "accept: application/xml" -sku "${4}:${5}" > /dev/null 2>&1
+  curl -X POST "${6}/JSSResource/computercommands/command/SettingsDisableBluetooth/id/$ComputerID" -H "accept: application/xml" -sku "${4}:${5}" > /dev/null 2>&1
 
 fi
 
 while true ; do
   #Re-populate Bluetooth controller power status variable
   btPowerStatus=$(/usr/libexec/PlistBuddy -c "print ControllerPowerState" /Library/Preferences/com.apple.Bluetooth.plist)
-   if [[ "$btPowerStatus" -eq "1" ]] || [[ "$btPowerStatus" == "true" ]]; then
-      su -l $loggedInUser -c "open '/System/Library/CoreServices/Menu Extras/Bluetooth.menu/'"
-      echo "Bluetooth now on and enabled in the menu bar"
-      jamfHelperBTOn
-      sleep 10
-      killall jamfHelper
+   if [[ "$btPowerStatus" -eq "0" ]] || [[ "$btPowerStatus" == "false" ]]; then
+      echo "Bluetooth now off"
       exit
    fi
 done

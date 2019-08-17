@@ -25,8 +25,8 @@ deferralOption4="$8" #deferral time option 4 e.g 0, 300, 3600, 21600 (Now, 5 min
 #deferralOption3="3600"
 #deferralOption4="10800"
 
-macOSUpdateVersion=$(softwareupdate -l | grep -i "macOS" | awk 'NR==2 {print $1,$2}')
-macOSUpdate=$(softwareupdate -l | grep -i "macOS" | awk 'NR==2 {print $1,$2}' | awk '{print $1}')
+macOSUpdateVersion=$(softwareupdate -l | grep -vi "Command" | grep -i "macOS" | awk 'NR==2 {print $1,$2}')
+macOSUpdate=$(softwareupdate -l | grep -vi "Command" | grep -i "macOS" | awk 'NR==2 {print $1,$2}' | awk '{print $1}')
 
 #Get the current logged in user and store in variable
 LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
@@ -91,7 +91,7 @@ Your Mac will reboot automatically once the update is installed." &
 #Show a message via Jamf Helper that the update has been installed
 function jamfHelperUpdateComplete ()
 {
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    "${macOSUpdateVersion}" update complete     " -description "${macOSUpdateVersion} update has been successfully installed." -button1 "Ok" -defaultButton "1"
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    ${macOSUpdateVersion} update complete     " -description "${macOSUpdateVersion} update has been successfully installed." -button1 "Ok" -defaultButton "1"
 }
 
 #While the installer porcess is running we wait, this leaves the jamf helper message up. Once installation is complete the message is killed
