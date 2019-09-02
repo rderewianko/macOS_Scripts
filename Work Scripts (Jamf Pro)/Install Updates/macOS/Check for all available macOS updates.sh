@@ -26,10 +26,11 @@ deferralOption4="$8" #deferral time option 4 e.g 0, 300, 3600, 21600 (Now, 5 min
 #deferralOption4="10800"
 
 macOSUpdateVersion=$(softwareupdate -l | grep -vi "Command" | grep -i "macOS" | awk 'NR==2 {print $1,$2}')
-macOSUpdate=$(softwareupdate -l | grep -vi "Command" | grep -i "macOS" | awk 'NR==2 {print $1,$2}' | awk '{print $1}')
+macOSUpdate=$(echo "$macOSUpdateVersion" | awk '{print $1}')
+
 
 #Get the current logged in user and store in variable
-LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+loggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 
 #Check if the deferral file exists, if not create, if it does read the value and add to a variable
 if [[ ! -e /Library/Application\ Support/JAMF/.UpdateDeferral-"$PolicyTrigger".txt ]]; then
@@ -51,7 +52,9 @@ HELPER=$(
 
 You may choose to install the ${macOSUpdateVersion} update now or select one of the deferral times if you want to finish your current work. After the deferral time lapses the update will be automatically installed.
 Please make sure you save all your work before the update starts!
-The update could take up to 40 minutes." -lockHUD -showDelayOptions "$deferralOption1, $deferralOption2, $deferralOption3, $deferralOption4"  -button1 "Select"
+The update could take up to 40 minutes.
+
+If you do not select an option during the 8 hour countdown the update will be installed automatically." -lockHUD -timeout 28800 -countdown -showDelayOptions "$deferralOption1, $deferralOption2, $deferralOption3, $deferralOption4" -button1 "Select" -defaultButton "1"
 )
 }
 
@@ -61,7 +64,7 @@ function jamfHelperUpdateConfirm ()
 HELPER_CONFIRM=$(
 /Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Installer.app/Contents/Resources/Installer.icns -title "Message from Bauer IT" -heading "    ${macOSUpdateVersion} update is now ready to be installed     " -description "This update is important to keep your Mac up-to-date.
 
-${macOSUpdateVersion} update will now be installed and your Mac will automatically restart after the installation has completed." -lockHUD -timeout 21600 -button1 "Install" -defaultButton 1
+${macOSUpdateVersion} update will now be installed and your Mac will automatically restart after the installation has completed." -lockHUD -timeout 21600 -button1 "Install" -defaultButton "1"
 )
 }
 
@@ -76,22 +79,52 @@ local M=$((T/60%60));
 timeChosenHuman=$(printf '%s' "${macOSUpdateVersion} update will be installed in: "; [[ $D > 0 ]] && printf '%d days ' $D; [[ $H -eq 1 ]] && printf '%d hour' $H; [[ $H -ge 2 ]] && printf '%d hours' $H; [[ $M > 0 ]] && printf '%d minutes' $M; [[ $D > 0 || $H > 0 || $M > 0 ]] )
 # Show a message via Jamf Helper that the updates will be installed after the deferral time chosen
 HELPER_DEFERRAL_CONFIRM=$(
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    $timeChosenHuman      " -description "If you would like to install the update sooner please open Self Service and navigate to Updates section and select Install Security Updates." -timeout 10  -button1 "Ok" -defaultButton 1 &
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    $timeChosenHuman      " -description "If you would like to install the update sooner please open Self Service and navigate to Updates section and select macOS Updates Install." -timeout 10  -button1 "Ok" -defaultButton "1" &
 )
 }
 
 #Show a message via Jamf Helper that the update is in progress
 function jamfHelperUpdateInProgress ()
 {
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    ${macOSUpdateVersion} update in progress     " -description "${macOSUpdateVersion} update is now installing...
+su - $loggedInUser <<'jamfmsg1'
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    macOS update in progress     " -description "A macOS update is now installing...
 Please DO NOT shutdown or reboot your Mac during the installation process.
 Your Mac will reboot automatically once the update is installed." &
+jamfmsg1
 }
 
 #Show a message via Jamf Helper that the update has been installed
 function jamfHelperUpdateComplete ()
 {
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    ${macOSUpdateVersion} update complete     " -description "${macOSUpdateVersion} update has been successfully installed." -button1 "Ok" -defaultButton "1"
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    ${macOSUpdateVersion} update complete     " -description "${macOSUpdateVersion} update has been successfully installed." -timeout 30 -button1 "Ok" -defaultButton "1"
+}
+
+function addReconOnBoot ()
+{
+#Check if recon has already been added to the startup script - the startup script gets overwirtten during a jamf manage.
+jamfRecon=$(grep "/usr/local/jamf/bin/jamf recon" "/Library/Application Support/JAMF/ManagementFrameworkScripts/StartupScript.sh")
+#Check if recon has already been added to the startup script - the startup script gets overwirtten during a jamf manage.
+if [[ -n "$jamfRecon" ]]; then
+  echo "Recon already entered in startup script"
+else
+  #Add recon to the startup script
+  echo "Recon not found in startup script adding..."
+  #Remove the exit from the file
+  sed -i '' "/$exit 0/d" /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
+  #Add in additional recon line with an exit in
+  /bin/echo "## Run Recon" >> /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
+  /bin/echo "/usr/local/jamf/bin/jamf recon" >>  /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
+  /bin/echo "exit 0" >>  /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
+
+    #Re-populate startup script recon check variable
+    jamfRecon=$(grep "/usr/local/jamf/bin/jamf recon" "/Library/Application Support/JAMF/ManagementFrameworkScripts/StartupScript.sh")
+    if [[ -n "$jamfRecon" ]]; then
+      echo "Recon added to the startup script successfully"
+    else
+      echo "Recon NOT added to the startup script"
+    fi
+
+fi
 }
 
 #While the installer porcess is running we wait, this leaves the jamf helper message up. Once installation is complete the message is killed
@@ -103,13 +136,15 @@ do
         sleep 1;
 done
 echo "Installer Finished"
-killall jamfHelper
+killall jamfHelper > /dev/null 2>&1
 }
 
 #Call jamf Helper to show message update has started
 function performUpdate ()
 {
 jamfHelperUpdateInProgress
+
+addReconOnBoot
 
 #Call the policy to run the update
 /usr/local/jamf/bin/jamf policy -trigger "$PolicyTrigger"
@@ -134,16 +169,18 @@ if [[ "${macOSUpdate}" =~ "macOS" ]]; then
 		echo "macOS update is available"
 
 #If there is no logged in user, install the updates
-	if [[ "$LoggedInUser" == "" ]]; then
+	if [[ "$loggedInUser" == "" ]]; then
     	echo "No logged in user, apply security update."
 
     performUpdate
+    #Call the policy to restart the Mac
+    /usr/local/jamf/bin/jamf policy -trigger "immediate_restart"
 else
 
 #Read the deferral time from the file, incase Mac got rebooted. This will determine the next step
 DeferralTime=$(cat /Library/Application\ Support/JAMF/.UpdateDeferral-"$PolicyTrigger".txt)
 	if [[ -z $DeferralTime ]]; then #No Deferral time set so we can now ask the user to set one
-      echo "$LoggedInUser will be asked to install $PolicyTrigger with the deferral options $deferralOption1, $deferralOption2, $deferralOption3, $deferralOption4 "
+      echo "$loggedInUser will be asked to install $PolicyTrigger with the deferral options $deferralOption1, $deferralOption2, $deferralOption3, $deferralOption4 "
 
 #Run function to show jamf Helper message to ask user to set deferral time
 jamfHelperApplyUpdate
@@ -160,6 +197,8 @@ performUpdate
 
 #Call jamf Helper to show message that the installation has completed
 jamfHelperUpdateComplete
+#Call the policy to restart the Mac
+/usr/local/jamf/bin/jamf policy -trigger "immediate_restart"
 else # A deferral time was selected from the dropdown menu, show user what was selected
 jamfHelperUpdateDeferralConfirm #Message auto closes after 10 seconds
 		echo "Wait for $DeferralTime before running $PolicyTrigger"
@@ -172,10 +211,12 @@ performUpdate
 
 #Call jamf Helper to show message that the installation has completed
 jamfHelperUpdateComplete
+#Call the policy to restart the Mac
+/usr/local/jamf/bin/jamf policy -trigger "immediate_restart"
 	fi
 fi
 else # A deferral time has already been set and saved in the .UpdateDeferral-${PolicyTrigger}.txt file
-		echo "$LoggedInUser already has a deferal time set of $DeferralTime, wait for deferral time then ask to apply update"
+		echo "$loggedInUser already has a deferal time set of $DeferralTime, wait for deferral time then ask to apply update"
 		echo "Wait for $DeferralTime before running $PolicyTrigger"
 sleep $DeferralTime
 
@@ -186,6 +227,10 @@ performUpdate
 
 #Call jamf Helper to show message that the installation has completed
 jamfHelperUpdateComplete
+#Call the policy to restart the Mac
+/usr/local/jamf/bin/jamf policy -trigger "immediate_restart"
+
+
           	fi
         fi
     fi

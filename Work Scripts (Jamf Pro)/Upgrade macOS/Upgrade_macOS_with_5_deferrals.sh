@@ -1,21 +1,20 @@
 #!/bin/bash
 
 ########################################################################
-#                Upgrade macOS - self service policy                   #
+#                Upgrade macOS with 5 user deferrals                   #
 ################# Written by Phil Walker August 2019 ###################
 ########################################################################
+
+#Installer to be deployed separately
 
 ########################################################################
 #                         Jamf Variables                               #
 ########################################################################
 
-osInstallerLocation="$4" #The path the to Mac OS installer is pulled in from the policy for flexability e.g /Users/Shared/Install macOS Sierra.app SPACES ARE PRESERVED
-osName="$5" #The nice name for jamfHelper e.g. macOS Mojave.
-requiredSpace="$9" #In GB how many are required to complete the update
-##DEBUG
-#osInstallerLocation="/Applications/Install macOS Mojave.app"
-#osName="macOS Mojave"
-#requiredSpace="15"
+osInstallerLocation="$4" #The path the to Mac OS installer is pulled in from the policy for flexability e.g /Applications/Install macOS Mojave.app SPACES ARE PRESERVED
+requiredSpace="$5" #In GB how many are requried to compelte the update
+osName="$6" #The nice name for jamfHelper e.g. macOS Mojave.
+policyName="$9" #In GB how many are requried to compelte the update
 
 ########################################################################
 #                            Variables                                 #
@@ -38,32 +37,70 @@ noLoADBundle="/Library/Security/SecurityAgentPlugins/NoMADLoginAD.bundle"
 #Check the logged in user is a local account
 mobileAccount=$(dscl . read /Users/${loggedInUser} OriginalNodeName 2>/dev/null)
 
-##Title to be used for userDialog (only applies to Utility Window)
+#Check we have the timer file and if not create it and populate with 5
+#which represents the number of defers the end user will have
+if [ ! -e /Library/Application\ Support/JAMF/.UpgradeDeferral-${policyName}.txt ]; then
+    echo "5" > /Library/Application\ Support/JAMF/.UpgradeDeferral-${policyName}.txt
+fi
+
+#Get the value of the timer file and store for later
+Timer=$(cat /Library/Application\ Support/JAMF/.UpgradeDeferral-${policyName}.txt)
+
+#Go get the Mojave icon from Apple's website
+curl -s --url https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP777/mojave-roundel-240_2x.png > /var/tmp/mojave-roundel-240_2x.png
+
+jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
+icon="/var/tmp/mojave-roundel-240_2x.png"
 title="Message from Bauer IT"
+heading="An important upgrade is availabe for your Mac - $Timer deferral(s) remaining"
+description="The ${osName} upgrade includes new features, security updates and performance enhancements.
 
-##Headings to be used for userDialog
-heading="Please wait as we prepare your computer for $osName..."
-heading_error="Oops... Something went wrong!"
-heading_requirements="Requirements Not Met"
+Would you like to upgrade now? You may choose not to upgrade to ${osName} now, but after $Timer deferrals your mac will be automatically upgraded.
 
-##Titles to be used for userDialog
-description="This process will take approximately 5-10 minutes. Please do not open any Documents or Applications
+During this upgrade, you will not have access to your computer! The upgrade can take up to 1 hour to complete.
+
+If using a laptop please make sure you are connected to power.
+
+You must ensure all work is saved before clicking the 'Upgrade Now' button. All of your files and Applications will remain exactly as you leave them.
+
+You can also trigger the upgrade via the Self Service Application at any time e.g. over lunch or just before you leave for the day."
+##Icon to be used for userDialog
+##Default is macOS Mohave Installer logo which is included in the staged installer package
+icon="$osInstallerLocation"/Contents/Resources/InstallAssistant.icns
+icon_warning=/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertCautionIcon.icns
+
+########################################################################
+#                            Functions                                 #
+########################################################################
+
+function jamfHelperAsktoUpgrade ()
+{
+HELPER=$( "$jamfHelper" -windowType utility -icon "$icon" -heading "$heading" -alignHeading center -title "$title" -description "$description" -button1 "Later" -button2 "Upgrade Now" -defaultButton "2" )
+}
+
+function jamfHelperUpdateConfirm ()
+{
+#Show a message via Jamf Helper that the update is ready, this is after it has been deferred
+HELPER_CONFIRM=$(
+"$jamfHelper" -windowType utility -icon "$icon" -title "$title" -heading "    ${osName} upgrade is now ready to be installed     " -description "This upgrade includes new features, security updates and performance enhancements.
+
+Your Mac will restart once complete!
+
+Please save all of your work before clicking install" -lockHUD -timeout 21600 -button1 "Install" -defaultButton "1"
+)
+}
+
+function jamfHelperInProgress()
+{
+"$jamfHelper" -windowType utility -title "Message from Bauer IT" -icon "$icon" -heading "Please wait as we prepare your computer for ${osName}..." -description "This process will take approximately 5-10 minutes. Please do not open any documents or applications.
 Once completed your computer will reboot and begin the upgrade.
 
 During this upgrade you will not have access to your Mac!
-It can take up to 60 minutes to complete the upgrade process
-before the login window is available. Time for a ☕️ ...
+It can take up to 60 minutes to complete the upgrade process.
+Time for a ☕️ ...
 
-"
-description_error="Something has gone wrong with downloading or initialising the
-$osName upgrade.
-
-Please contact the IT Service Desk for assistance"
-
-##Icon to be used for userDialog
-##Default is macOS Sierra Installer logo which is included in the staged installer package
-icon="$osInstallerLocation"/Contents/Resources/InstallAssistant.icns
-icon_warning=/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertCautionIcon.icns
+" &
+}
 
 function jamfHelperNoPower ()
 {
@@ -88,10 +125,10 @@ function jamfHelperFVMobileAccounts ()
 function jamfHelperNoSpace ()
 {
 HELPER_SPACE=$(
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Problem\ Reporter.app/Contents/Resources/ProblemReporter.icns -title "Message from Bauer IT" -heading "Not enough free space found - upgrade cannot continue!" -description "Please ensure you have at least ${requiredSpace}GB of Free Space
-Available Space : ${freeSpace}GB
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Problem\ Reporter.app/Contents/Resources/ProblemReporter.icns -title "Message from Bauer IT" -heading "Not enough free space found - upgrade cannot continue!" -description "Please ensure you have at least ${requiredSpace}GB of free space
+Available Space : ${freeSpace}Gb
 
-Please delete files and emtpy yout trash to free up additional space.
+Please delete files and empty your trash to free up additional space.
 
 If you continue to experience this issue, please contact the IT Service Desk on 0345 058 4444." -button1 "Retry" -button2 "Quit" -defaultButton 1
 )
@@ -142,7 +179,7 @@ function checkSpace ()
 {
 ##Check if free space > 15GB
 osMinor=$( /usr/bin/sw_vers -productVersion | awk -F. {'print $2'} )
-if [[ "$osMinor" -eq "12" ]]; then
+if [[ $osMinor -eq 12 ]]; then
 	freeSpace=$( /usr/sbin/diskutil info / | grep "Available Space" | awk '{print $4}' )
 else
   freeSpace=$( /usr/sbin/diskutil info / | grep "Free Space" | awk '{print $4}' )
@@ -218,6 +255,78 @@ fi
 
 }
 
+function deleteSleepImage()
+{
+#Check for a sleepimage and if found delete, this should help with laptops and lack of space as the sleepimage is normally 4-8Gb
+if [[ -f /var/vm/sleepimage ]]; then
+  echo "sleepimage found deleting..."
+  rm -rf /var/vm/sleepimage
+    if [[ -f /var/vm/sleepimage ]]; then
+      echo "sleepimage NOT deleted!"
+    else
+      echo "sleepimage DELETED"
+    fi
+else
+  echo "No sleepimage found"
+fi
+}
+
+function runInstall()
+{
+#Check if the Mac is a MacBook. If so, make sure NoMAD Login AD is installed
+#and that the logged in user has a local account
+checkNoMADLoginAD
+
+#Check for Power
+checkPower
+while ! [[  ${pwrStatus} == "OK" ]]
+do
+  echo "No Power"
+  jamfHelperNoPower
+  sleep 5
+  checkPower
+done
+
+deleteSleepImage
+
+#Check the Mac meets the space Requirements
+checkSpace
+while ! [[  ${spaceStatus} == "OK" ]]
+do
+  echo "Not enough Space"
+  jamfHelperNoSpace
+  if [[ "$HELPER_SPACE" -eq "2" ]]; then
+    echo "User clicked quit at lack of space message"
+    exit 1
+  fi
+  sleep 5
+  checkSpace
+done
+
+echo "Ask for final agreement to upgrade"
+jamfHelperUpdateConfirm
+
+echo "--------------------------"
+echo "Passed all Checks"
+echo "--------------------------"
+#Quit all open Apps
+echo "Killing all Microsoft Apps to avoid MS Error Reporting launching"
+ps -ef | grep Microsoft | grep -v grep | awk '{print $2}' | xargs kill -9
+echo "Killing all other open applications for $loggedInUser"
+killall -u "$loggedInUser"
+#Launch jamfHelper
+echo "Launching jamfHelper..."
+jamfHelperInProgress
+#Begin Upgrade
+addReconOnBoot
+echo "Removing Pre-Mojave mount network shares content..."
+/usr/local/jamf/bin/jamf policy -trigger removemountnetworkshares
+echo "Launching startosinstall..."
+"$osInstallerLocation"/Contents/Resources/startosinstall --agreetolicense --nointeraction
+/bin/sleep 3
+
+exit 0
+}
 
 ########################################################################
 #                         Script starts here                           #
@@ -226,25 +335,26 @@ fi
 #Clear any jamfHelper windows
 killall jamfHelper 2>/dev/null
 
-echo "Starting Upgrade to $osName with $osInstallerLocation"
+echo "Starting upgrade to $osName with $osInstallerLocation"
 echo "$requiredSpace GB will be required to complete."
 
-##Check the installer is downloaded if it's not there throw a jamf helper message
+#Check the installer is downloaded if it's not there exit
 if [[ ! -d "$osInstallerLocation" ]]; then
         echo "No Installer found!"
-				/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -title "$title" -icon "$icon_warning" -heading "$heading_error" -description "$description_error" -button1 "OK" -defaultButton 1 &
+        echo "Check available disk space and the result of the policy to install macOS Mojave"
         exit 1
 else
-        echo "Installer found"
+        echo "Installer found, continuing with upgrade"
 fi
 
 if [ "$loggedInUser" == "" ]; then
   echo "No user logged in"
-  #Show status of backup, network, power, sapce for reporting. As no logged in user no action can be taken to fix an issues.
+  #Show status of NoLoAD, power and space for reporting. As no user is logged in no action can be taken to fix any issues.
   checkNoMADLoginAD
   checkPower
+  deleteSleepImage
   checkSpace
-  ##Begin Upgrade
+  #Begin Upgrade
   echo "--------------------------"
   echo "Passed all Checks"
   echo "--------------------------"
@@ -255,51 +365,42 @@ if [ "$loggedInUser" == "" ]; then
   echo "Launching startosinstall..."
   "$osInstallerLocation"/Contents/Resources/startosinstall --nointeraction --agreetolicense
   /bin/sleep 3
+
+  exit 0
+
 else
+
   echo "Current logged in user is $loggedInUser"
-  #Check if the Mac is a MacBook. If so, make sure NoMAD Login AD is installed and the logged in user has a local account
-  checkNoMADLoginAD
-
-  #Check for Power
-  checkPower
-  while ! [[  ${pwrStatus} == "OK" ]]
-  do
-    echo "No Power"
-    jamfHelperNoPower
-    sleep 5
-    checkPower
-  done
-
-  #Check the Mac meets the space Requirements
-  checkSpace
-  while ! [[  ${spaceStatus} == "OK" ]]
-  do
-    /bin/echo "Not enough Space"
-    jamfHelperNoSpace
-    if [ "$HELPER_SPACE" == "2" ]; then
-      /bin/echo "User clicked quit at lack of space message"
-      exit 1
-    fi
-    sleep 5
-    checkSpace
-  done
-
-  echo "--------------------------"
-  echo "Passed all Checks"
-  echo "--------------------------"
-  #Quit all open Apps
-  echo "Killing all Microsoft Apps to avoid MS Error Reporting launching"
-  ps -ef | grep Microsoft | grep -v grep | awk '{print $2}' | xargs kill -9
-  echo "Killing all other open applications for $loggedInUser"
-  killall -u "$loggedInUser"
-  ##Launch jamfHelper
+  # Check the value of the timer variable, if greater than 0 i.e. can defer
+  # then show a jamfHelper message
+  if [[ "$Timer" -gt "0" ]]; then
+  echo "User has "$Timer" deferrals left"
+  #Launch jamfHelper
   echo "Launching jamfHelper..."
-  /Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -title "$title" -icon "$icon" -heading "$heading" -description "$description" &
-  ##Begin Upgrade
-  addReconOnBoot
-  echo "Removing Pre-Mojave mount network shares content..."
-  /usr/local/jamf/bin/jamf policy -trigger removemountnetworkshares
-  echo "Launching startosinstall..."
-  "$osInstallerLocation"/Contents/Resources/startosinstall --agreetolicense --nointeraction
-  /bin/sleep 3
+  jamfHelperAsktoUpgrade
+  #Get the value of the jamfHelper, user chosing to upgrade now or defer.
+
+    if [[ "$HELPER" -eq "0" ]]; then
+          #User chose to ignore
+          echo "User clicked no"
+          let CurrTimer=$Timer-1
+          echo "$CurrTimer" > /Library/Application\ Support/JAMF/.UpgradeDeferral-${policyName}.txt
+          exit 0
+    else
+          #User clicked yes
+          echo "User clicked yes"
+
+          #Start the install process
+          runInstall
+
+    fi
+  fi
+fi
+
+# Check the value of the timer variable, if equals 0 then no deferal left run the upgrade
+
+if [[ "$Timer" -eq "0" ]]; then
+  echo "No Deferral left, run the install!"
+  #Start the install process
+  runInstall
 fi

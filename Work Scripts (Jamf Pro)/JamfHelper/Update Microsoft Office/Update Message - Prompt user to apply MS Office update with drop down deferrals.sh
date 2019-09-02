@@ -41,7 +41,9 @@ HELPER=$(
 
 You can choose to start the install now or select one of the deferral times if you currently require the use of any Microsoft Office apps. The installation can take up to 20 minutes to complete.
 
-Please make sure you do not need to use any of the Microsoft Office apps before the update starts!" -lockHUD -showDelayOptions "$deferralOption1, $deferralOption2, $deferralOption3, $deferralOption4"  -button1 "Select"
+Please make sure you do not need to use any of the Microsoft Office apps before the update starts!
+
+If you do not select an option during the 8 hour countdown the update will be installed automatically." -lockHUD -timeout 28800 -countdown -showDelayOptions "$deferralOption1, $deferralOption2, $deferralOption3, $deferralOption4"  -button1 "Select" -defaultButton "1"
 
 )
 }
@@ -52,7 +54,7 @@ function jamfHelperUpdateConfirm ()
 HELPER_CONFIRM=$(
 /Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Installer.app/Contents/Resources/Installer.icns -title "Message from Bauer IT" -heading "    ${ApplicationName} is waiting to be installed     " -description "${ApplicationName} brings new features, bug fixes and security patches
 
-All Microsoft Office apps will be closed automatically during the update process" -lockHUD -timeout 21600 -button1 "Install" -defaultButton 1
+All Microsoft Office apps will be closed automatically during the update process" -lockHUD -timeout 21600 -button1 "Install" -defaultButton "1"
 )
 }
 
@@ -67,20 +69,22 @@ local M=$((T/60%60));
 timeChosenHuman=$(printf '%s' "${ApplicationName} will be installed in: "; [[ $D > 0 ]] && printf '%d days ' $D; [[ $H -eq 1 ]] && printf '%d hour' $H; [[ $H -ge 2 ]] && printf '%d hours' $H; [[ $M > 0 ]] && printf '%d minutes' $M; [[ $D > 0 || $H > 0 || $M > 0 ]] )
 #Show a message via Jamf Helper that the update will be installed after the deferral time chosen
 HELPER_DEFERRAL_CONFIRM=$(
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    $timeChosenHuman      " -description "If you would like to install ${ApplicationName} sooner please open Self Service and navigate to the Applications section" -timeout 10  -button1 "Ok" -defaultButton 1 &
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    $timeChosenHuman      " -description "If you would like to install ${ApplicationName} sooner please open Self Service and navigate to the Applications section" -timeout 10  -button1 "Ok" -defaultButton "1" &
 )
 }
 
 function jamfHelperUpdateInProgress ()
 {
-#Show a message via Jamf Helper that the update is ready, this is after it has been deferred
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    ${ApplicationName} installation in progress     " -description "All Microsoft Office apps will be closed automatically during the update process" &
+#Show a message via Jamf Helper that the update is in progress
+su - $LoggedInUser <<'jamfmsg1'
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    Microsoft Office 2019 installation in progress     " -description "All Microsoft Office apps will be closed automatically during the update process" &
+jamfmsg1
 }
 
 function jamfHelperUpdateComplete ()
 {
 #Show a message via Jamf Helper that the update is ready, this is after it has been deferred
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    ${ApplicationName} installation complete     " -description "${ApplicationName} has been successfully installed" -button1 "Ok" -defaultButton "1"
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "    ${ApplicationName} installation complete     " -description "${ApplicationName} has been successfully installed" -timeout 30 -button1 "Ok" -defaultButton "1"
 }
 
 function installerWhile ()
