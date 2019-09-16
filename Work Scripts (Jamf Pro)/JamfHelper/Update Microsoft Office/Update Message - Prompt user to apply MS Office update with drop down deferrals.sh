@@ -15,8 +15,6 @@
 PolicyTrigger="$4" #What unique policy trigger actually installs the package
 deferralOption1="$5" #deferral time option 1 e.g 0, 300, 3600, 21600 (Now, 5 minutes, 1 hour, 6 hours)
 deferralOption2="$6" #deferral time option 2 e.g 0, 300, 3600, 21600 (Now, 5 minutes, 1 hour, 6 hours)
-deferralOption3="$7" #deferral time option 3 e.g 0, 300, 3600, 21600 (Now, 5 minutes, 1 hour, 6 hours)
-deferralOption4="$8" #deferral time option 4 e.g 0, 300, 3600, 21600 (Now, 5 minutes, 1 hour, 6 hours)
 ApplicationName="$9" #Application name to be used in Jamf Helper windows
 
 #Get the current logged in user and store in variable
@@ -43,7 +41,7 @@ You can choose to start the install now or select one of the deferral times if y
 
 Please make sure you do not need to use any of the Microsoft Office apps before the update starts!
 
-If you do not select an option during the 8 hour countdown the update will be installed automatically." -lockHUD -timeout 28800 -countdown -showDelayOptions "$deferralOption1, $deferralOption2, $deferralOption3, $deferralOption4"  -button1 "Select" -defaultButton "1"
+If you do not select an option during the 1 hour countdown the update will be installed automatically." -lockHUD -timeout 3600 -countdown -showDelayOptions "$deferralOption1, $deferralOption2"  -button1 "Select" -defaultButton "1"
 
 )
 }
