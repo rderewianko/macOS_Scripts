@@ -13,9 +13,8 @@
 # Get Mac model and marketing name
 macModel=$(sysctl -n hw.model)
 macModelFull=$(system_profiler SPHardwareDataType | grep "Model Name" | sed 's/Model Name: //' | xargs)
-# Get OS Version (Full and Short)
+# Get OS Version
 OSFull=$(sw_vers -productVersion)
-OSShort=$(sw_vers -productVersion | awk -F. '{print $2}')
 # Get hibernate mode status
 hibernateMode=$(pmset -g | grep "hibernatemode" | awk '{ print $2 }')
 # Get standby mode status
@@ -29,7 +28,7 @@ standbydelayhighStatus=$(pmset -g | grep "standbydelayhigh" | awk '{ print $2 }'
 #                         Script starts here                           #
 ########################################################################
 
-if [[ "$macModel" =~ "MacBook" ]] && [[ "$OSShort" -ge "14" ]]; then
+if [[ "$macModel" =~ "MacBook" ]]; then
 
   echo "Power Management Settings"
   echo "hibernatemode = $hibernateMode"
@@ -83,7 +82,7 @@ if [[ "$macModel" =~ "MacBook" ]] && [[ "$OSShort" -ge "14" ]]; then
 else
 
   echo "$macModelFull running $OSFull, power management settings have not been changed"
-  echo "This policy will only amend the power settings for a MacBook running 10.14 and above"
+  echo "This policy will only amend the power settings for MacBooks"
 
 fi
 
