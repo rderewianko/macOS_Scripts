@@ -38,7 +38,7 @@ btPowerStatus=$(/usr/libexec/PlistBuddy -c "print ControllerPowerState" /Library
 function jamfHelperBTOn()
 {
 su - $loggedInUser <<'jamfmsg1'
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/PreferencePanes/Bluetooth.prefPane/Contents/Resources/AppIcon.icns -title "Message from Bauer IT" -heading "Enable Bluetooth" -description "Bluetooth has now been enabled.
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/PreferencePanes/Bluetooth.prefPane/Contents/Resources/AppIcon.icns -title "Message from Bauer IT" -heading "Bluetooth Turned On" -description "Bluetooth has now been turned on.
 
 The status of Bluetooth can be found in the menu bar." &
 jamfmsg1
@@ -62,10 +62,10 @@ else
 
   echo "Turning Bluetooth on..."
   #Getting the computer ID
-  ComputerID=$(curl -X GET "${6}/JSSResource/computers/serialnumber/$serialNumber" -H "accept: application/xml" -sku "${4}:${5}" | xmllint --format --xpath /computer/general/id - | awk -F '>|<' '{print $3}')
+  ComputerID=$(curl -X GET "${jssurl}/JSSResource/computers/serialnumber/$serialNumber" -H "accept: application/xml" -sku "${apiuser}:${apipass}" | xmllint --format --xpath /computer/general/id - | awk -F '>|<' '{print $3}')
 
   #Send Enable Bluetooth command
-  curl -X POST "${6}/JSSResource/computercommands/command/SettingsEnableBluetooth/id/$ComputerID" -H "accept: application/xml" -sku "${4}:${5}" > /dev/null 2>&1
+  curl -X POST "${jssurl}/JSSResource/computercommands/command/SettingsEnableBluetooth/id/$ComputerID" -H "accept: application/xml" -sku "${apiuser}:${apipass}" > /dev/null 2>&1
 
 fi
 
