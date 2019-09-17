@@ -14,7 +14,13 @@
 osInstallerLocation="$4" #The path the to Mac OS installer is pulled in from the policy for flexability e.g /Applications/Install macOS Mojave.app SPACES ARE PRESERVED
 requiredSpace="$5" #In GB how many are requried to compelte the update
 osName="$6" #The nice name for jamfHelper e.g. macOS Mojave.
-policyName="$9" #In GB how many are requried to compelte the update
+policyName="$9" #Policy name for deferral file.
+
+##DEBUG
+#osInstallerLocation="/Applications/Install macOS Mojave.app"
+#requiredSpace="$5"
+#osName="macOS Mojave"
+#policyName="macOSMojaveUpgrade" #Policy name for deferral file.
 
 ########################################################################
 #                            Variables                                 #
@@ -86,7 +92,7 @@ HELPER_CONFIRM=$(
 
 Your Mac will restart once complete!
 
-Please save all of your work before clicking install" -lockHUD -timeout 21600 -button1 "Install" -defaultButton "1"
+Please save all of your work before clicking install" -lockHUD -timeout 7200 -countdown -alignCountdown center -button1 "Install" -defaultButton "1"
 )
 }
 
@@ -114,7 +120,12 @@ function jamfHelperNoMADLoginADMissing ()
 
 function jamfHelperMobileAccount ()
 {
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Problem\ Reporter.app/Contents/Resources/ProblemReporter.icns -title "Message from Bauer IT" -heading "Mobile account detected - upgrade cannot continue!" -description "Please logout and back in before attempting the upgrade again. Any further issues contact the IT Service Desk on 0345 058 4444." -button1 "Close" -defaultButton 1
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Problem\ Reporter.app/Contents/Resources/ProblemReporter.icns -title "Message from Bauer IT" -heading "Mobile account detected - upgrade cannot continue!" -description "To resolve this issue a logout/login is required.
+
+In 30 seconds you will be automatically logged out of your current session.
+Please log back in to your Mac, launch the Self Service app and run the ${osName} Upgrade.
+
+If you have any further issues please contact the IT Service Desk on 0345 058 4444." -timeout 30 -button1 "Logout" -defaultButton 1
 }
 
 function jamfHelperFVMobileAccounts ()
@@ -220,8 +231,10 @@ if [[ "$macModel" =~ "MacBook" ]] && [[ "$osShort" -eq "12" ]]; then
           echo "$loggedInUser has a local account, carry on with OS Upgrade"
         else
           echo "$loggedInUser has a mobile account, aborting OS Upgrade"
-          echo "Advising $loggedInUser via a jamfHelper message to logout and back in before attempting the upgrade again"
+          echo "Advising $loggedInUser via a jamfHelper that they will be logged out in 30 seconds as a logout/login is required"
           jamfHelperMobileAccount
+          echo "killing the login session..."
+          killall loginwindow
           exit 1
         fi
       else
