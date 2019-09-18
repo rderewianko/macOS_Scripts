@@ -48,7 +48,7 @@ jamfmsg1
 #                         Script starts here                           #
 ########################################################################
 
-if [[ "$btPowerStatus" -eq "1" ]] || [[ "$btPowerStatus" == "true" ]]; then
+if [[ "$btPowerStatus" == "1" ]] || [[ "$btPowerStatus" == "true" ]]; then
 
   echo "Bluetooth already turned on"
   su -l $loggedInUser -c "open '/System/Library/CoreServices/Menu Extras/Bluetooth.menu/'"
@@ -72,7 +72,7 @@ fi
 while true ; do
   #Re-populate Bluetooth controller power status variable
   btPowerStatus=$(/usr/libexec/PlistBuddy -c "print ControllerPowerState" /Library/Preferences/com.apple.Bluetooth.plist)
-   if [[ "$btPowerStatus" -eq "1" ]] || [[ "$btPowerStatus" == "true" ]]; then
+   if [[ "$btPowerStatus" == "1" ]] || [[ "$btPowerStatus" == "true" ]]; then
       su -l $loggedInUser -c "open '/System/Library/CoreServices/Menu Extras/Bluetooth.menu/'"
       echo "Bluetooth now on and enabled in the menu bar"
       jamfHelperBTOn

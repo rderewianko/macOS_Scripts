@@ -31,29 +31,10 @@ serialNumber=$(ioreg -c IOPlatformExpertDevice -d 2 | awk -F\" '/IOPlatformSeria
 btPowerStatus=$(/usr/libexec/PlistBuddy -c "print ControllerPowerState" /Library/Preferences/com.apple.Bluetooth.plist)
 
 ########################################################################
-#                            Functions                                 #
-########################################################################
-
-function jamfHelperBTOff()
-{
-#jamf Helper to advise the user that Bluetooth is now off and how it can be turned back on if needed
-#We DO NOT disable Bluetooth it is simply turned off if its never used/no devices are paired
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/PreferencePanes/Bluetooth.prefPane/Contents/Resources/AppIcon.icns -title "Message from Bauer IT" -heading "        Bluetooth Turned Off" -description "To improve the security of your Mac, Bluetooth has now been turned off.
-
-If you wish to pair a device in the future please use either of the methods below:
-
-1) Open the Self Service app, select Configuration and then select Enable Bluetooth.
-
-2) Open System Preferences, select Bluetooth and then select Turn Bluetooth On.
-
-" -timeout 120 -button1 "OK" -defaultButton "1"
-}
-
-########################################################################
 #                         Script starts here                           #
 ########################################################################
 
-if [[ "$btPowerStatus" -eq "0" ]] || [[ "$btPowerStatus" == "false" ]]; then
+if [[ "$btPowerStatus" == "0" ]] || [[ "$btPowerStatus" == "false" ]]; then
 
   echo "Bluetooth already turned off, nothing to do"
   exit 0
@@ -72,9 +53,8 @@ fi
 while true ; do
   #Re-populate Bluetooth controller power status variable
   btPowerStatus=$(/usr/libexec/PlistBuddy -c "print ControllerPowerState" /Library/Preferences/com.apple.Bluetooth.plist)
-   if [[ "$btPowerStatus" -eq "0" ]] || [[ "$btPowerStatus" == "false" ]]; then
+   if [[ "$btPowerStatus" == "0" ]] || [[ "$btPowerStatus" == "false" ]]; then
       echo "Bluetooth now off"
-      jamfHelperBTOff
       exit
    fi
 done
