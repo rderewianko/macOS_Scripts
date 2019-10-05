@@ -11,7 +11,11 @@ if [[ "$FV2Deferred" == "" ]] || [[ "$FV2Deferred" =~ "Encryption in progress" ]
   echo "<result>Not deferred</result>"
 else
   FV2DeferralUser=$(fdesetup status | sed -n 2p | awk '{print $9}' | cut -d "'" -f2)
-  echo "<result>FileVault deferred for: ${FV2DeferralUser}</result>"
+  if [[ "$FV2DeferralUser" == "" ]]; then
+    echo "<result>FileVault deferred</result>"
+  else
+    echo "<result>FileVault deferred for: ${FV2DeferralUser}</result>"
+  fi
 fi
 
 exit 0
