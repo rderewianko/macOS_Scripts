@@ -77,7 +77,12 @@ function jamfHelperNoMADLoginADMissing ()
 
 function jamfHelperMobileAccount ()
 {
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Problem\ Reporter.app/Contents/Resources/ProblemReporter.icns -title "Message from Bauer IT" -heading "Mobile account detected - upgrade cannot continue!" -description "Please logout and back in before attempting the upgrade again. Any further issues contact the IT Service Desk on 0345 058 4444." -button1 "Close" -defaultButton 1
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Problem\ Reporter.app/Contents/Resources/ProblemReporter.icns -title "Message from Bauer IT" -heading "Mobile account detected - upgrade cannot continue!" -description "To resolve this issue a logout/login is required.
+
+In 30 seconds you will be automatically logged out of your current session.
+Please log back in to your Mac, launch the Self Service app and run the ${osName} Upgrade.
+
+If you have any further issues please contact the IT Service Desk on 0345 058 4444." -timeout 30 -button1 "Logout" -defaultButton 1
 }
 
 function jamfHelperFVMobileAccounts ()
@@ -101,27 +106,29 @@ function addReconOnBoot ()
 {
 #Check if recon has already been added to the startup script - the startup script gets overwirtten during a jamf manage.
 jamfRecon=$(grep "/usr/local/jamf/bin/jamf recon" "/Library/Application Support/JAMF/ManagementFrameworkScripts/StartupScript.sh")
-#Check if recon has already been added to the startup script - the startup script gets overwirtten during a jamf manage.
-if [[ -n "$jamfRecon" ]]; then
-  echo "Recon already entered in startup script"
+#Check if logout policy has already been added to the startup script - the startup script gets overwirtten during a jamf manage.
+jamfLogout=$(grep "/usr/local/jamf/bin/jamf policy -trigger logout" "/Library/Application Support/JAMF/ManagementFrameworkScripts/StartupScript.sh")
+if [[ -n "$jamfRecon" ]] && [[ -n "$jamfLogout" ]]; then
+  echo "Recon and logout policy already entered in startup script"
 else
-  #Add recon to the startup script
-  echo "Recon not found in startup script adding..."
+  #Add recon and logout policy to the startup script
+  echo "Recon and logout policy not found in startup script adding..."
   #Remove the exit from the file
   sed -i '' "/$exit 0/d" /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
   #Add in additional recon line with an exit in
-  /bin/echo "## Run Recon" >> /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
+  /bin/echo "## Run Recon and run logout policies" >> /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
   /bin/echo "/usr/local/jamf/bin/jamf recon" >>  /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
+  /bin/echo "/usr/local/jamf/bin/jamf policy -trigger logout" >>  /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
   /bin/echo "exit 0" >>  /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
 
     #Re-populate startup script recon check variable
     jamfRecon=$(grep "/usr/local/jamf/bin/jamf recon" "/Library/Application Support/JAMF/ManagementFrameworkScripts/StartupScript.sh")
-    if [[ -n "$jamfRecon" ]]; then
-      echo "Recon added to the startup script successfully"
+    jamfLogout=$(grep "/usr/local/jamf/bin/jamf policy -trigger logout" "/Library/Application Support/JAMF/ManagementFrameworkScripts/StartupScript.sh")
+    if [[ -n "$jamfRecon" ]] && [[ -n "$jamfLogout" ]]; then
+      echo "Recon and logout policy added to the startup script successfully"
     else
-      echo "Recon NOT added to the startup script"
+      echo "Recon and logout policy NOT added to the startup script"
     fi
-
 fi
 }
 
@@ -163,58 +170,60 @@ fi
 
 function checkNoMADLoginAD()
 {
-#If a MacBook make sure NoMAD Login AD is installed and the logged in user has a local account
-if [[ "$macModel" =~ "MacBook" ]] && [[ "$osShort" -eq "12" ]]; then
-  echo "${macModelFull} running ${osFull}, confirming that NoMAD Login AD is installed..."
-  if [[ ! -d "$noLoADBundle" ]]; then
-    if [[ "$loggedInUser" != "" ]]; then
-      echo "NoMAD Login AD not installed, aborting OS Upgrade"
-      jamfHelperNoMADLoginADMissing
-      exit 1
-    else
-      echo "NoMAD Login AD not installed, Aborting OS Upgrade"
-      exit 1
-    fi
-  else
-    echo "NoMAD Login AD installed"
+  #If a MacBook make sure NoMAD Login AD is installed and the logged in user has a local account
+  if [[ "$macModel" =~ "MacBook" ]] && [[ "$osShort" -eq "12" ]]; then
+    echo "${macModelFull} running ${osFull}, confirming that NoMAD Login AD is installed..."
+    if [[ ! -d "$noLoADBundle" ]]; then
       if [[ "$loggedInUser" != "" ]]; then
-      echo "Confirming that $loggedInUser has a local account..."
-        if [[ "$mobileAccount" == "" ]]; then
-          echo "$loggedInUser has a local account, carry on with OS Upgrade"
-        else
-          echo "$loggedInUser has a mobile account, aborting OS Upgrade"
-          echo "Advising $loggedInUser via a jamfHelper message to logout and back in before attempting the upgrade again"
-          jamfHelperMobileAccount
-          exit 1
-        fi
+        echo "NoMAD Login AD not installed, aborting OS Upgrade"
+        jamfHelperNoMADLoginADMissing
+        exit 1
       else
-        fileVaultStatus=$(fdesetup status | sed -n 1p)
-          if [[ "$fileVaultStatus" =~ "Off" ]]; then
-            echo "FileVault off, carry on with OS upgrade"
-          else
-            echo "FileVault is on, checking that all FileVault enabled users have local accounts"
-            allUsers=$(dscl . -list /Users | grep -v "^_\|casadmin\|daemon\|nobody\|root\|admin")
-              for user in $allUsers
-                do
-                  fileVaultUser=$(fdesetup list | grep "$user" | awk  -F, '{print $1}')
-                  if [[ "$fileVaultUser" == "$user" ]]; then
-                    fvMobileAccount=$(dscl . read /Users/${user} OriginalNodeName 2>/dev/null)
-                      if [[ "$fvMobileAccount" == "" ]]; then
-                        echo "$user is a FileVault enabled user with a local account"
-                      else
-                        echo "$user is a FileVault enabled user with a mobile account, aborting upgrade!"
-                        echo "Please contact $user and ask them to login to demobilise their account before attempting the upgrade again"
-                        jamfHelperFVMobileAccounts
-                        exit 1
-                      fi
-                  fi
-              done
-          fi
+        echo "NoMAD Login AD not installed, Aborting OS Upgrade"
+        exit 1
       fi
-    fi
-else
-  echo "${macModelFull} running ${osFull}, carry on with OS Upgrade"
-fi
+    else
+      echo "NoMAD Login AD installed"
+        if [[ "$loggedInUser" != "" ]]; then
+        echo "Confirming that $loggedInUser has a local account..."
+          if [[ "$mobileAccount" == "" ]]; then
+            echo "$loggedInUser has a local account, carry on with OS Upgrade"
+          else
+            echo "$loggedInUser has a mobile account, aborting OS Upgrade"
+            echo "Advising $loggedInUser via a jamfHelper that they will be logged out in 30 seconds as a logout/login is required"
+            jamfHelperMobileAccount
+            echo "killing the login session..."
+            killall loginwindow
+            exit 1
+          fi
+        else
+          fileVaultStatus=$(fdesetup status | sed -n 1p)
+            if [[ "$fileVaultStatus" =~ "Off" ]]; then
+              echo "FileVault off, carry on with OS upgrade"
+            else
+              echo "FileVault is on, checking that all FileVault enabled users have local accounts"
+              allUsers=$(dscl . -list /Users | grep -v "^_\|casadmin\|daemon\|nobody\|root\|admin")
+                for user in $allUsers
+                  do
+                    fileVaultUser=$(fdesetup list | grep "$user" | awk  -F, '{print $1}')
+                    if [[ "$fileVaultUser" == "$user" ]]; then
+                      fvMobileAccount=$(dscl . read /Users/${user} OriginalNodeName 2>/dev/null)
+                        if [[ "$fvMobileAccount" == "" ]]; then
+                          echo "$user is a FileVault enabled user with a local account"
+                        else
+                          echo "$user is a FileVault enabled user with a mobile account, aborting upgrade!"
+                          echo "Please contact $user and ask them to login to demobilise their account before attempting the upgrade again"
+                          jamfHelperFVMobileAccounts
+                          exit 1
+                        fi
+                    fi
+                done
+            fi
+        fi
+      fi
+  else
+    echo "${macModelFull} running ${osFull}, carry on with OS Upgrade"
+  fi
 
 }
 
@@ -255,6 +264,7 @@ if [ "$loggedInUser" == "" ]; then
   echo "Launching startosinstall..."
   "$osInstallerLocation"/Contents/Resources/startosinstall --nointeraction --agreetolicense
   /bin/sleep 3
+  exit 0
 else
   echo "Current logged in user is $loggedInUser"
   #Check if the Mac is a MacBook. If so, make sure NoMAD Login AD is installed and the logged in user has a local account
@@ -302,4 +312,5 @@ else
   echo "Launching startosinstall..."
   "$osInstallerLocation"/Contents/Resources/startosinstall --agreetolicense --nointeraction
   /bin/sleep 3
+  exit 0
 fi

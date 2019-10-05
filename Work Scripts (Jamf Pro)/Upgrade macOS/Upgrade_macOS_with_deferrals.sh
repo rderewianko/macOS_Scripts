@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-#                Upgrade macOS with 3 user deferrals                   #
+#                 Upgrade macOS with user deferrals                    #
 ################# Written by Phil Walker August 2019 ###################
 ########################################################################
 
@@ -149,27 +149,29 @@ function addReconOnBoot ()
 {
 #Check if recon has already been added to the startup script - the startup script gets overwirtten during a jamf manage.
 jamfRecon=$(grep "/usr/local/jamf/bin/jamf recon" "/Library/Application Support/JAMF/ManagementFrameworkScripts/StartupScript.sh")
-#Check if recon has already been added to the startup script - the startup script gets overwirtten during a jamf manage.
-if [[ -n "$jamfRecon" ]]; then
-  echo "Recon already entered in startup script"
+#Check if logout policy has already been added to the startup script - the startup script gets overwirtten during a jamf manage.
+jamfLogout=$(grep "/usr/local/jamf/bin/jamf policy -trigger logout" "/Library/Application Support/JAMF/ManagementFrameworkScripts/StartupScript.sh")
+if [[ -n "$jamfRecon" ]] && [[ -n "$jamfLogout" ]]; then
+  echo "Recon and logout policy already entered in startup script"
 else
-  #Add recon to the startup script
-  echo "Recon not found in startup script adding..."
+  #Add recon and logout policy to the startup script
+  echo "Recon and logout policy not found in startup script adding..."
   #Remove the exit from the file
   sed -i '' "/$exit 0/d" /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
   #Add in additional recon line with an exit in
-  /bin/echo "## Run Recon" >> /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
+  /bin/echo "## Run Recon and run logout policies" >> /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
   /bin/echo "/usr/local/jamf/bin/jamf recon" >>  /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
+  /bin/echo "/usr/local/jamf/bin/jamf policy -trigger logout" >>  /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
   /bin/echo "exit 0" >>  /Library/Application\ Support/JAMF/ManagementFrameworkScripts/StartupScript.sh
 
     #Re-populate startup script recon check variable
     jamfRecon=$(grep "/usr/local/jamf/bin/jamf recon" "/Library/Application Support/JAMF/ManagementFrameworkScripts/StartupScript.sh")
-    if [[ -n "$jamfRecon" ]]; then
-      echo "Recon added to the startup script successfully"
+    jamfLogout=$(grep "/usr/local/jamf/bin/jamf policy -trigger logout" "/Library/Application Support/JAMF/ManagementFrameworkScripts/StartupScript.sh")
+    if [[ -n "$jamfRecon" ]] && [[ -n "$jamfLogout" ]]; then
+      echo "Recon and logout policy added to the startup script successfully"
     else
-      echo "Recon NOT added to the startup script"
+      echo "Recon and logout policy NOT added to the startup script"
     fi
-
 fi
 }
 
