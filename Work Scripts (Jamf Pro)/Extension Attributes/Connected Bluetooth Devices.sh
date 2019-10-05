@@ -40,22 +40,23 @@ fi
 
 getFirstName
 
-BTDevices1=$(system_profiler SPBluetoothDataType > /tmp/BT.txt)
-BTDevices2=$(cat /tmp/BT.txt | grep -i "$firstName" | grep -vi "wireless" | grep -vi "iPhone-Wirel" | sed 's/://g' | sed -e '/^ *$/d')
-  if [[ "$loggedInUser" == "root" ]]; then
-    exit 0
+BTDevicesAll=$(system_profiler SPBluetoothDataType > /tmp/BT.txt)
+BTDevices1=$(cat /tmp/BT.txt | grep -i "$firstName" | grep -vi "wireless" | grep -vi "iPhone-Wirel" | sed 's/://g' | sed -e 's/^[ \t]*//' | sort -u)
+BTDevices2=$(cat /tmp/BT.txt | grep -i "magic" | sed 's/Services//g' | sed 's/://g' | sed -e 's/^[ \t]*//' | sort -u)
+BTDevices3=$(cat /tmp/BT.txt | grep -i "Galaxy\|HUAWEI\|Samsung" | sed 's/://g' | sed -e 's/^[ \t]*//' | sort -u)
+
+if [[ "$firstName" == "" ]] && [[ "$BTDevices2" == "" ]] && [[ "$BTDevices3" == "" ]]; then
+  echo "<result></result>"
+elif [[ "$firstName" == "" ]] && [[ "$BTDevices2" != "" || "$BTDevices3" != "" ]]; then
+  echo "<result>"${BTDevices2}${BTDevices3}"</result>"
+else
+  if [[ "$BTDevices1" == "" ]] && [[ "$BTDevices2" == "" ]] && [[ "$BTDevices3" == "" ]]; then
+    echo "<result></result>"
   else
-      if [[ "$firstName" == "" ]]; then
-        exit 0
-      else
-        if [[ "$BTDevices2" == "" ]]; then
-          echo "<result></result>"
-        else
-          echo "<result>"$BTDevices2"</result>"
-          sleep 2
-          rm /tmp/BT.txt
-        fi
-    fi
+    echo "<result>"${BTDevices1}${BTDevices2}${BTDevices3}"</result>"
+    sleep 2
+    rm /tmp/BT.txt
+  fi
 fi
 
 exit 0
