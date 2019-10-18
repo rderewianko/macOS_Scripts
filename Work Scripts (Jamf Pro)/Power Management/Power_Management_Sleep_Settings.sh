@@ -73,7 +73,7 @@ if [[ "$macModel" =~ "MacBook" && "$OSShort" == "12" ]]; then
     echo "standbydelayStatus = $standbydelayStatus"
     echo ""
 
-elif [[ "$macModel" =~ "MacBook" && "$OSShort" == "14" ]]; then
+elif [[ "$macModel" =~ "MacBook" ]] && [[ "$OSShort" -ge "14" ]]; then
 
   echo "Power Management Settings"
   echo "hibernatemode = $hibernateMode"
