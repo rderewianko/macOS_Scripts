@@ -261,6 +261,8 @@ if [ "$loggedInUser" == "" ]; then
   addReconOnBoot
   echo "Removing Pre-Mojave mount network shares content..."
   /usr/local/jamf/bin/jamf policy -trigger removemountnetworkshares
+  echo "Cleaning font registration database..."
+  /usr/local/jamf/bin/jamf policy -trigger cleanfontdatabase_mojaveupgrade
   echo "Launching startosinstall..."
   "$osInstallerLocation"/Contents/Resources/startosinstall --nointeraction --agreetolicense
   /bin/sleep 3
@@ -309,6 +311,8 @@ else
   addReconOnBoot
   echo "Removing Pre-Mojave mount network shares content..."
   /usr/local/jamf/bin/jamf policy -trigger removemountnetworkshares
+  echo "Cleaning font registration database..."
+  /usr/local/jamf/bin/jamf policy -trigger cleanfontdatabase_mojaveupgrade
   echo "Launching startosinstall..."
   "$osInstallerLocation"/Contents/Resources/startosinstall --agreetolicense --nointeraction
   /bin/sleep 3
