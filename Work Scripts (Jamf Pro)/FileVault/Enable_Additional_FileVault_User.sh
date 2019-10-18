@@ -120,7 +120,7 @@ localUserGUID=$(/usr/bin/dscl . -read /Users/$loggedInUser GeneratedUID | awk '{
 # Get the logged in user's SecureToken status
 localUserSecureToken=$(/usr/sbin/sysadminctl -secureTokenStatus "$loggedInUser" 2>&1)
 # Get the logged in user's FileVault status
-localUserFVStatus=$(/usr/bin/fdesetup list | grep "$loggedInUser" | sed 's/.*,//g')
+localUserFVStatus=$(/usr/bin/fdesetup list | grep "$loggedInUser" | awk  -F, '{print $2}')
 
 if [[ "$localUserSecureToken" =~ "ENABLED" ]] && [[ "$localUserGUID" == "$localUserFVStatus" ]]; then
   echo "$loggedInUser already has a SecureToken and is a FileVault enabled user, nothing to do"
@@ -140,7 +140,7 @@ localUserGUID=$(/usr/bin/dscl . -read /Users/$loggedInUser GeneratedUID | awk '{
 # Get the logged in user's SecureToken status
 localUserSecureToken=$(/usr/sbin/sysadminctl -secureTokenStatus "$loggedInUser" 2>&1)
 # Get the logged in user's FileVault status
-localUserFVStatus=$(/usr/bin/fdesetup list | grep "$loggedInUser" | sed 's/.*,//g')
+localUserFVStatus=$(/usr/bin/fdesetup list | grep "$loggedInUser" | awk  -F, '{print $2}')
 
 if [[ "$localUserSecureToken" =~ "ENABLED" ]] && [[ "$localUserGUID" == "$localUserFVStatus" ]]; then
   echo "$loggedInUser now has a SecureToken and is a FileVault enabled user!"
@@ -265,7 +265,7 @@ fvUserGUID=$(/usr/bin/dscl . -read /Users/$fvEnabledUser GeneratedUID | awk '{pr
 # Get the FV enabled user's SecureToken status
 fvUserSecureToken=$(/usr/sbin/sysadminctl -secureTokenStatus "$fvEnabledUser" 2>&1)
 # Get the FV enabled user's FileVault status
-fvUserStatus=$(/usr/bin/fdesetup list | grep "$fvEnabledUser" | sed 's/.*,//g')
+fvUserStatus=$(/usr/bin/fdesetup list | grep "$fvEnabledUser" | awk  -F, '{print $2}')
 
 		echo "FileVault is on, checking ${fvEnabledUser}'s SecureToken and FileVault status"
 			if [[ "$fvUserSecureToken" =~ "ENABLED" ]] && [[ "$fvUserGUID" == "$fvUserStatus" ]]; then
@@ -300,7 +300,7 @@ adminUsers=$(dscl . -read Groups/admin GroupMembership | cut -c 18-)
 # Get the logged in users GUID
 UserGUID=$(/usr/bin/dscl . -read /Users/$loggedInUser GeneratedUID | awk '{print $2}')
 # Get the logged in users FileVault status
-UserFVStatus=$(/usr/bin/fdesetup list | grep "$loggedInUser" | sed 's/.*,//g')
+UserFVStatus=$(/usr/bin/fdesetup list | grep "$loggedInUser" | awk  -F, '{print $2}')
 
 		if [[ "$UserGUID" == "$UserFVStatus" ]]; then
 			echo "$loggedInUser now has a SecureToken and is a FileVault enabled user"
@@ -326,7 +326,7 @@ fvUserGUID=$(/usr/bin/dscl . -read /Users/$fvEnabledUser GeneratedUID | awk '{pr
 # Get the FV enabled user's SecureToken status
 fvUserSecureToken=$(/usr/sbin/sysadminctl -secureTokenStatus "$fvEnabledUser" 2>&1)
 # Get the FV enabled user's FileVault status
-fvUserStatus=$(/usr/bin/fdesetup list | grep "$fvEnabledUser" | sed 's/.*,//g')
+fvUserStatus=$(/usr/bin/fdesetup list | grep "$fvEnabledUser" | awk  -F, '{print $2}')
 
 		echo "FileVault is on, checking ${fvEnabledUser}'s SecureToken and FileVault status"
 			if [[ "$fvUserSecureToken" =~ "ENABLED" ]] && [[ "$fvUserGUID" == "$fvUserStatus" ]]; then
