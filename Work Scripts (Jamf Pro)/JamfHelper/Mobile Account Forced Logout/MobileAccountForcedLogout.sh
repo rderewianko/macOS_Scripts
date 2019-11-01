@@ -18,13 +18,6 @@ deferralOption2="$6" #deferral time option 2 e.g 0, 300, 3600, 10800 (Now, 5 min
 deferralOption3="$7" #deferral time option 3 e.g 0, 300, 3600, 10800 (Now, 5 minutes, 1 hour, 3 hours)
 deferralOption4="$8" #deferral time option 4 e.g 0, 300, 3600, 10800 (Now, 5 minutes, 1 hour, 3 hours)
 
-#DEBUG
-#policyTrigger="forceuserlogout"
-#deferralOption1="0"
-#deferralOption2="300"
-#deferralOption3="1800"
-#deferralOption4="3600"
-
 #Get the current logged in user and store in variable
 loggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
 
@@ -49,15 +42,8 @@ fileVaultStatus=$(/usr/bin/fdesetup status | grep "FileVault" | head -n 1)
 loggedInUserGUID=$(/usr/bin/dscl . -read /Users/$loggedInUser GeneratedUID | awk '{print $2}')
 
 #Get the logged in user's FileVault status
-loggedInUserFVStatus=$(/usr/bin/fdesetup list | grep "$loggedInUser" | awk  -F, '{print $2}')
+loggedInUserFVStatus=$(/usr/bin/fdesetup list 2>/dev/null | grep "$loggedInUser" | awk  -F, '{print $2}')
 
-#Check if the deferral file exists, if not create, if it does read the value and add to a variable
-if [ ! -e /Library/Application\ Support/JAMF/.Deferral-${policyTrigger}.txt ]; then
-    touch /Library/Application\ Support/JAMF/.Deferral-${policyTrigger}.txt
-else
-    deferralTime=$(cat /Library/Application\ Support/JAMF/.Deferral-${policyTrigger}.txt)
-    echo "Deferral file present with $deferralTime seconds"
-fi
 ########################################################################
 #                            Functions                                 #
 ########################################################################
@@ -90,8 +76,8 @@ if [[ "$macModel" =~ "MacBook" ]] && [[ "$osShort" -eq "12" ]]; then
         if [[ "$mobileAccount" != "" ]]; then
           echo "${loggedInUser} has a mobile account, logout/login required"
         else
-          echo "NoMAD Login AD not installed, quitting..."
-          exit 1
+          echo "${loggedInUser} has a local account, nothing to do"
+          exit 0
         fi
     fi
 else
@@ -154,7 +140,7 @@ function performLogout ()
 {
 
 #Kill the deferal file before the login session is ended
-rm /Library/Application\ Support/JAMF/.Deferral-${policyTrigger}.txt
+rm -f /Library/Application\ Support/JAMF/.Deferral-${policyTrigger}.txt 2>/dev/null
 if [ -e /Library/Application\ Support/JAMF/.Deferral-${policyTrigger}.txt ]; then
     echo "Something went wrong, the deferral timer file is still present"
 else
@@ -177,6 +163,13 @@ if [ "$loggedInUser" == "" ]; then
   else
     fileVaultStatus
     mobileAccount
+    #Check if the deferral file exists, if not create, if it does read the value and add to a variable
+    if [ ! -e /Library/Application\ Support/JAMF/.Deferral-${policyTrigger}.txt ]; then
+        touch /Library/Application\ Support/JAMF/.Deferral-${policyTrigger}.txt
+    else
+        deferralTime=$(cat /Library/Application\ Support/JAMF/.Deferral-${policyTrigger}.txt)
+        echo "Deferral file present with $deferralTime seconds"
+    fi
     jamfHelperFullScreen
     sleep 30s
     killall jamfHelper
