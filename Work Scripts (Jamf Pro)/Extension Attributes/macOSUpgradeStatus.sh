@@ -63,6 +63,8 @@ if [[ "$osMinor" -eq "12" ]] && [[ "$macModel" =~ "MacBook" ]]; then
 	if [[ -d "$noLoADBundle" ]] && [[ "$accountStatus" == "Local" ]]; then
 		if [[ "$spaceStatus" == "OK" ]] && [[ "$mojaveInstaller" == "Found" ]]; then
       echo "<result>Upgrade Ready</result>"
+    else
+      echo "<result>Disk space:${freeSpace}GB | Installer:${mojaveInstaller} | Account status:${accountStatus}</result>"
 		fi
 	else
   	echo "<result>Disk space:${freeSpace}GB | Installer:${mojaveInstaller} | Account status:${accountStatus}</result>"
