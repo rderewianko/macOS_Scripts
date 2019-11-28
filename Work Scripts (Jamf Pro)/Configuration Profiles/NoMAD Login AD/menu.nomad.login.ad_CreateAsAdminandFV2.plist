@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+	<key>ADDomain</key>
+	<string>bauer-uk.bauermedia.group</string>
+	<key>KerberosRealm</key>
+	<string>BAUER-UK.BAUERMEDIA.GROUP</string>
+	<key>LoginLogo</key>
+	<string>/usr/local/bauer/loginwindow/Bauer-Logo-icons1.png</string>
+	<key>DemobilizeUsers</key>
+	<true/>
+	<key>LoginScreen</key>
+	<false/>
+	<key>IgnoreSites</key>
+	<true/>
+	<key>KeychainAddNoMAD</key>
+	<true/>
+	<key>KeychainCreate</key>
+	<true/>
+  <key>CreateAdminUser</key>
+  <true/>
+  <key>EnableFDE</key>
+  <true/>
+	<key>UsernameFieldPlaceholder</key>
+	<string>Bauer-UK Username</string>
+</dict>
+</plist>
