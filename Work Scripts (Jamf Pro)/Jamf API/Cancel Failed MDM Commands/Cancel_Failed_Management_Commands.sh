@@ -8,6 +8,8 @@
 ## API Username & Password
 ## Note: API account must have READ and UPDATE access to:
 ## • Computers
+## New API privilege Flush MDM Commands is also now required
+## This is found under Jamf Pro Server Actions
 
 ########################################################################
 #                            Variables                                 #
