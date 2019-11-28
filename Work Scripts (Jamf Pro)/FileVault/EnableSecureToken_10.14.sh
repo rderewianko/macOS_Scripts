@@ -24,6 +24,8 @@ adminUserPassword=$5
 adminAccount=$(dscl . list /Users | grep -v "_\|casadmin" | grep "admin" | sed -n 1p)
 # FileVault status
 fileVault=$(fdesetup status | grep "FileVault" | head -n 1)
+# DEPNotify process
+depNotify=$(ps aux | grep -v grep | grep "DEPNotify.app")
 
 ########################################################################
 #                            Functions                                 #
@@ -146,10 +148,12 @@ userFVEnabled=$(fdesetup list | grep "$loggedInUser" | sed 's/.*,//g')
 userSecureTokenStatus=$(/usr/sbin/sysadminctl -secureTokenStatus "$loggedInUser" 2>&1)
 if [[ "$userFVEnabled" == "$userGUID" ]] && [[ "$userSecureTokenStatus" =~ "ENABLED" ]]; then
 	echo "$loggedInUser has a SecureToken and is a FileVault enabled user"
-		#fdesetup remove -user "$adminUser"
+		fdesetup remove -user "$adminUser"
 		#trigger FileVault policy via a custom trigger
-		jamf policy -trigger EnableFileVaultIndividualUser
-		killall loginwindow
+		/usr/local/jamf/bin/jamf policy -trigger EnableFileVaultIndividualUser
+		echo "Updating preBoot..."
+		diskutil quiet apfs updatepreBoot /
+		#killall loginwindow
 		exit 0
 	else
 		echo "No user found to have a SecureToken, process FAILED"
@@ -161,6 +165,14 @@ if [[ "$userFVEnabled" == "$userGUID" ]] && [[ "$userSecureTokenStatus" =~ "ENAB
 ########################################################################
 #                         Script starts here                           #
 ########################################################################
+
+# Check if DEPNotify process is running
+
+if [[ "${depNotify}" != "" ]]; then
+	echo "DEPNotify process is running, try again later!"
+	exit 0
+
+else
 
 checkLoggedInUser
 checkAdminAccount
@@ -254,6 +266,8 @@ if [[ "$localAdminSecureToken" == "NoToken" ]] && [[ "$userSecureToken" == "Toke
 						echo "$loggedInUser removed from the admin group"
 					fi
 				fvDisabled
+fi
+
 fi
 
 exit 0
