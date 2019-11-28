@@ -46,7 +46,7 @@ installer -pkg /Volumes/Virtual\ Instrument\ Content/First\ AIR\ Instruments\ Bu
 #Xpand II
 installer -pkg /Volumes/Virtual\ Instrument\ Content/XPand\ II\ NoAudio.pkg -target /
 #Waves Central
-installer -pkg /usr/local/Pro\ Tools/Waves\ Central/UK_WavesCentral_11.0.40.pkg -target /
+installer -pkg /usr/local/Pro\ Tools/Waves\ Central/UK_WavesCentral_11.0.43.pkg -target /
 }
 
 function userTemplate ()
