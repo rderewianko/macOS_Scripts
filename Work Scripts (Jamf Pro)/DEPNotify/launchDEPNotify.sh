@@ -103,10 +103,10 @@ function rebindtoAD ()
   		echo "$theDomain is not reachable"
       #Add the computer name to the asset tag field in the JSS
       echo "Update Asset Tag in JSS"
-      jamf recon -assetTag "$hostName"
+      /usr/local/jamf/bin/jamf recon -assetTag "$hostName"
       #Set the computer name in JSS to match the new hostname
       echo "Update hostname in JSS"
-      jamf -setComputerName -name "$hostName"
+      /usr/local/jamf/bin/jamf -setComputerName -name "$hostName"
       exit 0
   else
   		echo "$theDomain is reachable"
@@ -118,10 +118,10 @@ function rebindtoAD ()
       /usr/local/jamf/bin/jamf bind -type ad -domain "$theDomain" -computerID "$hostName" -username "$theUser" -password "$thePass" -ou "$theOU" -cache -defaultShell /bin/bash -localHomes
       #Add the computer name to the asset tag field in the JSS
       echo "Update Asset Tag in JSS"
-      jamf recon -assetTag "$hostName"
+      /usr/local/jamf/bin/jamf recon -assetTag "$hostName"
       #Set the computer name in JSS to match the new hostname
       echo "Update hostname in JSS"
-      jamf -setComputerName -name "$hostName"
+      /usr/local/jamf/bin/jamf -setComputerName -name "$hostName"
   fi
 }
 
@@ -327,23 +327,24 @@ else
   sleep 2
 
   # Start the software deployment
-  /bin/echo "Command: Image: /var/tmp/company_logo.png" >> /var/tmp/depnotify.log
+  /bin/echo "Command: Image: /var/tmp/bauer_logo.png" >> /var/tmp/depnotify.log
   /bin/echo "Command: MainTitle: Software Installations." >> /var/tmp/depnotify.log
   /bin/echo "Status: Installing Software" >> /var/tmp/depnotify.log
   /bin/echo "Command: MainText: This process can take 10-20 minutes to complete.\n\nPlease do not turn this Mac off." >> /var/tmp/depnotify.log
-  /usr/local/bin/jamf recon
-  /usr/local/bin/jamf policy
+  /usr/local/jamf/bin/jamf recon
+  /usr/local/jamf/bin/jamf policy -event remove_temp_fv_admin
+  /usr/local/jamf/bin/jamf policy
   /bin/sleep 3
 
   # Run a Recon
   /bin/echo "Status: Updating Inventory" >> /var/tmp/depnotify.log
   /bin/echo "Command: MainText: Performing an inventory update of the device. Please wait." >> /var/tmp/depnotify.log
-  /usr/local/bin/jamf recon
+  /usr/local/jamf/bin/jamf recon
   /bin/sleep 3
 
   # Submitting information screen
   /bin/echo "Status: Waiting for a restart....." >> /var/tmp/depnotify.log
-  /bin/echo "Command: Image: /var/tmp/company_logo.png" >> /var/tmp/depnotify.log
+  /bin/echo "Command: Image: /var/tmp/bauer_logo.png" >> /var/tmp/depnotify.log
   /bin/echo "Command: MainTitle: Mac Setup Complete." >> /var/tmp/depnotify.log
   /bin/echo "Command: MainText: Rebooting to finish.\n\nEnjoy your Mac.\n\n❤️IT." >> /var/tmp/depnotify.log
   /bin/sleep 7
