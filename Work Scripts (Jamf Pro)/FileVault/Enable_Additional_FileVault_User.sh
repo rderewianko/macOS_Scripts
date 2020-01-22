@@ -80,6 +80,7 @@ end if
 EOT
 )
 if [ "$?" != "0" ]; then
+	echo "Process cancelled"
 	exit 1
 fi
 }
