@@ -27,7 +27,7 @@ installer -pkg /Volumes/Pro\ Tools/Codec\ Installers/Install\ Avid\ Codecs\ LE.p
 #HD Driver
 installer -pkg /Volumes/Pro\ Tools/Driver\ Installers/Install\ Avid\ HD\ Driver.pkg -target /
 #AvidLink Update
-installer -pkg /usr/local/Pro\ Tools/Pro\ Tools/AvidLink_2019_10_Installer.pkg -target /
+installer -pkg /usr/local/Pro\ Tools/Pro\ Tools/UK_Avid_Link_20.1.0.1090.pkg -target /
 }
 
 function userTemplate ()
