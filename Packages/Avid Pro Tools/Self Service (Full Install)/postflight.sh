@@ -80,7 +80,7 @@ installer -pkg /Volumes/Pro\ Tools/Codec\ Installers/Install\ Avid\ Codecs\ LE.p
 #HD Driver
 installer -pkg /Volumes/Pro\ Tools/Driver\ Installers/Install\ Avid\ HD\ Driver.pkg -target /
 #AvidLink Update
-installer -pkg /usr/local/Pro\ Tools/Pro\ Tools/AvidLink_2019_10_Installer.pkg -target /
+installer -pkg /usr/local/Pro\ Tools/Pro\ Tools/UK_Avid_Link_20.1.0.1090.pkg -target /
 #First AIR Effects Bundle 12
 installer -pkg /Volumes/First\ AIR\ Effects\ Bundle/Install\ First\ AIR\ Effects\ Bundle.pkg -target /
 #First AIR Instruments Bundle 12
@@ -88,7 +88,7 @@ installer -pkg /Volumes/Virtual\ Instrument\ Content/First\ AIR\ Instruments\ Bu
 #Xpand II
 installer -pkg /Volumes/Virtual\ Instrument\ Content/XPand\ II\ NoAudio.pkg -target /
 #Waves Central
-installer -pkg /usr/local/Pro\ Tools/Waves\ Central/UK_WavesCentral_11.0.43.pkg -target /
+installer -pkg /usr/local/Pro\ Tools/Waves\ Central/UK_WavesCentral_11.0.50.pkg -target /
 }
 
 function copyVirtualInstrumentContent ()
