@@ -29,8 +29,7 @@ if [ -d "/Library/Application Support/Universal Audio/Apollo/IOPresets" ]; then
 
     cd -
 
-    su "${loggedInUser}" -c "chmod 755 \"/Library/Application Support/Universal Audio/Apollo/IOPresets\""
-    su "${loggedInUser}" -c "rm -Rf \"/Library/Application Support/Universal Audio/Apollo/IOPresets\""
+    rm -Rf "/Library/Application Support/Universal Audio/Apollo/IOPresets"
 fi
 
 
