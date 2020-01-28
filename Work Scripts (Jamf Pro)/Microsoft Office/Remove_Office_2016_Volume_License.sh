@@ -31,13 +31,13 @@ pkgReceipt2=$(pkgutil --pkgs | grep "com.microsoft.pkg.licensing.volume")
 #Check for the serialiser package receipts, if one is found then remove it
 if [[ "$pkgReceipt1" != "" ]] || [[ "$pkgReceipt2" != "" ]]; then
   echo "Removing VL Serialiser V2 package receipts..."
-  pkgutil --forget "com.microsoft.pkg.licensing.volume"
-  pkgutil --forget "com.microsoft.pkg.licensing"
+  pkgutil --forget "com.microsoft.pkg.licensing.volume" >/dev/null 2>&1
+  pkgutil --forget "com.microsoft.pkg.licensing" >/dev/null 2>&1
   #re-populate variables
   pkgReceipt1=$(pkgutil --pkgs | grep "com.microsoft.pkg.licensing.volume")
   pkgReceipt2=$(pkgutil --pkgs | grep "com.microsoft.pkg.licensing")
-    if [[ "$pkgReceipt1" != "" ]] || [[ "$pkgReceipt2" != "" ]]; then
-      echo "Package receipts for VL Serialiser V2 removed"
+    if [[ "$pkgReceipt1" == "" ]] && [[ "$pkgReceipt2" == "" ]]; then
+      echo "Package receipts for VL Serialiser V2 successfully removed"
     fi
 else
   echo "Package receipts for VL Serialiser V2 not found"
