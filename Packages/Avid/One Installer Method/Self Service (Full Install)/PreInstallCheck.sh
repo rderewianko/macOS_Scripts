@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-#                  Pre-Install Checks - Pro Tools 2019                 #
+#                     Pre-Install Checks - Pro Tools                   #
 #################### Written by Phil Walker Oct 2019 ###################
 ########################################################################
 
@@ -23,9 +23,9 @@ proToolsHDDshort="$hostName Pro Tools Sessions"
 function externalHDDHelper ()
 {
 #jamf Helper to advise that an external disk for sessions and virtual instrument content has not been found
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Problem\ Reporter.app/Contents/Resources/ProblemReporter.icns -title "Message from Bauer IT" -heading "External Hard Drive for Additional Content Not Found" -description "In order for Pro Tools to be installed an external hard drive with the correct naming convention needs to be attached.
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/Problem\ Reporter.app/Contents/Resources/ProblemReporter.icns -title "Message from Bauer IT" -heading "External Hard Drive for Additional Content Not Found" -description "In order for the Pro Tools bundle to be installed, an external hard drive with the correct naming convention needs to be attached.
 
-The External drive should be formatted and named
+The external drive should be formatted and named
 ${proToolsHDDshort} " -timeout 30 -button1 "Ok" -defaultButton "1"
 }
 

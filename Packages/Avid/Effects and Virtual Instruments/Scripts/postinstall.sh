@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-#         Postinstall - Effects and Virtual Instrument Bundles         #
+#          Postinstall - Effects and Virtual Instrument Bundle         #
 #################### Written by Phil Walker Nov 2019 ###################
 ########################################################################
 
@@ -24,15 +24,15 @@ function jamfHelperCopyInProgress ()
 {
 #Show a message via Jamf Helper that the data copy is in progress
 su - $loggedInUser <<'jamfmsg1'
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "Effects and Virtual Instrument Bundles" -alignHeading natural -description "Installation in progress...
-This can take between 2 - 20 minutes to complete depending on your external hard disk" -alignDescription natural &
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "Effects and Virtual Instrument Bundle" -alignHeading natural -description "Installation in progress...
+This can take between 2-20 minutes to complete depending on your external hard disk" -alignDescription natural &
 jamfmsg1
 }
 
 function jamfHelperCopyComplete ()
 {
 #Show a message via Jamf Helper that the install has completed
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "Effects and Virtual Instrument Bundles" -description "Effects and Virtual Instrument Bundles install complete" -alignDescription natural -timeout 30 -button1 "Ok" -defaultButton "1"
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "Effects and Virtual Instrument Bundle" -description "Installation complete" -alignDescription natural -timeout 30 -button1 "Ok" -defaultButton "1"
 }
 
 function dittoWhile ()
@@ -41,7 +41,7 @@ function dittoWhile ()
 while ps axg | grep -vw grep | grep -w ditto > /dev/null;
 do
         echo "Copying data..."
-        sleep 1;
+        sleep 15;
 done
 echo "Copy finished"
 killall jamfHelper
@@ -53,6 +53,17 @@ function mountDMGs ()
 #Mount all the DMG's silently
 hdiutil mount -noverify -nobrowse /usr/local/Pro\ Tools/Virtual\ Instruments\ and\ Effects/First_AIR_Effects_Bundle_12.0_Mac.dmg
 hdiutil mount -noverify -nobrowse /usr/local/Pro\ Tools/Virtual\ Instruments\ and\ Effects/AIR\ Instruments\ and\ XPand2.dmg
+}
+
+function installPackages ()
+{
+#Install packages
+#First AIR Effects Bundle 12
+installer -pkg /Volumes/First\ AIR\ Effects\ Bundle/Install\ First\ AIR\ Effects\ Bundle.pkg -target /
+#First AIR Instruments Bundle 12
+installer -pkg /Volumes/Virtual\ Instrument\ Content/First\ AIR\ Instruments\ Bundle\ 12\ NoAudio.pkg -target /
+#Xpand II
+installer -pkg /Volumes/Virtual\ Instrument\ Content/XPand\ II\ NoAudio.pkg -target /
 }
 
 function copyVirtualInstrumentContent ()
@@ -96,6 +107,8 @@ fi
 mountDMGs
 #Copy in progress jamf Helper window
 jamfHelperCopyInProgress
+#Install packages
+installPackages
 #Copy the Effects and Virtual Instrument content
 copyVirtualInstrumentContent
 #Keep checking the copy and kill the jamf Helper window once its complete
