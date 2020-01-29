@@ -25,7 +25,7 @@ if [[ ! -e "$BitBarAD" ]] && [[ ! -e $LaunchSysPrefs ]]; then
   echo "Redundant BitBar scripts not found, nothing to do"
   exit 0
 else
-  echo "Redundant BitBar scripts found, all will be removed"
+  echo "Redundant BitBar scripts found"
 fi
 
 }
