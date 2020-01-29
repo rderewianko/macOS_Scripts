@@ -37,7 +37,7 @@ fi
 # Check ADPassword and LaunchSysPrefs scripts are present
 checkScripts
 
-echo "Removing Redundant scripts..."
+echo "Removing redundant scripts..."
 
 # Remove ADPassword script
 rm -f "$BitBarAD"
