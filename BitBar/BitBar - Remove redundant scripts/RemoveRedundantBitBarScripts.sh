@@ -22,10 +22,10 @@ function checkScripts ()
 {
 
 if [[ ! -e "$BitBarAD" ]] && [[ ! -e $LaunchSysPrefs ]]; then
-  echo "ADPassword and LaunchSysPrefs scripts not found, nothing to do"
+  echo "Redundant BitBar scripts not found, nothing to do"
   exit 0
 else
-  echo "ADPassword and LaunchSysPrefs scripts found, both will be removed"
+  echo "Redundant BitBar scripts found, all will be removed"
 fi
 
 }
@@ -37,7 +37,7 @@ fi
 # Check ADPassword and LaunchSysPrefs scripts are present
 checkScripts
 
-echo "Removing ADPassword and LaunchSysPrefs scripts..."
+echo "Removing Redundant scripts..."
 
 # Remove ADPassword script
 rm -f "$BitBarAD"
@@ -48,11 +48,11 @@ rm -f "$LaunchSysPrefs"
 echo "Checking removal was successful"
 if [[ ! -e "$BitBarAD" ]] && [[ ! -e $LaunchSysPrefs ]]; then
 
-  echo "ADPassword and LaunchSysPrefs scripts deleted successfully"
+  echo "Redundant BitBar scripts deleted successfully"
 
 else
 
-  echo "ADPassword and LaunchSysPrefs scripts removal FAILED"
+  echo "Redundant BitBar scripts removal FAILED"
   exit 1
 
 fi
