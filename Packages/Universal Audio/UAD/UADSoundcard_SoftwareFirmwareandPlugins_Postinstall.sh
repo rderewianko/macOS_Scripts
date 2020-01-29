@@ -26,7 +26,8 @@ Please contact the IT Service Desk on 0345 058 4444 for assistance" -timeout 60 
 function jamfHelperUpdateComplete ()
 {
 #Show a message via Jamf Helper that the install has completed
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "UAD Soundcard Software, Firmware and Plugins" -description "Installation complete. Your Mac will now be rebooted" -alignDescription natural -timeout 15 -button1 "Ok" -defaultButton "1"
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Library/Application\ Support/JAMF/bin/Management\ Action.app/Contents/Resources/Self\ Service.icns -title "Message from Bauer IT" -heading "UAD Soundcard Software, Firmware and Plugins" -description "Installation complete
+Your Mac will now be rebooted" -alignDescription natural -timeout 15 -button1 "Ok" -defaultButton "1"
 }
 
 ########################################################################
