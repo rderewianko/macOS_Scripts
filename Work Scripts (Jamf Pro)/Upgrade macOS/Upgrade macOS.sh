@@ -260,9 +260,11 @@ if [ "$loggedInUser" == "" ]; then
   echo "Start upgrade"
   addReconOnBoot
   echo "Removing Pre-Mojave mount network shares content..."
-  /usr/local/jamf/bin/jamf policy -trigger removemountnetworkshares
+  /usr/local/jamf/bin/jamf policy -event removemountnetworkshares
+  echo "Removing redundant BitBar scripts..."
+  /usr/local/jamf/bin/jamf policy -event removeredundantbitbarscripts
   echo "Cleaning font registration database..."
-  /usr/local/jamf/bin/jamf policy -trigger cleanfontdatabase_mojaveupgrade
+  /usr/local/jamf/bin/jamf policy -event cleanfontdatabase_mojaveupgrade
   echo "Launching startosinstall..."
   "$osInstallerLocation"/Contents/Resources/startosinstall --nointeraction --agreetolicense
   /bin/sleep 3
@@ -310,9 +312,11 @@ else
   ##Begin Upgrade
   addReconOnBoot
   echo "Removing Pre-Mojave mount network shares content..."
-  /usr/local/jamf/bin/jamf policy -trigger removemountnetworkshares
+  /usr/local/jamf/bin/jamf policy -event removemountnetworkshares
+  echo "Removing redundant BitBar scripts..."
+  /usr/local/jamf/bin/jamf policy -event removeredundantbitbarscripts
   echo "Cleaning font registration database..."
-  /usr/local/jamf/bin/jamf policy -trigger cleanfontdatabase_mojaveupgrade
+  /usr/local/jamf/bin/jamf policy -event cleanfontdatabase_mojaveupgrade
   echo "Launching startosinstall..."
   "$osInstallerLocation"/Contents/Resources/startosinstall --agreetolicense --nointeraction
   /bin/sleep 3
