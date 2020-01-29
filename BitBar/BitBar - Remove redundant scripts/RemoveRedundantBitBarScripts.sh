@@ -21,7 +21,7 @@ LaunchSysPrefs="/usr/local/launchSysPrefstoUserPane.sh"
 function checkScripts ()
 {
 
-if [[ ! -a "$BitBarAD" ]] && [[ ! -a $LaunchSysPrefs ]]; then
+if [[ ! -e "$BitBarAD" ]] && [[ ! -e $LaunchSysPrefs ]]; then
   echo "ADPassword and LaunchSysPrefs scripts not found, nothing to do"
   exit 0
 else
@@ -46,7 +46,7 @@ rm -f "$LaunchSysPrefs"
 
 # Check removal was successful
 echo "Checking removal was successful"
-if [[ ! -a "$BitBarAD" ]] && [[ ! -a $LaunchSysPrefs ]]; then
+if [[ ! -e "$BitBarAD" ]] && [[ ! -e $LaunchSysPrefs ]]; then
 
   echo "ADPassword and LaunchSysPrefs scripts deleted successfully"
 
