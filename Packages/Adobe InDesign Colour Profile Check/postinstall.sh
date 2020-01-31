@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-#               Install Papermule Adobe InDesign plugin                #
+#               Papermule InDesign CC plugin installation              #
 #                   Written by Phil Walker Jan 2020                    #
 ###################### postinstall script ##############################
 ########################################################################
