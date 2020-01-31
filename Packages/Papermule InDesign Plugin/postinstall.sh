@@ -2,7 +2,7 @@
 
 ########################################################################
 #               Papermule InDesign CC plugin installation              #
-#                   Created by Phil Walker Oct 2018                    #
+#                   Written by Phil Walker Jan 2020                    #
 ###################### postinstall script ##############################
 ########################################################################
 
@@ -11,20 +11,36 @@
 ########################################################################
 
 #Find which versions of InDesign are installed
-ADOBEINDESIGN=$(find /Applications/Adobe\ InDesign\ CC*/Scripts/startup\ scripts/ -type d -maxdepth 0 > /tmp/InDesignInstalls.txt)
+adobeInDesign=$(find /Applications/Adobe\ InDesign*/Scripts/startup\ scripts/ -type d -maxdepth 0 > /tmp/InDesignInstalls.txt)
 #Script temp location
-STARTUPSCRIPT="/usr/local/Papermule/PapermuleIDCS4XTLSupportV1.jsx"
+startupScript="/usr/local/Papermule/PapermuleIDCS4XTLSupportV1.jsx"
+
+########################################################################
+#                            Functions                                 #
+########################################################################
+
+function cleanUp ()
+{
+#Clean up temporary files and directories
+if [[ ! -f "/tmp/InDesignInstalls.txt" ]] && [[ ! -d "/usr/local/Papermule" ]]; then
+  echo "All temporary files and directories removed"
+else
+  echo "Clean up failed, manual clean up required"
+fi
+}
 
 ########################################################################
 #                         Script starts here                           #
 ########################################################################
 
-while read LINE; do
-cp -pf "$STARTUPSCRIPT" "$LINE"
-echo "Copying Papermule script to $LINE..."
+while read line; do
+cp -pf "$startupScript" "$line"
+echo "Copied Papermule script to $line..."
 done < /tmp/InDesignInstalls.txt
 
-rm -rf /tmp/InDesignInstalls.txt
-rm -rf /usr/local/Papermule
+rm -f /tmp/InDesignInstalls.txt
+rm -f /usr/local/Papermule
+
+cleanUp
 
 exit 0
