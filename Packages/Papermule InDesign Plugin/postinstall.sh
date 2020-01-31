@@ -39,7 +39,7 @@ echo "Copied Papermule script to $line..."
 done < /tmp/InDesignInstalls.txt
 
 rm -f /tmp/InDesignInstalls.txt
-rm -f /usr/local/Papermule
+rm -rf /usr/local/Papermule
 
 cleanUp
 

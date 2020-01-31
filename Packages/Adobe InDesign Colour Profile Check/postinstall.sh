@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-#               Papermule InDesign CC plugin installation              #
+#             Install Adobe InDesign Colour Profile Check              #
 #                   Written by Phil Walker Jan 2020                    #
 ###################### postinstall script ##############################
 ########################################################################
@@ -13,7 +13,7 @@
 #Find which versions of InDesign are installed
 adobeInDesign=$(find /Applications/Adobe\ InDesign*/Scripts/startup\ scripts/ -type d -maxdepth 0 > /tmp/InDesignInstalls.txt)
 #Script temp location
-startupScript="/usr/local/Papermule/PapermuleIDCS4XTLSupportV1.jsx"
+startupScript="/usr/local/ColourProfileCheck/InDesign_CC_Colour_Profile_Check.scpt"
 
 ########################################################################
 #                            Functions                                 #
@@ -22,7 +22,7 @@ startupScript="/usr/local/Papermule/PapermuleIDCS4XTLSupportV1.jsx"
 function cleanUp ()
 {
 #Clean up temporary files and directories
-if [[ ! -f "/tmp/InDesignInstalls.txt" ]] && [[ ! -d "/usr/local/Papermule" ]]; then
+if [[ ! -f "/tmp/InDesignInstalls.txt" ]] && [[ ! -d "/usr/local/ColourProfileCheck" ]]; then
   echo "All temporary files and directories removed"
 else
   echo "Clean up failed, manual clean up required"
@@ -39,7 +39,7 @@ echo "Copied Papermule script to $line..."
 done < /tmp/InDesignInstalls.txt
 
 rm -f /tmp/InDesignInstalls.txt
-rm -f /usr/local/Papermule
+rm -rf /usr/local/ColourProfileCheck
 
 cleanUp
 
