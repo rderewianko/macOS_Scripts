@@ -16,7 +16,7 @@ macModelFull=$(system_profiler SPHardwareDataType | grep "Model Name" | sed 's/M
 OSFull=$(sw_vers -productVersion)
 OSShort=$(sw_vers -productVersion | awk -F. '{print $2}')
 # Get hibernate mode status
-hibernateMode=$(pmset -g | grep "hibernatemode" | awk '{ print $2 }')
+hibernateModeStatus=$(pmset -g | grep "hibernatemode" | awk '{ print $2 }')
 # Get standby mode status
 standbyStatus=$(pmset -g | grep -v "standbydelayhigh\|standbydelaylow\|highstandbythreshold" | grep "standby" | awk '{ print $2 }')
 # Get standbydelaylow status
