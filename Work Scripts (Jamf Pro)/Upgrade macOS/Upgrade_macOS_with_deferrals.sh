@@ -92,7 +92,7 @@ HELPER_CONFIRM=$(
 
 Your Mac will restart once complete!
 
-Please save all of your work before clicking install" -lockHUD -timeout 7200 -countdown -alignCountdown center -button1 "Install" -defaultButton "1"
+Please save all of your work before clicking install" -timeout 7200 -countdown -alignCountdown center -button1 "Install" -defaultButton "1"
 )
 }
 
