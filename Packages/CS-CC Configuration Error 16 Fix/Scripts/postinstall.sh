@@ -31,9 +31,10 @@ PCDCacheperms=$(find "/Library/Application Support/Adobe/Adobe PCD/cache/" -type
 #                            Functions                                 #
 ########################################################################
 
-function cleanUp() {
+function cleanUp ()
+{
 #Cleanup installation files
-rm -R "$tmp"
+rm -Rf "$tmp"
 if [ ! -e $tmp ] ; then
   echo "Cleanup complete"
 else
@@ -42,37 +43,38 @@ fi
 
 }
 
-function permissionsChange() {
+function permissionsChange ()
+{
 #set correct permissions
 chmod -R 755 "$PCD"
 chown -R root:admin "$PCD"
 chmod -R 777 "$SLStore"
 chown -R root:admin "$SLStore"
 chmod -R 777 "$PCDCache"
-
 }
 
-function replaceDirectories() {
+function replaceDirectories ()
+{
 #Remove and replace the Adobe licensing folders (CS6 Design Standard only)
 echo "Replacing Adobe PCD & SLStore folders..."
-  rm -R "$PCD" 2>/dev/null
-  rm -R "$SLStore" 2>/dev/null
+  rm -Rf "$PCD" 2>/dev/null
+  rm -Rf "$SLStore" 2>/dev/null
   ditto "$tmp" /Library/Application\ Support/Adobe
-
 }
 
-function checkPermissions() {
+function checkPermissions ()
+{
 #check permissions have been set correctly
 if [[ "$PCDperms" == 0 ]] && [[ "$SLStoreperms" == 0 ]] && [[ "$PCDCacheperms" == 0 ]] ; then
-  echo "Permissions not set correctly on Adobe licensing folders"
+  echo "Permissions not set correctly on Adobe licensing folders - Please reinstall the product"
   exit 1
 else
   echo "Correct permissions set on Adobe licensing folders - REBOOT REQUIRED"
 fi
-
 }
 
-function checkDirectories() {
+function checkDirectories ()
+{
 #check if Adobe licensing folders are present
 if [[ -e "$PCD" && -e "$SLStore" ]] ; then
   echo "Adobe licensing folders found"
@@ -81,51 +83,47 @@ else
   cleanUp
   exit 1
 fi
-
 }
 
-function checkDirectoryReplacement() {
+function checkDirectoryReplacement ()
+{
 #check if Adobe licensing folders are present after replacement
 if [[ -e "$PCD" && -e "$SLStore" ]] ; then
   echo "Adobe licensing folders successfully replaced"
 else
-  echo "Adobe licensing folders not found - replacement failed"
+  echo "Adobe licensing folders not found, replacement failed - Please reinstall the product"
   cleanUp
   exit 1
 fi
-
 }
 
-function additionalAdobeApps() {
+function additionalAdobeApps ()
+{
 #Commands to run when CS6 Design Standard isnt found or is found alongside additional Adobe Apps
 checkDirectories
 permissionsChange
 checkPermissions
 cleanUp
-exit 0
-
 }
 
-function designStandardOnly() {
+function designStandardOnly ()
+{
 #Commands to run when only CS6 Design Standard is found
 checkDirectories
 replaceDirectories
 checkDirectoryReplacement
 checkPermissions
 cleanUp
-exit 0
-
 }
 
-function adobeApp() {
+function adobeApp ()
+{
 #Check if CS6 Design Standard is installed but no app has ever been succesfully launched
 if [[ "$CS_CC" -eq "0" ]] && [[ "$CS6" -eq "6" ]]; then
   echo "Adobe CS6 Design Standard installed but no app successfully launched (no additional CS or CC Apps found)"
   designStandardOnly
   cleanUp
-  exit 0
 fi
-
 }
 
 

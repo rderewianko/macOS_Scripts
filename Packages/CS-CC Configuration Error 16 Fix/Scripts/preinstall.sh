@@ -20,8 +20,8 @@ CC=$(ls /Applications/ | grep -i "CC" 2>/dev/null | wc -l)
 #Check for any CS or CC App in /Applications
 if [[ "$CS6" -eq "0" ]] && [[ "$CC" -eq "0" ]] ; then
   echo "No Adobe CS6 or CC Apps found in /Applications"
-      exit 1
-    else
-      echo "Adobe CS or CC Apps found, continuing....."
-      exit 0
+  exit 1
+else
+  echo "Adobe CS or CC Apps found, continuing....."
+  exit 0
 fi
