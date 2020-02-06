@@ -136,7 +136,8 @@ function checkPower ()
 {
 ##Check if device is on battery or ac power
 pwrAdapter=$( /usr/bin/pmset -g ps )
-if [[ ${pwrAdapter} =~ "AC Power" ]]; then
+batteryPercentage=$(/usr/bin/pmset -g ps | grep -i "InternalBattery" | awk '{print $3}' | cut -c1-3)
+if [[ ${pwrAdapter} =~ "AC Power" ]] || [[ ${batteryPercentage} -ge "60" ]]; then
 	pwrStatus="OK"
 	echo "Power Check: OK - AC Power Detected"
 else
