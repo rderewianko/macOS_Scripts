@@ -14,10 +14,8 @@ deferralOption1="600"
 deferralOption2="3600"
 deferralOption3="10800"
 deferralOption4="28800"
-
 #Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
-
 #Get the hostname
 hostName=$(scutil --get HostName)
 
