@@ -11,8 +11,10 @@
 
 #Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
+
 #Get the hostname
 hostName=$(scutil --get HostName)
+
 #Get a list of users who are in the admin group
 adminUsers=$(dscl . -read Groups/admin GroupMembership | cut -c 18-)
 
