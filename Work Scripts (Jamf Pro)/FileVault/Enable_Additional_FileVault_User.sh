@@ -31,7 +31,7 @@ echo "Prompting for a FileVault enabled user's username"
 fvEnabledUser=$(su - $loggedInUser -c /usr/bin/osascript << EOT
 
 set fv_user_name to display dialog ¬
-	"Please enter the username of a FileVault enabled user" with title ¬
+	"Please enter the username of a FileVault enabled user (all lowercase)" with title ¬
 	"Bauer IT" with icon file "System:Library:CoreServices:CoreTypes.bundle:Contents:Resources:FileVaultIcon.icns" ¬
 	default answer ¬
 	"" buttons {"Cancel", "Continue"} default button 2 cancel button 1 ¬
