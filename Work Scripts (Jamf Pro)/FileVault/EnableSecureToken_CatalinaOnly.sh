@@ -4,6 +4,7 @@
 #       Grant a SecureToken to the logged in user (10.15 only)         #
 ################### Written by Phil Walker Jan 2020 ####################
 ########################################################################
+
 # Required when the standard process has not been followed, resulting in
 # the management account being the only user with a SecureToken
 
@@ -12,7 +13,7 @@
 ########################################################################
 
 # Get the logged in user
-loggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+loggedInUser=$(stat -f %Su /dev/console)
 # Get the logged in users GUID
 userGUID=$(/usr/bin/dscl . -read /Users/$loggedInUser GeneratedUID | awk '{print $2}')
 # Check if the logged in user is FileVault enabled already
@@ -27,17 +28,6 @@ fileVault=$(/usr/bin/fdesetup status | grep "FileVault" | head -n 1)
 ########################################################################
 #                            Functions                                 #
 ########################################################################
-
-function checkLoggedInUser ()
-{
-# Confirm the logged in user is not _mbsetupuser before continuing
-if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "_mbsetupuser" ]]; then
-	echo "No user logged in"
-	exit 1
-else
-		echo "$loggedInUser is logged in"
-fi
-}
 
 function checkAdminSecureToken()
 {
@@ -82,7 +72,7 @@ function checkManagementAccount()
 {
 # Confirm that the management account is no longer a FileVault enabled user
 # Get the management account user GUID
-managementGUID=$(/usr/bin/dscl . -read /Users/casadmin GeneratedUID | awk '{print $2}')
+managementGUID=$(/usr/bin/dscl . -read /Users/${adminUser} GeneratedUID | awk '{print $2}')
 # List FileVault enabled users
 fvEnabled=$(/usr/bin/fdesetup list)
 if [[ "$fvEnabled" =~ "$managementGUID" ]]; then
@@ -156,7 +146,6 @@ Please contact the IT Service Desk for assistance"  -button1 "OK" -defaultButton
 #                         Script starts here                           #
 ########################################################################
 
-checkLoggedInUser
 checkAdminSecureToken
 checkUserSecureToken
 checkFileVault
