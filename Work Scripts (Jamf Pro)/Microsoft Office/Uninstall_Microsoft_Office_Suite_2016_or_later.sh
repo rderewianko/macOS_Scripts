@@ -1,9 +1,29 @@
 #!/bin/bash
 
 ########################################################################
-#       Uninstall Microsoft Office 2016/2019 and all preferences       #
+#  Uninstall Microsoft Office 2016/2019/365 Suite and all preferences  #
 #################### Written by Phil Walker August #####################
 ########################################################################
+
+########################################################################
+#                             Functions                                #
+########################################################################
+
+function removeMAU ()
+{
+#Only remove MAU if no other app is dependent on it for updates
+mauApps=$(ls /Applications/ | grep -i "Microsoft" | grep -i "Edge\|Remote\|Defender\|Portal")
+if [[ "$mauApps" != "" ]]; then
+	echo "Microsoft Auto Update required by other applications so will not be removed"
+else
+	echo "Removing Microsoft Auto Update..."
+	rm -rf /Library/Application\ Support/Microsoft/MAU2.0
+	rm -f /Library/LaunchAgents/com.microsoft.update.agent.plist
+	rm -f /Library/Preferences/com.microsoft.autoupdate2.plist
+	pkgutil --forget com.microsoft.package.Microsoft_AutoUpdate.app
+	pkgutil --forget com.microsoft.package.Microsoft_AU_Bootstrapper.app
+fi
+}
 
 ########################################################################
 #                         Script starts here                           #
@@ -11,35 +31,35 @@
 
 # Check if Office 2016/2019 is installed
 
-	if [[ -d /Applications/Microsoft\ Word.app/ ]]; then
+if [[ -d /Applications/Microsoft\ Word.app/ ]]; then
 
 		rm -rf "/Applications/Microsoft Excel.app"
 		rm -rf "/Applications/Microsoft OneNote.app"
-    	rm -rf "/Applications/Microsoft Outlook.app"
-    	rm -rf "/Applications/Microsoft PowerPoint.app"
-    	rm -rf "/Applications/Microsoft Word.app"
-			rm -rf "/Applications/OneDrive.app"
-			rm -rf "/Applications/Skype\ for\ Business.app"
+    rm -rf "/Applications/Microsoft Outlook.app"
+    rm -rf "/Applications/Microsoft PowerPoint.app"
+    rm -rf "/Applications/Microsoft Word.app"
+		rm -rf "/Applications/OneDrive.app"
+		rm -rf "/Applications/Microsoft Teams.app"
 
-    	echo "Office 2016/2019 apps removed"
+    	echo "Office 2016/2019/365 apps removed"
 
 else
 
-		echo "Office 2016/2019 apps not found"
+		echo "Office 2016/2019/365 apps not found"
 
 fi
 
-# Remove Office 2016 license file
+# Remove Office 2016 volume license file
 
 	if [ -e "/Library/Preferences/com.microsoft.office.licensingV2.plist" ]; then
 
-	rm /Library/Preferences/com.microsoft.office.licensingV2.plist
+	rm -f /Library/Preferences/com.microsoft.office.licensingV2.plist
 
-    	echo "license file removed"
+    	echo "Office 2016 volume license file removed"
 
 else
 
-    	echo "license file not found"
+    	echo "Office 2016 volume license file not found"
 
 fi
 
@@ -114,18 +134,19 @@ cat "$tmp_users" | while read the_user; do
 		rm -rf /$user_home/Library/Application\ Scripts/com.microsoft.errorreporting
 		rm -rf /$user_home/Library/Application\ Scripts/com.microsoft.Outlook
 
-		rm /$user_home/Library/Preferences/com.microsoft.autoupdate.fba.plist
-		rm /$user_home/Library/Preferences/com.microsoft.onenote.mac.plist
-		rm /$user_home/Library/Preferences/com.microsoft.Outlook.plist
-		rm /$user_home/Library/Preferences/com.microsoft.autoupdate2.plist
-		rm /$user_home/Library/Preferences/com.microsoft.OneDrive.plist
-		rm /$user_home/Library/Preferences/com.microsoft.SkypeForBusiness.plist
-		rm /$user_home/Library/Preferences/com.microsoft.Excel.plist
-		rm /$user_home/Library/Preferences/com.microsoft.office.plist
-		rm /$user_home/Library/Preferences/com.microsoft.Powerpoint.plist
-		rm /$user_home/Library/Preferences/com.microsoft.Word.plist
-		rm /$user_home/Library/Preferences/com.microsoft.OutlookSkypeIntegration.plist
-		rm /$user_home/Library/Preferences/com.microsoft.OneDriveUpdater.plist
+		rm -f /$user_home/Library/Preferences/com.microsoft.autoupdate.fba.plist
+		rm -f /$user_home/Library/Preferences/com.microsoft.onenote.mac.plist
+		rm -f /$user_home/Library/Preferences/com.microsoft.Outlook.plist
+		rm -f /$user_home/Library/Preferences/com.microsoft.autoupdate2.plist
+		rm -f /$user_home/Library/Preferences/com.microsoft.OneDrive.plist
+		rm -f /$user_home/Library/Preferences/com.microsoft.SkypeForBusiness.plist
+		rm -f /$user_home/Library/Preferences/com.microsoft.Excel.plist
+		rm -f /$user_home/Library/Preferences/com.microsoft.office.plist
+		rm -f /$user_home/Library/Preferences/com.microsoft.Powerpoint.plist
+		rm -f /$user_home/Library/Preferences/com.microsoft.Word.plist
+		rm -f /$user_home/Library/Preferences/com.microsoft.OutlookSkypeIntegration.plist
+		rm -f /$user_home/Library/Preferences/com.microsoft.OneDriveUpdater.plist
+		rm -rf /$user_home/Library/Preferences/ByHost/com.microsoft*
 
 		rm -rf /$user_home/Library/WebKit/com.microsoft.*
 
@@ -153,6 +174,7 @@ fi
 			rm -rf /$user_home/Library/Group\ Containers/UBF8T346G9.OfficeOneDriveSyncIntegration
     	rm -rf /$user_home/Library/Group\ Containers/UBF8T346G9.OfficeOsfWebHost
 			rm -rf /$user_home/Library/Group\ Containers/UBF8T346G9.OneDriveStandaloneSuite
+			rm -rf /$user_home/Library/Group\ Containers/UBF8T346G9.OneDriveSyncClientSuite
 
 
         echo "Group Container Cleaned"
@@ -167,42 +189,43 @@ done
 
 # Remove System Library files
 
-		rm -rf /Library/Application\ Support/Microsoft/MAU2.0
-   		rm -rf /Library/Fonts/Microsoft
-			rm /Library/LaunchAgents/com.microsoft.update.agent.plist
-    	rm /Library/LaunchDaemons/com.microsoft.office.licensing.helper.plist
-    	rm /Library/LaunchDaemons/com.microsoft.office.licensingV2.helper.plist
-			rm /Library/LaunchDaemons/com.microsoft.OneDriveUpdaterDaemon.plist
-    	rm /Library/Preferences/com.microsoft.Excel.plist
-    	rm /Library/Preferences/com.microsoft.office.plist
-    	rm /Library/Preferences/com.microsoft.office.setupassistant.plist
-    	rm /Library/Preferences/com.microsoft.outlook.databasedaemon.plist
-    	rm /Library/Preferences/com.microsoft.outlook.office_reminders.plist
-    	rm /Library/Preferences/com.microsoft.Outlook.plist
-    	rm /Library/Preferences/com.microsoft.PowerPoint.plist
-    	rm /Library/Preferences/com.microsoft.Word.plist
-    	rm /Library/Preferences/com.microsoft.office.licensingV2.plist
-    	rm /Library/Preferences/com.microsoft.autoupdate2.plist
-    	rm -rf /Library/Preferences/ByHost/com.microsoft
-    	rm -rf /Library/Receipts/Office2016_*
-			rm -rf /Library/Receipts/Office2019_*
-    	rm /Library/PrivilegedHelperTools/com.microsoft.office.licensing.helper
-    	rm /Library/PrivilegedHelperTools/com.microsoft.office.licensingV2.helper
+			rm -rf /Library/Fonts/Microsoft
+    	rm -f /Library/LaunchDaemons/com.microsoft.office.licensing.helper.plist
+    	rm -f /Library/LaunchDaemons/com.microsoft.office.licensingV2.helper.plist
+			rm -f /Library/LaunchDaemons/com.microsoft.OneDriveUpdaterDaemon.plist
+    	rm -f /Library/Preferences/com.microsoft.Excel.plist
+    	rm -f /Library/Preferences/com.microsoft.office.plist
+    	rm -f /Library/Preferences/com.microsoft.office.setupassistant.plist
+    	rm -f /Library/Preferences/com.microsoft.outlook.databasedaemon.plist
+    	rm -f /Library/Preferences/com.microsoft.outlook.office_reminders.plist
+    	rm -f /Library/Preferences/com.microsoft.Outlook.plist
+    	rm -f /Library/Preferences/com.microsoft.PowerPoint.plist
+    	rm -f /Library/Preferences/com.microsoft.Word.plist
+    	rm -f /Library/PrivilegedHelperTools/com.microsoft.office.licensing.helper
+    	rm -f /Library/PrivilegedHelperTools/com.microsoft.office.licensingV2.helper
 
     	echo "System folders Cleaned"
 
-    	echo "Making the Mac forget about Office 2016/2019"
+    	echo "Removing Office 2016/2019 package receipts"
 
-		pkgutil --forget com.microsoft.package.Fonts
-		pkgutil --forget com.microsoft.package.Microsoft_AutoUpdate.app
-		pkgutil --forget com.microsoft.package.Microsoft_Excel.app
-		pkgutil --forget com.microsoft.package.Microsoft_OneNote.app
-		pkgutil --forget com.microsoft.package.Microsoft_Outlook.app
-		pkgutil --forget com.microsoft.package.Microsoft_PowerPoint.app
-		pkgutil --forget com.microsoft.package.Microsoft_Word.app
-		pkgutil --forget com.microsoft.package.Proofing_Tools
-		pkgutil --forget com.microsoft.package.licensing
+			pkgutil --forget com.microsoft.package.Fonts
+			pkgutil --forget com.microsoft.package.DFonts
+			pkgutil --forget com.microsoft.pkg.licensing.volume >/dev/null 2>&1
+			pkgutil --forget com.microsoft.pkg.licensing >/dev/null 2>&1
+			pkgutil --forget com.microsoft.package.Microsoft_Excel.app
+			pkgutil --forget com.microsoft.package.Microsoft_OneNote.app
+			pkgutil --forget com.microsoft.package.Microsoft_Outlook.app
+			pkgutil --forget com.microsoft.package.Microsoft_PowerPoint.app
+			pkgutil --forget com.microsoft.package.Microsoft_Word.app
+			pkgutil --forget com.microsoft.OneDrive
+			pkgutil --forget com.microsoft.SkypeForBusiness
+			pkgutil --forget com.microsoft.package.Proofing_Tools
+			pkgutil --forget com.microsoft.package.licensing
+			pkgutil --forget com.microsoft.pkg.licensing
+			pkgutil --forget com.microsoft.package.Frameworks
+			pkgutil --forget com.microsoft.teams
+			pkgutil --forget microsoftskypeforbusinesssetdefaulttelephony
 
-        echo "All done! Microsoft Silverlight might need reinstalling"
+      echo "All done!"
 
 exit 0

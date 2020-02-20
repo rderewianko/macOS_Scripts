@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AutofillCreditCardEnabled</key>
+	<false/>
+	<key>BackgroundModeEnabled</key>
+	<false/>
+	<key>ConfigureDoNotTrack</key>
+	<true/>
+	<key>DefaultBrowserSettingEnabled</key>
+	<false/>
+	<key>DefaultSearchProviderEnabled</key>
+	<true/>
+	<key>DefaultSearchProviderName</key>
+	<string>Google</string>
+	<key>DefaultSearchProviderSearchURL</key>
+	<string>{google:baseURL}search?q={searchTerms}</string>
+	<key>ExtensionInstallBlocklist</key>
+	<array>
+			<string>emfinbmielocnlhgmfkkmkngdoccbadn</string><!--ARC Welder-->
+			<string>omdakjcmkglenbhjadbccaookpfjihpa</string><!-- TunnelBear-->
+			<string>gkojfkhlekighikafcpjkiklfbnlmeio</string><!-- VPN-->
+			<string>ffbkglfijbcbgblgflchnbphjdllaogb</string><!--VPN-->
+			<string>goimpaiignmlnmdnpnkbbjoophmbebhp</string><!--Tor-->
+			<string>kjoabfljeghcinlpjhdbdfbcflapkccm</string><!--Tor-->
+			<string>hfddekpiekhlkkgeaobcdkeonpkinipo</string><!--Tor-->
+	</array>
+	<key>ImportPaymentInfo</key>
+	<false/>
+	<key>MetricsReportingEnabled</key>
+	<false/>
+	<key>NewTabPageHideDefaultTopSites</key>
+	<true/>
+	<key>PaymentMethodQueryEnabled</key>
+	<false/>
+	<key>PopupsAllowedForUrls</key>
+	<array>
+			<string>[*.]adp.com</string><!--HR.Net-->
+	</array>
+	<key>SendSiteInfoToImproveServices</key>
+	<false/>
+	<key>ShowHomeButton</key>
+	<true/>
+	<key>SitePerProcess</key>
+	<true/>
+	<key>SmartScreenEnabled</key>
+	<true/>
+	<key>SyncDisabled</key>
+	<false/>
+	<key>TrackingPrevention</key>
+	<integer>3</integer>
+	<key>UserFeedbackAllowed</key>
+	<false/>
+</dict>
+</plist>

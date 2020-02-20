@@ -15,7 +15,7 @@
 ########################################################################
 
 # Get the logged in user
-loggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+loggedInUser=$(stat -f %Su /dev/console)
 #Get the logged user's real name
 RealName=$(dscl . -read /Users/$loggedInUser | grep -A1 "RealName:" | sed -n '2p' | awk '{print $1, $2}' | sed s/,//)
 # FileVault status
@@ -80,7 +80,6 @@ end if
 EOT
 )
 if [ "$?" != "0" ]; then
-	echo "Process cancelled"
 	exit 1
 fi
 }
@@ -117,13 +116,13 @@ fi
 function loggedInUserStatus ()
 {
 # Get the logged in users GUID
-localUserGUID=$(/usr/bin/dscl . -read /Users/$loggedInUser GeneratedUID | awk '{print $2}')
+loggedInUserGUID=$(/usr/bin/dscl . -read /Users/$loggedInUser GeneratedUID | awk '{print $2}')
 # Get the logged in user's SecureToken status
-localUserSecureToken=$(/usr/sbin/sysadminctl -secureTokenStatus "$loggedInUser" 2>&1)
+loggedInUserSecureToken=$(/usr/sbin/sysadminctl -secureTokenStatus "$loggedInUser" 2>&1)
 # Get the logged in user's FileVault status
-localUserFVStatus=$(/usr/bin/fdesetup list | grep "$loggedInUser" | awk  -F, '{print $2}')
+loggedInUserFVStatus=$(/usr/bin/fdesetup list | grep "$loggedInUser" | awk  -F, '{print $2}')
 
-if [[ "$localUserSecureToken" =~ "ENABLED" ]] && [[ "$localUserGUID" == "$localUserFVStatus" ]]; then
+if [[ "$loggedInUserSecureToken" =~ "ENABLED" ]] && [[ "$loggedInUserGUID" == "$loggedInUserFVStatus" ]]; then
   echo "$loggedInUser already has a SecureToken and is a FileVault enabled user, nothing to do"
   	jamfHelperNothingToDo
   exit 0
@@ -137,13 +136,13 @@ fi
 function postLoggedInUserCheck ()
 {
 # Get the logged in users GUID
-localUserGUID=$(/usr/bin/dscl . -read /Users/$loggedInUser GeneratedUID | awk '{print $2}')
+loggedInUserGUID=$(/usr/bin/dscl . -read /Users/$loggedInUser GeneratedUID | awk '{print $2}')
 # Get the logged in user's SecureToken status
-localUserSecureToken=$(/usr/sbin/sysadminctl -secureTokenStatus "$loggedInUser" 2>&1)
+loggedInUserSecureToken=$(/usr/sbin/sysadminctl -secureTokenStatus "$loggedInUser" 2>&1)
 # Get the logged in user's FileVault status
-localUserFVStatus=$(/usr/bin/fdesetup list | grep "$loggedInUser" | awk  -F, '{print $2}')
+loggedInUserFVStatus=$(/usr/bin/fdesetup list | grep "$loggedInUser" | awk  -F, '{print $2}')
 
-if [[ "$localUserSecureToken" =~ "ENABLED" ]] && [[ "$localUserGUID" == "$localUserFVStatus" ]]; then
+if [[ "$loggedInUserSecureToken" =~ "ENABLED" ]] && [[ "$loggedInUserGUID" == "$loggedInUserFVStatus" ]]; then
   echo "$loggedInUser now has a SecureToken and is a FileVault enabled user!"
   echo "Updating preBoot..."
   	diskutil quiet apfs updatepreBoot /

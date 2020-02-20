@@ -10,7 +10,7 @@
 ########################################################################
 
 #Get the logged in user
-loggedInUser=$(stat -f %Su /dev/console)
+loggedInUser=$(scutil <<< "show State:/Users/ConsoleUser" | awk '/Name :/ && ! /loginwindow/ { print $3 }')
 
 #Get the hostname
 hostName=$(scutil --get HostName)
