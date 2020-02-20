@@ -85,7 +85,7 @@ while read ComputerID; do
           echo "$computerName is lost or stolen"
           echo "Deleting computer record for $computerName..."
           #Export the computer details to a file for reference
-          curl -H "Accept: text/xml" -sfku "${apiuser}:${apipass}" "${jssurl}/JSSResource/computers/id/$ComputerID" 2>/dev/null | xmllint --format --xpath  "/computer/general/name | /computer/general/serial_number | /computer/location/department" - | awk -F'>|<' '{print $3,$7,$11}' >> /var/tmp/Lost_or_Stolen_Computers.txt
+          curl -H "Accept: text/xml" -sfku "${apiuser}:${apipass}" "${jssurl}/JSSResource/computers/id/$ComputerID" 2>/dev/null | xmllint --format --xpath  "/computer/general/name | /computer/general/serial_number | /computer/location/department| /computer/location/username" - | awk -F'>|<' '{print $11,$3,$7,$15}' >> /var/tmp/Lost_or_Stolen_Computers.txt
           curl -sfku "${apiuser}:${apipass}" "${jssurl}/JSSResource/computers/id/$ComputerID" -X DELETE | xmllint --format - | awk -F'>|<' '/<id>/{print $3}' &>/dev/null
   fi
 done < <(echo "$allComputerIDs")
