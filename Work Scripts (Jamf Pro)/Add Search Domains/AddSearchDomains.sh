@@ -10,24 +10,47 @@
 ########################################################################
 
 #Identify Hardware
-MacModel=$(ioreg -rd1 -c IOPlatformExpertDevice | awk -F'["|"]' '/model/{print $4}' | sed 's/[0-9]*//g;s/,//g')
+macModel=$(sysctl -n hw.model)
+macModelFriendly=$(system_profiler SPHardwareDataType | grep "Model Name" | sed 's/Model Name: //' | xargs)
 #Identify current network service
 currentService=$(networksetup -listallhardwareports | grep -C1 $(route get default | grep interface | awk '{print $2}') | grep "Hardware Port" | sed 's/Hardware Port: //')
 
-#Get the IP
-theLoc=`ifconfig | awk '/inet[^6]/{split($2,ip,".");theip=ip[1] "." ip[2] ".";$0=theip}
+#Specify location based on IP address
+theLoc=$(ifconfig | awk '/inet[^6]/{split($2,ip,".");theip=ip[1] "." ip[2] ".";$0=theip}
 
-	$0 == "10.1."	{print "London"}
-	$0 == "10.3."	{print "London"}
-	$0 == "10.101."	{print "London"}
-	$0 == "10.102."	{print "London"}
-	$0 == "172.26."	{print "London"}
+$0 == "10.1." {print "London (Wi-Fi)"}
+$0 == "172.26." {print "London"}
 
-	$0 == "10.96."  {print "Peterborough"}
-	$0 == "10.116."	{print "Peterborough"}
-	$0 == "10.168." {print "Peterborough"}
+$0 == "10.96." {print "Peterborough"}
+$0 == "10.168." {print "Peterborough"}
 
-' | head -n 1`
+$0 == "10.176." {print "One Golden Square"}
+
+$0 == "10.38." {print "Nottingham"}
+$0 == "10.52." {print "Stockton"}
+$0 == "10.54." {print "Sheffield"}
+$0 == "10.55." {print "Leeds"}
+$0 == "10.56." {print "Manchester"}
+$0 == "10.57." {print "Preston"}
+$0 == "10.58." {print "Newcastle"}
+$0 == "10.59." {print "Liverpool"}
+$0 == "10.60." {print "Worcester"}
+$0 == "10.65." {print "Inverness"}
+$0 == "10.66." {print "Glasgow"}
+$0 == "10.67." {print "Aberdeen"}
+$0 == "10.68." {print "Edinburgh"}
+$0 == "10.69." {print "Birmingham"}
+$0 == "10.70." {print "Dundee"}
+$0 == "10.71." {print "Ayr"}
+$0 == "10.72." {print "Carlisle"}
+$0 == "10.73." {print "Belfast"}
+$0 == "10.74." {print "Bury St Edmunds"}
+$0 == "10.75." {print "Bristol"}
+$0 == "10.76." {print "Fareham"}
+$0 == "10.77." {print "Dumfries"}
+$0 == "10.81." {print "Galashiels"}
+
+' | head -n 1)
 
 #Set DNS suffix based on location
 if [[ "$theLoc" == "London" ]]; then
@@ -99,7 +122,7 @@ function confirmDomainsMacPro() {
 DomainsEthernet1=$(/usr/sbin/networksetup -getsearchdomains "Ethernet 1" | grep "bauer" | wc -l)
 DomainsEthernet2=$(/usr/sbin/networksetup -getsearchdomains "Ethernet 2" | grep "bauer" | wc -l)
 
-if [[ $MacModel == "MacPro" ]]; then
+if [[ $macModel =~ "MacPro" ]]; then
   if [[ $DomainsEthernet1 -eq "$DomainCount" ]] && [[ $DomainsEthernet2 -eq "$DomainCount" ]]; then
     echo "RESULT: Ethernet interfaces search domains correct"
 else
@@ -141,11 +164,11 @@ fi
 #                         Script starts here                           #
 ########################################################################
 
-echo "$MacModel with the location of $theLoc"
+echo "$macModelFriendly in $theLoc"
 echo "Connected to network via $currentService"
 echo "Search Domains Count: $DomainCount"
 
-if [[ $MacModel = *"MacBook"* ]] && [[ "$currentService" = *"Ethernet"* || "$currentService" == "USB 10/100/1000 LAN" ]]; then
+if [[ $macModel =~ "MacBook" ]] && [[ "$currentService" =~ "Ethernet" || "$currentService" == "USB 10/100/1000 LAN" ]]; then
 
 	currentServiceDomains
 	wifiDomains
@@ -155,7 +178,7 @@ if [[ $MacModel = *"MacBook"* ]] && [[ "$currentService" = *"Ethernet"* || "$cur
 	confirmCurrentServiceDomains
 	confirmWiFiDomains
 
-elif [[ $MacModel = *"MacBook"* ]] && [[ "$currentService" = *"Wi-Fi"* ]]; then
+elif [[ $macModel =~ "MacBook" ]] && [[ "$currentService" =~ "Wi-Fi" ]]; then
 
 	wifiDomains
 
@@ -164,7 +187,7 @@ elif [[ $MacModel = *"MacBook"* ]] && [[ "$currentService" = *"Wi-Fi"* ]]; then
   confirmWiFiDomains
 
 
-elif [[ $MacModel = "MacPro" ]]; then
+elif [[ $macModel =~ "MacPro" ]]; then
 
 	EthernetDomainsMacPro
 
