@@ -14,7 +14,7 @@
 ########################################################################
 
 #Get the current logged in user
-loggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+loggedInUser=$(stat -f %Su /dev/console)
 #Logged in users home directory
 userHomeDirectory=$(/usr/bin/dscl . -read /Users/"$loggedInUser" NFSHomeDirectory | awk '{print $2}')
 #Get the Office version to confirm its 2019/365
@@ -28,7 +28,7 @@ o365SubmainB="$o365Product/com.microsoft.Office365V2.plist"
 o365Subbak1B="$o365Product/com.microsoft.O4kTOBJ0M5ITQxATLEJkQ40SNwQDNtQUOxATL1YUNxQUO2E0e.plist"
 o365Subbak2B="$o365Product/O4kTOBJ0M5ITQxATLEJkQ40SNwQDNtQUOxATL1YUNxQUO2E0e"
 #Get the mailbox location of the logged in user (On-Premises/O365)
-mailboxValue=$(dscl /Active\ Directory/BAUER-UK/bauer-uk.bauermedia.group -read /Users/$loggedInUser | grep "msExchRecipientDisplayType" | awk '{print$2}')
+mailboxValue=$(dscl /Active\ Directory/BAUER-UK/bauer-uk.bauermedia.group -read /Users/$loggedInUser | grep "msExchRecipientDisplayType" | awk '{print $2}')
 #Get the logged in users email address
 userEmail=$(dscl /Active\ Directory/BAUER-UK/bauer-uk.bauermedia.group -read /Users/$loggedInUser | grep EMailAddress: | awk '{print $2}')
 #Get the logged in users UPN
@@ -57,22 +57,22 @@ domainPing=$(ping -c1 -W5 -q bauer-uk.bauermedia.group 2>/dev/null | head -n1 | 
 
 #Confirm that Office 365 for Mac is installed before continuing
   if [[ "$officeVersion" -ge "1617" ]]; then
-    echo "Office 365 for Mac installed"
+    echo "Office 2019/365 for Mac installed"
   else
-    echo "Office 365 for Mac not installed, exiting..."
+    echo "Office 2019/365 for Mac not installed, exiting..."
     exit 0
   fi
 
 #Check to see if an O365 subscription license file is present
   if [[ -f "$o365Submain" || -f "$o365Subbak1" || -f "$o365Subbak2" || -f "$o365SubmainB" || -f "$o365Subbak1B" || -f "$o365Subbak2B" ]]; then
-    echo "Office 365 for Mac already activated for ${loggedInUser}, exiting..."
+    echo "Office 2019/365 for Mac already activated for ${loggedInUser}, exiting..."
     exit 0
   else
-    echo "Office 365 for Mac not yet activated for ${loggedInUser}"
+    echo "Office 2019/365 for Mac not yet activated for ${loggedInUser}"
   fi
 
 #Confirm that the logged in user in an O365 user
-  if [[ "$mailboxValue" == "-1073741818" ]]; then
+  if [[ "$mailboxValue" == "-1073741818" ]] || [[ "$mailboxValue" == "-2147483642" ]]; then
     echo "$loggedInUser is an Office 365 user, auto activating Office and configuring Outlook..."
       #Set the activation email address, turn auto activate on and set the default email address
       su -l "$loggedInUser" -c "defaults write com.microsoft.office OfficeActivationEmailAddress -string "$userUPN""
