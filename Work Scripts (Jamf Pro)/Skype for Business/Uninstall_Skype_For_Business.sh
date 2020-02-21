@@ -11,15 +11,15 @@
 
 # Check if Skype for Business is installed
 
-if [[ -d /Applications/Skype\ for\ Business.app ]]; then
+if [[ -d "/Applications/Skype for Business.app" ]]; then
 
-		rm -rf "/Applications/Skype\ for\ Business.app"
+	echo "Removing Skype for Business application..."
 
-    echo "Skype for Business app removed"
+	rm -rf "/Applications/Skype for Business.app"
 
 else
 
-		echo "Skype for Business app app not found"
+	echo "Skype for Business application app not found"
 
 fi
 
@@ -27,11 +27,11 @@ fi
 
 tmp_users=$(mktemp "/tmp/users-unsort-XXXXX")
 
-	if [[ -z "$tmp_users" ]]; then
+if [[ -z "$tmp_users" ]]; then
 
-    	echo "error: could not make tmp file"
+	echo "error: could not make tmp file"
 
-exit 1
+	exit 1
 
 fi
 
@@ -39,9 +39,9 @@ fi
 
 for the_folder in "$targetVolume/Users"; do
 
-    if [[ -d "$the_folder" ]]; then
+	if [[ -d "$the_folder" ]]; then
 
-    ls -lTn "$the_folder" | awk -v vDIR="$the_folder" '/^d/{vUID = $3; vGID = $4; sub("^.*[0-9]+:[0-9]+.[0-9]+","");sub("^ +","");if($0 !~ "^[.]"){print vUID, vGID, vDIR "/" $0}}'
+  	ls -lTn "$the_folder" | awk -v vDIR="$the_folder" '/^d/{vUID = $3; vGID = $4; sub("^.*[0-9]+:[0-9]+.[0-9]+","");sub("^ +","");if($0 !~ "^[.]"){print vUID, vGID, vDIR "/" $0}}'
 
 fi
 
@@ -51,31 +51,31 @@ done | sed '/\/Shared/d' >> "$tmp_users"
 
 cat "$tmp_users" | while read the_user; do
 
-    user_uid=$(echo "$the_user" | awk '{print $1}')
-    user_gid=$(echo "$the_user" | awk '{print $2}')
     user_home=$(echo "$the_user" | awk '{$1 = ""; $2 = ""; sub("^ +","");print}')
+		user_name=$(echo "$the_user" | awk '{$1 = ""; $2 = ""; sub("^ +","");print}' | cut -c8-)
 
 # Remove users' Library files
 
     if [[ -n "$user_home" ]]; then
 
-    if [[ -d $user_home/Library/Containers/ ]]; then
+			echo "Cleaning all Skype for Business preferences for ${user_name}"
 
-		rm -rf /$user_home/Library/Containers/com.microsoft.errorreporting
-		rm -rf /$user_home/Library/Containers/com.microsoft.SkypeForBusiness
+    		if [[ -d $user_home/Library/Containers/ ]]; then
 
-		rm -rf /$user_home/Library/Caches/com.microsoft*
+					rm -rf $user_home/Library/Containers/com.microsoft.SkypeForBusiness
 
-		rm -rf /$user_home/Library/Application\ Scripts/com.microsoft.SkypeForBusiness
+					rm -rf $user_home/Library/Caches/com.microsoft*
 
-		rm -f /$user_home/Library/Preferences/com.microsoft.SkypeForBusiness.plist
-		rm -f /$user_home/Library/Preferences/com.microsoft.OutlookSkypeIntegration.plist
+					rm -rf $user_home/Library/Application\ Scripts/com.microsoft.SkypeForBusiness
 
-		echo "Users' Library Cleaned"
+					rm -f $user_home/Library/Preferences/com.microsoft.SkypeForBusiness.plist
+					rm -f $user_home/Library/Preferences/com.microsoft.OutlookSkypeIntegration.plist
+
+					echo "Skype for Business preferences cleaned successfully for ${user_name}"
 
 else
 
-		echo "No Users' Library files found"
+		echo "Skype for Business preferences found for ${user_name}"
 
 	fi
 
@@ -85,31 +85,12 @@ done
 
 # Remove System Library files
 
-			rm -rf /Library/Application\ Support/Microsoft/MAU2.0
-   		rm -rf /Library/Fonts/Microsoft
-			rm -f /Library/LaunchAgents/com.microsoft.update.agent.plist
-    	rm -f /Library/LaunchDaemons/com.microsoft.office.licensing.helper.plist
-    	rm -f /Library/LaunchDaemons/com.microsoft.office.licensingV2.helper.plist
-			rm -f /Library/LaunchDaemons/com.microsoft.OneDriveUpdaterDaemon.plist
-    	rm -f /Library/Preferences/com.microsoft.Excel.plist
-    	rm -f /Library/Preferences/com.microsoft.office.plist
-    	rm -f /Library/Preferences/com.microsoft.office.setupassistant.plist
-    	rm -f /Library/Preferences/com.microsoft.outlook.databasedaemon.plist
-    	rm -f /Library/Preferences/com.microsoft.outlook.office_reminders.plist
-    	rm -f /Library/Preferences/com.microsoft.Outlook.plist
-    	rm -f /Library/Preferences/com.microsoft.PowerPoint.plist
-    	rm -f /Library/Preferences/com.microsoft.Word.plist
-    	rm -f /Library/Preferences/com.microsoft.office.licensingV2.plist
-    	rm -f /Library/Preferences/com.microsoft.autoupdate2.plist
-    	rm -rf /Library/Preferences/ByHost/com.microsoft
-    	rm -rf /Library/Receipts/Office2016_*
-			rm -rf /Library/Receipts/Office2019_*
-    	rm -f /Library/PrivilegedHelperTools/com.microsoft.office.licensing.helper
-    	rm -f /Library/PrivilegedHelperTools/com.microsoft.office.licensingV2.helper
+			rm -f /Library/LaunchAgents/com.bauer.OpenSkypeForBusinessAfterUserLogin.plist
+			rm -f /Library/StartupItems/OpenSkypeForBusinessAfterUserLogin.sh
 
-    	echo "System folders Cleaned"
+    	echo "Skype for Business System preferences cleaned"
 
-    	echo "Removing Office 2016/2019 package receipts"
+    	echo "Removing Skype for Business package receipts..."
 
 			pkgutil --forget com.microsoft.SkypeForBusiness
 			pkgutil --forget microsoftskypeforbusinesssetdefaulttelephony
