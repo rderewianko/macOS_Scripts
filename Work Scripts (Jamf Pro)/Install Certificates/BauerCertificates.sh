@@ -18,8 +18,8 @@ SYSTEM_KEYCHAIN="/Library/Keychains/System.keychain"
 
 function bauerCerts() {
 
-UK_CERT=`security find-certificate -a ${SYSTEM_KEYCHAIN} | grep "bauer-uk-MSADSLONPKI02-CA" | awk -F '"' '/alis/{print $4}'`
-BM_CERT=`security find-certificate -a ${SYSTEM_KEYCHAIN} | grep "bauermedia-MSADSPKIRO02-CA" | awk -F '"' '/alis/{print $4}'`
+UK_CERT=$(security find-certificate -a ${SYSTEM_KEYCHAIN} | grep "bauer-uk-MSADSLONPKI02-CA" | awk -F '"' '/alis/{print $4}')
+BM_CERT=$(security find-certificate -a ${SYSTEM_KEYCHAIN} | grep "bauermedia-MSADSPKIRO02-CA" | awk -F '"' '/alis/{print $4}')
 
 }
 
