@@ -16,8 +16,6 @@ loggedInUser=$(stat -f %Su /dev/console)
 vmwareFusion="/Applications/VMware Fusion.app"
 #Check VMware Fusion version
 vmwareFusionVersion=$(defaults read /Applications/VMware\ Fusion.app/Contents/Info CFBundleShortVersionString | cut -c -2)
-#vfuse directory
-vfuseDir="/usr/local/vfuse"
 #vfuse binary
 vfuse="/usr/local/vfuse/bin/vfuse"
 #qemu binary
@@ -43,16 +41,16 @@ else
     echo "Install qemu via Homebrew, command: brew install qemu"
     echo "Exiting script..."
     exit 0
-      elif [[ -f "$vfuse" ]] && [[ ! -f "$qemu" ]]; then
-        echo "qemu not installed"
-        echo "Install qemu via Homebrew, command: brew install qemu"
-        echo "Exiting script..."
-        exit 0
-          elif [[ ! -f "$vfuse" ]] && [[ -f "$qemu" ]]; then
-            echo "vfuse not installed"
-            echo "Install vfuse from https://github.com/chilcote/vfuse/releases"
-            echo "Exiting script..."
-            exit 0
+  elif [[ -f "$vfuse" ]] && [[ ! -f "$qemu" ]]; then
+    echo "qemu not installed"
+    echo "Install qemu via Homebrew, command: brew install qemu"
+    echo "Exiting script..."
+    exit 0
+  elif [[ ! -f "$vfuse" ]] && [[ -f "$qemu" ]]; then
+    echo "vfuse not installed"
+    echo "Install vfuse from https://github.com/chilcote/vfuse/releases"
+    echo "Exiting script..."
+    exit 0
   else
     echo "Dependencies all installed"
   fi
