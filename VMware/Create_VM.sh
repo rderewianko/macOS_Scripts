@@ -37,26 +37,24 @@ if [[ ! -d "$vmwareFusion" ]]; then
   echo "VMware Fusion not installed, install VMware Fusion before running again. Exiting script..."
   exit 0
 else
-  if [[ ! -d "$vfuseDir" ]] && [[ ! -d "$qemu" ]]; then
+  if [[ ! -f "$vfuse" ]] && [[ ! -f "$qemu" ]]; then
     echo "vfuse and qemu not installed"
     echo "Install vfuse from https://github.com/chilcote/vfuse/releases"
     echo "Install qemu via Homebrew, command: brew install qemu"
     echo "Exiting script..."
     exit 0
-      if [[ -d "$vfuseDir" ]] && [[ ! -d "$qemu" ]]; then
+      elif [[ -f "$vfuse" ]] && [[ ! -f "$qemu" ]]; then
         echo "qemu not installed"
         echo "Install qemu via Homebrew, command: brew install qemu"
         echo "Exiting script..."
         exit 0
-          if [[ ! -d "$vfuseDir" ]] && [[ -d "$qemu" ]]; then
+          elif [[ ! -f "$vfuse" ]] && [[ -f "$qemu" ]]; then
             echo "vfuse not installed"
             echo "Install vfuse from https://github.com/chilcote/vfuse/releases"
             echo "Exiting script..."
             exit 0
   else
     echo "Dependencies all installed"
-          fi
-      fi
   fi
 fi
 }
@@ -65,7 +63,8 @@ fi
 #                         Script starts here                           #
 ########################################################################
 
-echo "$scriptDirectory"
+echo "Script being run from directory: ${scriptDirectory}"
+echo "Checking all dependencies are installed..."
 checkDependencies
 
 read -p "Enter the VM name: " NAME
