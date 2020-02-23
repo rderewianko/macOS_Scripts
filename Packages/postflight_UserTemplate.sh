@@ -75,3 +75,5 @@ cat "$tmp_users" | while read the_user; do
         done
     fi
 done
+
+exit 0
