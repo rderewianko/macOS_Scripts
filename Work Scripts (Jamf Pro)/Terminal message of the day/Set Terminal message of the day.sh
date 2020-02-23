@@ -36,6 +36,7 @@ if [[ $(cat /etc/motd | grep "Bauer") != "" ]]; then
         echo "Terminal message of the day set"
 else
         echo "Failed to set the Terminal message of the day!"
+        exit 1
 fi
 
 exit 0
