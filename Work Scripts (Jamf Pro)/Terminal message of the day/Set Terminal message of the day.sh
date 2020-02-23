@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 ########################################################################
 #                   Set Terminal message of the day                    #
@@ -11,11 +11,11 @@
 #Get hostname
 hostName=$(scutil --get HostName)
 #Get Serial Number
-serial=$(ioreg -c IOPlatformExpertDevice -d 2 | awk -F\" '/IOPlatformSerialNumber/{print $(NF-1)}')
+serialNumber=$(ioreg -c IOPlatformExpertDevice -d 2 | awk -F\" '/IOPlatformSerialNumber/{print $(NF-1)}')
 #Get OS version
-OS=$(sw_vers -productVersion)
+osVersion=$(sw_vers -productVersion)
 #Get OS build
-build=$(sw_vers -buildVersion)
+osBuild=$(sw_vers -buildVersion)
 #Company name
 companyName="Your Company"
 
@@ -29,7 +29,13 @@ fi
 /usr/bin/touch /etc/motd
 /bin/chmod 644 /etc/motd
 /bin/echo "" >> /etc/motd
-/bin/echo "***** This Apple Workstation ($hostName - $serial - $OS $build) belongs to $companyName *****" >> /etc/motd
+/bin/echo "***** This Apple Workstation ($hostName - $serialNumber - $osVersion $osBuild) belongs to $companyName *****" >> /etc/motd
 /bin/echo "" >> /etc/motd
+
+if [[ $(cat /etc/motd | grep "Bauer") != "" ]]; then
+        echo "Terminal message of the day set"
+else
+        echo "Failed to set the Terminal message of the day!"
+fi
 
 exit 0
