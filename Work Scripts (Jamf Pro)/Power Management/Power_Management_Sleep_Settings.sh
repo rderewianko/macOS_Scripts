@@ -73,7 +73,7 @@ if [[ "$macModel" =~ "MacBook" && "$OSShort" == "12" ]]; then
     echo "standbydelayStatus = $standbydelayStatus"
     echo ""
 
-elif [[ "$macModel" =~ "MacBook" ]] && [[ "$OSShort" -ge "14" ]]; then
+elif [[ "$macModel" =~ "MacBook" && "$OSShort" -eq "14" ]]; then
 
   echo "Power Management Settings"
   echo "hibernatemode = $hibernateMode"
@@ -127,7 +127,7 @@ elif [[ "$macModel" =~ "MacBook" ]] && [[ "$OSShort" -ge "14" ]]; then
 else
 
   echo "$macModelFull running $OSFull, power management settings have not been changed"
-  echo "This policy will only amend the power settings for MacBooks"
+  echo "This policy will only amend the power settings for MacBooks running macOS 10.12.x or 10.14.x"
 
 
 fi
