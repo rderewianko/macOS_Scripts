@@ -22,9 +22,9 @@ else
 
 	echo "Removing MAU components..."
 
-		rm -rf /Library/Application\ Support/Microsoft/MAU2.0
-		rm -f /Library/LaunchAgents/com.microsoft.update.agent.plist
-		rm -f /Library/Preferences/com.microsoft.autoupdate2.plist
+		rm -rf /Library/Application\ Support/Microsoft/MAU2.0 2>/dev/null
+		rm -f /Library/LaunchAgents/com.microsoft.update.agent.plist 2>/dev/null
+		rm -f /Library/Preferences/com.microsoft.autoupdate2.plist 2>/dev/null
 		pkgutil --forget com.microsoft.package.Microsoft_AutoUpdate.app 2>/dev/null
 		pkgutil --forget com.microsoft.package.Microsoft_AU_Bootstrapper.app 2>/dev/null
 
@@ -41,13 +41,13 @@ if [[ -d /Applications/Microsoft\ Word.app/ ]]; then
 
 	echo "Removing Office applications..."
 
-		rm -rf "/Applications/Microsoft Excel.app"
-		rm -rf "/Applications/Microsoft OneNote.app"
-  	rm -rf "/Applications/Microsoft Outlook.app"
-  	rm -rf "/Applications/Microsoft PowerPoint.app"
-  	rm -rf "/Applications/Microsoft Word.app"
-		rm -rf "/Applications/OneDrive.app"
-		rm -rf "/Applications/Microsoft Teams.app"
+		rm -rf "/Applications/Microsoft Excel.app" 2>/dev/null
+		rm -rf "/Applications/Microsoft OneNote.app" 2>/dev/null
+  		rm -rf "/Applications/Microsoft Outlook.app" 2>/dev/null
+  		rm -rf "/Applications/Microsoft PowerPoint.app" 2>/dev/null
+  		rm -rf "/Applications/Microsoft Word.app" 2>/dev/null
+		rm -rf "/Applications/OneDrive.app" 2>/dev/null
+		rm -rf "/Applications/Microsoft Teams.app" 2>/dev/null
 
 else
 
@@ -61,9 +61,9 @@ removeMAU
 
 if [ -e "/Library/Preferences/com.microsoft.office.licensingV2.plist" ]; then
 
-	rm -f /Library/Preferences/com.microsoft.office.licensingV2.plist
+	rm -f /Library/Preferences/com.microsoft.office.licensingV2.plist 2>/dev/null
 
-		echo "Office 2016 volume license file removed"
+	echo "Office 2016 volume license file removed"
 
 else
 
@@ -127,7 +127,7 @@ cat "$tmp_users" | while read the_user; do
 			rm -rf $user_home/Library/Containers/com.microsoft.openxml.excel.app 2>/dev/null
 			rm -rf $user_home/Library/Containers/com.microsoft.netlib.shipassertprocess 2>/dev/null
 			rm -rf $user_home/Library/Containers/com.microsoft.Office365ServiceV2 2>/dev/null
-    	rm -rf $user_home/Library/Containers/com.microsoft.OneDrive.FinderSync 2>/dev/null
+    		rm -rf $user_home/Library/Containers/com.microsoft.OneDrive.FinderSync 2>/dev/null
 			rm -rf $user_home/Library/Containers/com.Microsoft.OsfWebHost 2>/dev/null
 			rm -rf $user_home/Library/Containers/com.microsoft.Outlook 2>/dev/null
 			rm -rf $user_home/Library/Containers/com.microsoft.Powerpoint 2>/dev/null
@@ -178,12 +178,12 @@ cat "$tmp_users" | while read the_user; do
 
 	if [[ -d $user_home/Library/Group\ Containers/ ]]; then
 
-      rm -rf $user_home/Library/Group\ Containers/UBF8T346G9.ms 2>/dev/null
+      	rm -rf $user_home/Library/Group\ Containers/UBF8T346G9.ms 2>/dev/null
     	rm -rf $user_home/Library/Group\ Containers/UBF8T346G9.Office 2>/dev/null
-			rm -rf $user_home/Library/Group\ Containers/UBF8T346G9.OfficeOneDriveSyncIntegration 2>/dev/null
+		rm -rf $user_home/Library/Group\ Containers/UBF8T346G9.OfficeOneDriveSyncIntegration 2>/dev/null
     	rm -rf $user_home/Library/Group\ Containers/UBF8T346G9.OfficeOsfWebHost 2>/dev/null
-			rm -rf $user_home/Library/Group\ Containers/UBF8T346G9.OneDriveStandaloneSuite 2>/dev/null
-			rm -rf $user_home/Library/Group\ Containers/UBF8T346G9.OneDriveSyncClientSuite 2>/dev/null
+		rm -rf $user_home/Library/Group\ Containers/UBF8T346G9.OneDriveStandaloneSuite 2>/dev/null
+		rm -rf $user_home/Library/Group\ Containers/UBF8T346G9.OneDriveSyncClientSuite 2>/dev/null
 
 	fi
 
@@ -195,10 +195,10 @@ done
 
 # Remove System Library files
 
-			rm -rf /Library/Fonts/Microsoft 2>/dev/null
+		rm -rf /Library/Fonts/Microsoft 2>/dev/null
     	rm -f /Library/LaunchDaemons/com.microsoft.office.licensing.helper.plist 2>/dev/null
     	rm -f /Library/LaunchDaemons/com.microsoft.office.licensingV2.helper.plist 2>/dev/null
-			rm -f /Library/LaunchDaemons/com.microsoft.OneDriveUpdaterDaemon.plist 2>/dev/null
+		rm -f /Library/LaunchDaemons/com.microsoft.OneDriveUpdaterDaemon.plist 2>/dev/null
     	rm -f /Library/Preferences/com.microsoft.Excel.plist 2>/dev/null
     	rm -f /Library/Preferences/com.microsoft.office.plist 2>/dev/null
     	rm -f /Library/Preferences/com.microsoft.office.setupassistant.plist 2>/dev/null
