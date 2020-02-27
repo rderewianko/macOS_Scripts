@@ -84,8 +84,11 @@ domainPing=$(ping -c1 -W5 -q bauer-uk.bauermedia.group 2>/dev/null | head -n1 | 
       su -l "$loggedInUser" -c "defaults write com.microsoft.Excel kSubUIAppCompletedFirstRunSetup1507 -bool FALSE"
       su -l "$loggedInUser" -c "defaults write com.microsoft.onenote.mac kSubUIAppCompletedFirstRunSetup1507 -bool FALSE"
       su -l "$loggedInUser" -c "defaults write com.microsoft.Powerpoint kSubUIAppCompletedFirstRunSetup1507 -bool FALSE"
-  else
+  elif [[ "$mailboxValue" == "1073741824" ]]; then
     echo "$loggedInUser is an On-Premises user, exiting..."
+    exit 0
+  else
+    echo "Mailbox details not found, exiting..."
     exit 0
   fi
 
