@@ -8,12 +8,12 @@
 # <bitbar.abouturl>https://github.com/pwalker1485</bitbar.abouturl>
 
 #Get the logged in user
-LoggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+loggedInUser=$(stat -f %Su /dev/console)
 
 #Get the current JSS url from the JAMf plist and add to a variable
-jssURL=$(defaults read /Users/$LoggedInUser/Library/Preferences/com.jamfsoftware.jss.plist url)
+jssURL=$(defaults read /Users/$LoggedInUser/Library/Preferences/com.jamfsoftware.jss.plist jss_url)
 #Check which URL is configured and set the name that appears in the menu bar
-if [[ $jssURL == "https://casper.bauerservices.co.uk:443/" ]] || [[ $jssURL == "https://casper.bauerservices.co.uk/" ]] || [[ $jssURL == "https://casper.bauerservices.co.uk" ]] ; then
+if [[ $jssURL == "https://casper.bauerservices.co.uk:443/" ]] || [[ $jssURL == "https://casper.bauerservices.co.uk/" ]] || [[ $jssURL == "https://casper.bauerservices.co.uk" ]]; then
 	echo "Prod JSS | color=blue"
 fi
 if [[ $jssURL == "https://caspertest.bauerservices.co.uk:443/" ]] || [[ $jssURL == "https://caspertest.bauerservices.co.uk/" ]] || [[ $jssURL == "https://caspertest.bauerservices.co.uk" ]] ; then
