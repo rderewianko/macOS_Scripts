@@ -9,7 +9,13 @@
 #                            Variables                                 #
 ########################################################################
 
-pkgReceipt=$(pkgutil --pkgs | grep "ukavidprotools2019.10")
+#OS Version Full and Short
+osFull=$(sw_vers -productVersion)
+osShort=$(sw_vers -productVersion | awk -F. '{print $2}')
+#Mac model full name
+macModelFull=$(system_profiler SPHardwareDataType | grep "Model Name" | sed 's/Model Name: //' | xargs)
+#Package receipt
+pkgReceipt=$(pkgutil --pkgs | grep "ukavidprotools2019.12")
 
 ########################################################################
 #                            Functions                                 #
@@ -33,6 +39,17 @@ Please contact the IT Service Desk on 0345 058 4444 for assistance" -timeout 60 
 killall jamfHelper
 
 if [[ "$pkgReceipt" != "" ]]; then
+  echo "Package receipt found"
+  echo "Checking User Template package requirements..."
+    if [[ "$osShort" -eq "14" ]]; then
+      echo "${macModelFull} running macOS ${osFull}"
+      /usr/local/jamf/bin/jamf policy -event pt2019_preferences_mojave
+    elif [[ "$osShort" -ge "15" ]]; then
+      echo "${macModelFull} running macOS ${osFull}"
+      /usr/local/jamf/bin/jamf policy -event pt2019_preferences
+    else
+      echo "${macModelFull} running macOS ${osFull}, no User Template package requirement"
+    fi
   /usr/local/bin/jamf policy -event pt_bundle_EffectsandVirtualInstruments
 else
   echo "Pro Tools package failed to install successfully"
