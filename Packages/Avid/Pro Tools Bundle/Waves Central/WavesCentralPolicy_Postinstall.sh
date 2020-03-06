@@ -9,7 +9,7 @@
 #                            Variables                                 #
 ########################################################################
 
-pkgReceipt=$(pkgutil --pkgs | grep "ukwavescentral11.0.50")
+pkgReceipt=$(pkgutil --pkgs | grep "ukwavescentral11.0.55")
 
 ########################################################################
 #                            Functions                                 #
