@@ -9,7 +9,7 @@
 #                            Variables                                 #
 ########################################################################
 
-pkgReceipt=$(pkgutil --pkgs | grep "uksteinbergelicensercontrolcenter6.11.9.3259")
+pkgReceipt=$(pkgutil --pkgs | grep "uksteinbergelicensercontrolcenter6.11.10.2264")
 
 ########################################################################
 #                            Functions                                 #
