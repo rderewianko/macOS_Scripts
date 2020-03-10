@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 ########################################################################
 #  List logged in user's bluetooth devices (Paired, Configured, etc.)  #
@@ -11,8 +11,8 @@
 #                            Variables                                 #
 ########################################################################
 
-loggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
-mobileAccount=$(dscl . read /Users/${loggedInUser} OriginalNodeName 2>/dev/null)
+loggedInUser=$(stat -f %Su /dev/console)
+mobileAccount=$(dscl . -read /Users/$loggedInUser OriginalNodeName 2>/dev/null)
 loggedInUserUID=$(dscl . -read /Users/$loggedInUser UniqueID | awk '{print $2}')
 
 ########################################################################
@@ -41,7 +41,7 @@ fi
 getFirstName
 
 BTDevicesAll=$(system_profiler SPBluetoothDataType > /tmp/BT.txt)
-BTDevices1=$(cat /tmp/BT.txt | grep -i "$firstName" | grep -vi "wireless" | grep -vi "iPhone-Wirel" | sed 's/://g' | sed -e 's/^[ \t]*//' | sort -u)
+BTDevices1=$(cat /tmp/BT.txt | grep -i "$firstName" | grep -vi "wireless" | grep -vi "iPhone-Wirel" | sed 's/://g' | sed -e 's/^[ \t]*//' | tr -cd '\11\12\15\40-\176' | sort -u)
 BTDevices2=$(cat /tmp/BT.txt | grep -i "magic" | sed 's/Services//g' | sed 's/://g' | sed -e 's/^[ \t]*//' | sort -u)
 BTDevices3=$(cat /tmp/BT.txt | grep -i "Galaxy\|HUAWEI\|Samsung" | sed 's/://g' | sed -e 's/^[ \t]*//' | sort -u)
 
