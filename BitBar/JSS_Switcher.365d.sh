@@ -10,7 +10,7 @@
 #Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
 
-#Get the current JSS url from the JAMf plist and add to a variable
+#Get the current JSS url from the Jamf plist and add to a variable
 jssURL=$(defaults read /Users/$LoggedInUser/Library/Preferences/com.jamfsoftware.jss.plist jss_url)
 #Check which URL is configured and set the name that appears in the menu bar
 if [[ $jssURL == "https://casper.bauerservices.co.uk:443/" ]] || [[ $jssURL == "https://casper.bauerservices.co.uk/" ]] || [[ $jssURL == "https://casper.bauerservices.co.uk" ]]; then
