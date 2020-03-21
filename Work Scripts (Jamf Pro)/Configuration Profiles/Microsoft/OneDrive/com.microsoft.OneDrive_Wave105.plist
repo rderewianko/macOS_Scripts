@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>DefaultToBusinessFRE</key>
+	<true/>
+	<key>DisablePersonalSync</key>
+	<true/>
+	<key>EnableAddAccounts</key>
+	<true/>
+	<key>FilesOnDemandEnabled</key>
+	<true/>
+	<key>HideDockIcon</key>
+	<true/>
+  <key>OpenAtLogin</key>
+  <true/>
+	<key>Tenants</key>
+		<dict>
+			<key>0e79f3f3-4eeb-48ed-815e-2876c379e863</key>
+				<dict>
+					<key>DefaultFolder</key>
+					<string>~/</string>
+				</dict>
+			</dict>
+</dict>
+</plist>
