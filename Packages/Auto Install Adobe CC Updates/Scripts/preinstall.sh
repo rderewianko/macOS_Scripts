@@ -21,6 +21,13 @@ updateScript=/usr/local/bin/AutoInstallAdobeCCUpdates.sh
 #                         Script starts here                           #
 ########################################################################
 
+#Stop and unload the Launch Daemon
+launchctl stop "$LaunchDaemon" 2>/dev/null
+launchctl unload "$LaunchDaemon" 2>/dev/null
+#Stop and unload the Launch Agent
+launchctl stop "$launchAgent" 2>/dev/null
+launchctl unload "$launchAgent" 2>/dev/null
+
 if [[ -e "$launchAgent" || -e "$LaunchDaemon" || -e "$updateScript" ]]; then
     echo "Previous content found"
     echo "Removing previous launch agent, daemon and script"
