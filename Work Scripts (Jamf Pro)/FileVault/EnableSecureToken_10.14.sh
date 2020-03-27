@@ -11,7 +11,7 @@
 ########################################################################
 
 # Get the logged in user
-loggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+loggedInUser=$(stat -f %Su /dev/console)
 # Get the logged in users GUID
 userGUID=$(dscl . -read /Users/$loggedInUser GeneratedUID | awk '{print $2}')
 # Check if the logged in user is FileVault enabled already
@@ -21,7 +21,7 @@ adminUser=$4
 # Admin Password. Value set in Parameter 5 in the policy
 adminUserPassword=$5
 # Check local admin account has been created
-adminAccount=$(dscl . list /Users | grep -v "_\|casadmin" | grep "admin" | sed -n 1p)
+adminAccount=$(dscl . -list /Users | grep -v "_\|casadmin" | grep "admin" | sed -n 1p)
 # FileVault status
 fileVault=$(fdesetup status | grep "FileVault" | head -n 1)
 # DEPNotify process
@@ -37,7 +37,7 @@ function checkLoggedInUser ()
 if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "_mbsetupuser" ]]; then
 	echo "No user logged in"
 	exit 1
-	else
+else
 		echo "$loggedInUser is logged in"
 fi
 }
@@ -109,7 +109,7 @@ echo "Prompting $loggedInUser for their login password."
 userPass=$(/usr/bin/osascript << EOT
 
 set user_password to display dialog ¬
-	"Please enter your BAUER-UK password to enable SecureToken:" with title ¬
+	"Please enter your BAUER-UK password" with title ¬
 	"Bauer IT" with icon caution ¬
 	default answer ¬
 	"" buttons {"Cancel", "Continue"} default button 2 cancel button 1 ¬
@@ -197,14 +197,14 @@ passDSCLCheck=$(dscl /Local/Default authonly $loggedInUser $userPass; echo $?)
 
 # If password is not valid, loop and ask again
 while [[ "$passDSCLCheck" != "0" ]]; do
-		echo "Asking the user to enter the correct password"
-			promptUserPassword
-			passDSCLCheck=$(dscl /Local/Default authonly $loggedInUser $userPass; echo $?)
-		done
+	echo "Asking the user to enter the correct password"
+		promptUserPassword
+		passDSCLCheck=$(dscl /Local/Default authonly $loggedInUser $userPass; echo $?)
+done
 
-			if [[ "$passDSCLCheck" -eq "0" ]]; then
-				echo "Password confirmed for $loggedInUser"
-			fi
+	if [[ "$passDSCLCheck" -eq "0" ]]; then
+		echo "Password confirmed for $loggedInUser"
+	fi
 
 # Neither the local admin account or the logged in user have a SecureToken.
 
@@ -220,7 +220,7 @@ if [[ "$localAdminSecureToken" == "NoToken" ]] && [[ "$userSecureToken" == "NoTo
 		fi
 			checkFileVault
 				if [[ "$fvStatus" == "Enabled" ]] && [[ "$userFVEnabled" == "$userGUID" ]]; then
-					#fdesetup remove -user "$adminUser"
+					fdesetup remove -user "$adminUser"
 					echo "FileVault already enabled. $loggedInUser has a SecureToken and is a FileVault enabled user"
 					# If FileVault is already enabled update preBoot
 					echo "Updating preBoot..."
@@ -239,7 +239,7 @@ if [[ "$localAdminSecureToken" == "Token" ]] && [[ "$userSecureToken" == "NoToke
 		fi
 			checkFileVault
 				if [[ "$fvStatus" == "Enabled" ]] && [[ "$userFVEnabled" == "$userGUID" ]]; then
-					#fdesetup remove -user "$adminUser"
+					fdesetup remove -user "$adminUser"
 					# If FileVault is already enabled update preBoot
 					echo "Updating preBoot..."
 					diskutil quiet apfs updatepreBoot /
