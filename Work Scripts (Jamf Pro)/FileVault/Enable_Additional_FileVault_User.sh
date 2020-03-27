@@ -260,35 +260,35 @@ jamfHelperSelection
 
 		promptForFVUser
 
-# Get the FV enabled users GUID
-fvUserGUID=$(/usr/bin/dscl . -read /Users/$fvEnabledUser GeneratedUID | awk '{print $2}')
-# Get the FV enabled user's SecureToken status
-fvUserSecureToken=$(/usr/sbin/sysadminctl -secureTokenStatus "$fvEnabledUser" 2>&1)
-# Get the FV enabled user's FileVault status
-fvUserStatus=$(/usr/bin/fdesetup list | grep "$fvEnabledUser" | awk  -F, '{print $2}')
+		# Get the FV enabled users GUID
+		fvUserGUID=$(/usr/bin/dscl . -read /Users/$fvEnabledUser GeneratedUID | awk '{print $2}')
+		# Get the FV enabled user's SecureToken status
+		fvUserSecureToken=$(/usr/sbin/sysadminctl -secureTokenStatus "$fvEnabledUser" 2>&1)
+		# Get the FV enabled user's FileVault status
+		fvUserStatus=$(/usr/bin/fdesetup list | grep "$fvEnabledUser" | awk  -F, '{print $2}')
 
 		echo "FileVault is on, checking ${fvEnabledUser}'s SecureToken and FileVault status"
-			if [[ "$fvUserSecureToken" =~ "ENABLED" ]] && [[ "$fvUserGUID" == "$fvUserStatus" ]]; then
-				echo "$fvEnabledUser has a SecureToken and is a FileVault enabled user, continuing..."
+		if [[ "$fvUserSecureToken" =~ "ENABLED" ]] && [[ "$fvUserGUID" == "$fvUserStatus" ]]; then
+			echo "$fvEnabledUser has a SecureToken and is a FileVault enabled user, continuing..."
   		else
 	  		echo "$fvEnabledUser is not a FileVault enabled user! Exiting..."
-    			jamfHelperNotFVUser
+    		jamfHelperNotFVUser
 	  		exit 1
   		fi
 
 		echo "Granting temporary admin rights for $fvEnabledUser to allow SecureToken to be granted to $loggedInUser"
-			dseditgroup -o edit -a "$fvEnabledUser" -t user admin
+		dseditgroup -o edit -a "$fvEnabledUser" -t user admin
 
-#Get a list of users who are in the admin group
-adminUsers=$(dscl . -read Groups/admin GroupMembership | cut -c 18-)
+		#Get a list of users who are in the admin group
+		adminUsers=$(dscl . -read Groups/admin GroupMembership | cut -c 18-)
 
-#Check if the FV enabled user is in the admin group and show jamfHelper message
+		#Check if the FV enabled user is in the admin group and show jamfHelper message if not
 		if [[ "$adminUsers" =~ "$fvEnabledUser" ]]; then
-			echo "$LoggedInUser is now an admin"
+			echo "$fvEnabledUser is now an admin"
 		else
 			echo "Temp admin process failed"
-				jamfHelperAdminFailed
-				exit 1
+			jamfHelperAdminFailed
+			exit 1
 		fi
 
 		jamfHelperEnterCreds
@@ -297,19 +297,19 @@ adminUsers=$(dscl . -read Groups/admin GroupMembership | cut -c 18-)
 
 		removeTempAdminRights
 
-# Get the logged in users GUID
-UserGUID=$(/usr/bin/dscl . -read /Users/$loggedInUser GeneratedUID | awk '{print $2}')
-# Get the logged in users FileVault status
-UserFVStatus=$(/usr/bin/fdesetup list | grep "$loggedInUser" | awk  -F, '{print $2}')
+		# Get the logged in users GUID
+		UserGUID=$(/usr/bin/dscl . -read /Users/$loggedInUser GeneratedUID | awk '{print $2}')
+		# Get the logged in users FileVault status
+		UserFVStatus=$(/usr/bin/fdesetup list | grep "$loggedInUser" | awk  -F, '{print $2}')
 
 		if [[ "$UserGUID" == "$UserFVStatus" ]]; then
 			echo "$loggedInUser now has a SecureToken and is a FileVault enabled user"
-				jamfHelperComplete
-				exit 0
+			jamfHelperComplete
+			exit 0
 		else
 			echo "Something went wrong $loggedInUser is not a FileVault enabled user!"
-				jamfHelperSomethingWentWrong
-				exit 1
+			jamfHelperSomethingWentWrong
+			exit 1
 		fi
 
 else
@@ -321,58 +321,71 @@ else
 
 	promptForFVUser
 
-# Get the FV enabled users GUID
-fvUserGUID=$(/usr/bin/dscl . -read /Users/$fvEnabledUser GeneratedUID | awk '{print $2}')
-# Get the FV enabled user's SecureToken status
-fvUserSecureToken=$(/usr/sbin/sysadminctl -secureTokenStatus "$fvEnabledUser" 2>&1)
-# Get the FV enabled user's FileVault status
-fvUserStatus=$(/usr/bin/fdesetup list | grep "$fvEnabledUser" | awk  -F, '{print $2}')
+	# Get the FV enabled users GUID
+	fvUserGUID=$(/usr/bin/dscl . -read /Users/$fvEnabledUser GeneratedUID | awk '{print $2}')
+	# Get the FV enabled user's SecureToken status
+	fvUserSecureToken=$(/usr/sbin/sysadminctl -secureTokenStatus "$fvEnabledUser" 2>&1)
+	# Get the FV enabled user's FileVault status
+	fvUserStatus=$(/usr/bin/fdesetup list | grep "$fvEnabledUser" | awk  -F, '{print $2}')
 
-		echo "FileVault is on, checking ${fvEnabledUser}'s SecureToken and FileVault status"
-			if [[ "$fvUserSecureToken" =~ "ENABLED" ]] && [[ "$fvUserGUID" == "$fvUserStatus" ]]; then
-				echo "$fvEnabledUser has a SecureToken and is a FileVault enabled user, continuing..."
+	echo "FileVault is on, checking ${fvEnabledUser}'s SecureToken and FileVault status"
+		if [[ "$fvUserSecureToken" =~ "ENABLED" ]] && [[ "$fvUserGUID" == "$fvUserStatus" ]]; then
+			echo "$fvEnabledUser has a SecureToken and is a FileVault enabled user, continuing..."
 	  	else
 		  	echo "$fvEnabledUser is not a FileVault enabled user! Exiting..."
-	    		jamfHelperNotFVUser
-		  		exit 1
+			jamfHelperNotFVUser
+	  		exit 1
 	  	fi
 
-			promptForFVUserPass
+	promptForFVUserPass
 
-# Check if the password is correct for the FileVault enabled user
-passDSCLCheck=$(dscl /Local/Default authonly $fvEnabledUser $fvEnabledUserPass; echo $?)
+	# Check if the password is correct for the FileVault enabled user
+	passDSCLCheck=$(dscl /Local/Default authonly $fvEnabledUser $fvEnabledUserPass; echo $?)
 
-# If password is not valid, loop and ask again
-		while [[ "$passDSCLCheck" != "0" ]]; do
-			echo "Asking the user to enter the correct password"
-	  		promptForFVUserPass
-	  		passDSCLCheck=$(dscl /Local/Default authonly $fvEnabledUser $fvEnabledUserPass; echo $?)
-		done
+	# If password is not valid, loop and ask again
+	while [[ "$passDSCLCheck" != "0" ]]; do
+		echo "Asking the user to enter the correct password"
+		  	promptForFVUserPass
+			passDSCLCheck=$(dscl /Local/Default authonly $fvEnabledUser $fvEnabledUserPass; echo $?)
+	done
 
-				if [[ "$passDSCLCheck" == "0" ]]; then
-	 				echo "Password confirmed for $fvEnabledUser"
-	 			fi
+		if [[ "$passDSCLCheck" == "0" ]]; then
+	 		echo "Password confirmed for $fvEnabledUser"
+	 	fi
 
-				promptForLoggedInUserPass
+		promptForLoggedInUserPass
 
-# Check if the logged in users password is correct
-passDSCLCheckLoggedInUser=$(dscl /Local/Default authonly $loggedInUser $loggedInUserPass; echo $?)
+		# Check if the logged in users password is correct
+		passDSCLCheckLoggedInUser=$(dscl /Local/Default authonly $loggedInUser $loggedInUserPass; echo $?)
 
-# If password is not valid, loop and ask again
+		# If password is not valid, loop and ask again
 		while [[ "$passDSCLCheckLoggedInUser" != "0" ]]; do
 			echo "Asking the user to enter the correct password"
-				promptForLoggedInUserPass
+			promptForLoggedInUserPass
 	  		passDSCLCheckLoggedInUser=$(dscl /Local/Default authonly $loggedInUser $loggedInUserPass; echo $?)
 		done
 
 			if [[ "$passDSCLCheckLoggedInUser" == "0" ]]; then
 	  		echo "Password confirmed for $loggedInUser"
-	  	fi
+	  		fi
 
 			loggedInUserStatus
 
 			echo "Granting temporary admin rights for $fvEnabledUser to allow SecureToken to be granted to $loggedInUser"
 				dseditgroup -o edit -a "$fvEnabledUser" -t user admin
+				
+			#Get a list of users who are in the admin group
+			adminUsers=$(dscl . -read Groups/admin GroupMembership | cut -c 18-)
+
+			#Check if the FV enabled user is in the admin group and show jamfHelper message if not
+			if [[ "$adminUsers" =~ "$fvEnabledUser" ]]; then
+				echo "$fvEnabledUser is now an admin"
+			else
+				echo "Temp admin process failed"
+					jamfHelperAdminFailed
+					exit 1
+			fi
+
 			echo "Granting $loggedInUser a Secure Token..."
 	  		sysadminctl -adminUser $fvEnabledUser -adminPassword $fvEnabledUserPass -secureTokenOn $loggedInUser -password $loggedInUserPass
 
