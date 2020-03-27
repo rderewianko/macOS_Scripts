@@ -44,6 +44,9 @@ su -l "$loggedInUser" -c "/bin/launchctl unload /Library/LaunchAgents/com.adobe.
 /bin/launchctl unload /Library/LaunchDaemons/com.adobe.* 2>/dev/null
 
 pkill "obe"
+sleep 5
+#Close any Adobe Crash Reporter windows (e.g. Bridge)
+pkill "Crash Reporter"
 }
 
 function jamfHelperInstallInProgress ()
@@ -89,8 +92,10 @@ updatesInstalled=$(sed -n '/Following Updates were successfully installed*/,/\*/
     | sed 's/RUSH/Premiere\ Rush/g' \
     | sed 's/SPRK/XD/g' \
     | sed 's/ACR/Camera\ Raw/g' \
-    | sed 's/AdobeAcrobatDC-19.0/Acrobat\ DC/g' \
-    | sed 's/[()]//g' | sed 's/osx10-64//g' | sed 's/\// /g' \
+    | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
+    | sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
+    | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
+    | sed 's/[()]//g' | sed 's/osx10-64//g' | sed 's/osx10//g' | sed 's/\// /g' \
     | grep -v "*")
 
 echo "All updates below installed successfully"
@@ -127,7 +132,7 @@ else
     $rumBinary --action=list > $rumLog
 
     #Read the log file to check which updates are available for install for use in a jamf Helper window
-    updatesAvailable=$(sed -n '/Following Updates are applicable*/,/\*/p' $rumLog \
+    updatesAvailable=$(sed -n '/Following*/,/\*/p' $rumLog \
         | sed 's/Following Updates are applicable on the system :/*/g'  | grep -v "*" \
         | sed 's/Following Acrobat\/\Reader updates are applicable on the system :/*/g' | grep -v "*" \
         | sed 's/AEFT/After\ Effects/g' \
@@ -149,14 +154,16 @@ else
         | sed 's/RUSH/Premiere\ Rush/g' \
         | sed 's/SPRK/XD/g' \
         | sed 's/ACR/Camera Raw/g' \
-        | sed 's/AdobeAcrobatDC-19.0/Acrobat\ DC/g' \
-        | sed 's/[()]//g' | sed 's/osx10-64//g' | sed 's/\// /g' \
+        | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
+    	| sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
+        | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
+        | sed 's/[()]//g' | sed 's/osx10-64//g' | sed 's/osx10//g' | sed 's/\// /g' \
         | grep -v "*")
 
     
     #Check if any updates are required
     updatesCheck=$(cat $rumLog)
-    if [[ "$updatesCheck" =~ "Following Updates are applicable" ]]; then
+    if [[ "$updatesCheck" =~ "Following" ]]; then
 
         echo "Updates available"
         #Updates installing helper
