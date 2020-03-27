@@ -13,7 +13,7 @@
 ########################################################################
 
 #Get the current logged in user and store in variable
-loggedInUser=$(python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
+loggedInUser=$(stat -f %Su /dev/console)
 #Get the Mac hostname
 hostName=$(scutil --get HostName)
 
@@ -63,10 +63,11 @@ installer -pkg /Volumes/Virtual\ Instrument\ Content/XPand\ II\ NoAudio.pkg -tar
 
 function copyVirtualInstrumentContent ()
 {
-#Create the Folders to hold the plugins on the Pro Tools HDD
+#Create the folders to hold session data and virtual instruments on the Pro Tools HDD
 mkdir -v /Volumes/$hostName\ Pro\ Tools\ Sessions/Pro\ Tools\ Sessions/
 mkdir -v /Volumes/$hostName\ Pro\ Tools\ Sessions/Virtual\ Instrument\ Content/
-#Allow everybody to RW the folders
+mkdir -v /Volumes/$hostName\ Pro\ Tools\ Sessions/Virtual\ Instrument\ Content/Waves/
+#Allow everybody to RWX the folders
 chmod 777 /Volumes/$hostName\ Pro\ Tools\ Sessions/Pro\ Tools\ Sessions/
 chmod 777 /Volumes/$hostName\ Pro\ Tools\ Sessions/Virtual\ Instrument\ Content/
 
@@ -81,10 +82,10 @@ rm -f /Volumes/$hostName\ Pro\ Tools\ Sessions/Virtual\ Instrument\ Content/Firs
 function cleanUp ()
 {
 #Clean up
-#UnMount all DMG's
+#Unmount all DMG's
 hdiutil unmount -force /Volumes/First\ AIR\ Effects\ Bundle/
 hdiutil unmount -force /Volumes/Virtual\ Instrument\ Content/
-#Remove Install DMG's and packages
+#Remove install DMG's
 rm -rf /usr/local/Pro\ Tools/
 
 if [[ ! -d "/usr/local/Pro\ Tools/" ]]; then
