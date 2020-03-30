@@ -23,7 +23,7 @@ installer -pkg /Volumes/Pro\ Tools/Codec\ Installers/Install\ Avid\ Codecs\ LE.p
 #HD Driver
 installer -pkg /Volumes/Pro\ Tools/Driver\ Installers/Install\ Avid\ HD\ Driver.pkg -target /
 #AvidLink Update
-installer -pkg /usr/local/Pro\ Tools/Pro\ Tools/UK_Avid_Link_20.1.0.1090.pkg -target /
+installer -pkg /usr/local/Pro\ Tools/Pro\ Tools/UK_Avid_AvidLink_20.3.0.pkg -target /
 
 #Unmount the DMG
 hdiutil unmount -force /Volumes/Pro\ Tools/
