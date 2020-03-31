@@ -77,7 +77,5 @@
 	</dict>
 	<key>com.apple.EnergySaver.portable.BatteryPower-ProfileNumber</key>
 	<integer>-1</integer>
-	<key>timeServer</key>
-	<string>ntp.bauer-uk.bauermedia.group</string>
 </dict>
 </plist>
