@@ -69,7 +69,7 @@ mkdir -v /Volumes/$hostName\ Pro\ Tools\ Sessions/Virtual\ Instrument\ Content/
 mkdir -v /Volumes/$hostName\ Pro\ Tools\ Sessions/Virtual\ Instrument\ Content/Waves/
 #Allow everybody to RWX the folders
 chmod 777 /Volumes/$hostName\ Pro\ Tools\ Sessions/Pro\ Tools\ Sessions/
-chmod 777 /Volumes/$hostName\ Pro\ Tools\ Sessions/Virtual\ Instrument\ Content/
+chmod -R 777 /Volumes/$hostName\ Pro\ Tools\ Sessions/Virtual\ Instrument\ Content/
 
 #Now copy in the audio files from the AIR Instruments and XPand2.dmg
 ditto -v /Volumes/Virtual\ Instrument\ Content/ /Volumes/$hostName\ Pro\ Tools\ Sessions/Virtual\ Instrument\ Content/
