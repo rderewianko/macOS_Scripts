@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>DisableGuestAccount</key>
+	<integer>1</integer>
+	<key>EnableGuestAccount</key>
+	<integer>0</integer>
+	<key>PayloadUUID</key>
+	<string>0015B193-18AC-44E3-8982-9041A26ECB6B</string>
+	<key>com.apple.EnergySaver.desktop.ACPower</key>
+	<dict>
+		<key>Automatic Restart On Power Loss</key>
+		<integer>0</integer>
+		<key>Disk Sleep Timer</key>
+		<integer>0</integer>
+		<key>Display Sleep Timer</key>
+		<integer>30</integer>
+		<key>System Sleep Timer</key>
+		<integer>0</integer>
+		<key>Wake On LAN</key>
+		<integer>1</integer>
+		<key>Wake On Modem Ring</key>
+		<integer>0</integer>
+	</dict>
+	<key>com.apple.EnergySaver.desktop.ACPower-ProfileNumber</key>
+	<integer>-1</integer>
+	<key>com.apple.EnergySaver.portable.ACPower</key>
+	<dict>
+		<key>Automatic Restart On Power Loss</key>
+		<integer>0</integer>
+		<key>Disk Sleep Timer</key>
+		<integer>1</integer>
+		<key>Display Sleep Timer</key>
+		<integer>30</integer>
+		<key>Dynamic Power Step</key>
+		<integer>1</integer>
+		<key>Reduce Processor Speed</key>
+		<integer>0</integer>
+		<key>System Sleep Timer</key>
+		<integer>0</integer>
+		<key>Wake On LAN</key>
+		<integer>1</integer>
+		<key>Wake On Modem Ring</key>
+		<integer>0</integer>
+	</dict>
+	<key>com.apple.EnergySaver.portable.ACPower-ProfileNumber</key>
+	<integer>-1</integer>
+	<key>com.apple.EnergySaver.portable.BatteryPower</key>
+	<dict>
+	    <key>Automatic Restart On Power Loss</key>
+	    <integer>0</integer>
+		<key>Disk Sleep Timer</key>
+		<integer>1</integer>
+		<key>Display Sleep Timer</key>
+		<integer>30</integer>
+		<key>Dynamic Power Step</key>
+		<integer>1</integer>
+		<key>Reduce Processor Speed</key>
+		<integer>0</integer>
+		<key>System Sleep Timer</key>
+		<integer>0</integer>
+		<key>Wake On LAN</key>
+		<integer>1</integer>
+		<key>Wake On Modem Ring</key>
+		<integer>0</integer>
+	</dict>
+	<key>com.apple.EnergySaver.portable.BatteryPower-ProfileNumber</key>
+	<integer>-1</integer>
+</dict>
+</plist>
