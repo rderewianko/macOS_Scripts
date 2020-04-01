@@ -9,7 +9,7 @@
 #                            Variables                                 #
 ########################################################################
 
-pkgReceipt=$(pkgutil --pkgs | grep "ukptbundleeffectsandvirtualinstrumentsselfservice1.2")
+pkgReceipt=$(pkgutil --pkgs | grep "ukptbundleeffectsandvirtualinstrumentsselfservice1.3")
 
 ########################################################################
 #                            Functions                                 #
