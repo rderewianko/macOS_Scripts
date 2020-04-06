@@ -32,7 +32,11 @@ if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
 else
     echo "Setting Microsoft Teams URL associations for ${loggedInUser}..."
     sudo -u "$loggedInUser" -H python -c "$pythonScript"
-    echo "Microsoft Teams now the default telephony application"
+    if [[ "$?" == "0" ]]; then
+        echo "Microsoft Teams now the default telephony application"
+    else
+        echo "Failed to set Microsoft Teams as the default telephony application for ${loggedInUser}"
+    fi
 fi
 
 exit 0

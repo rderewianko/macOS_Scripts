@@ -38,8 +38,12 @@ if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
 else
     echo "Setting Microsoft Teams and Microsoft Outlook file/URL associations for ${loggedInUser}..."
     sudo -u "$loggedInUser" -H python -c "$pythonScript"
-    echo "Microsoft Teams now the default telephony application"
-    echo "Microsoft Outlook now the default mail and calendar application"
+    if [[ "$?" == "0" ]]; then
+        echo "Microsoft Teams now the default telephony application"
+        echo "Microsoft Outlook now the default mail and calendar application"
+    else
+        echo "Failed to set default file and URL associations for ${loggedInUser}"
+    fi
 fi
 
 exit 0
