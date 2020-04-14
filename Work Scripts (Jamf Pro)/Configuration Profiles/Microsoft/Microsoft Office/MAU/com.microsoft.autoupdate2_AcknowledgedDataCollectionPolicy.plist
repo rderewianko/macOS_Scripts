@@ -4,17 +4,7 @@
   <dict>
     <key>AcknowledgedDataCollectionPolicy</key>
     <string>RequiredDataOnly</string>
-    <key>HowToCheck</key>
-    <string>AutomaticDownload</string>
-    <key>ChannelName</key>
-    <string>InsiderFast</string>
-    <key>EnableCheckForUpdatesButton</key>
-    <true/>
-    <key>UpdateDeadline.DaysBeforeForcedQuit</key>
-    <integer>3</integer>
     <key>StartDaemonOnAppLaunch</key>
     <true/>
-    <key>UpdateCheckFrequency</key>
-    <integer>720</integer>
   </dict>
 </plist>

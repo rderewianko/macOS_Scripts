@@ -4,8 +4,6 @@
 <dict>
 	<key>AutofillCreditCardEnabled</key>
 	<false/>
-	<key>BackgroundModeEnabled</key>
-	<false/>
 	<key>ConfigureDoNotTrack</key>
 	<true/>
 	<key>DefaultBrowserSettingEnabled</key>
