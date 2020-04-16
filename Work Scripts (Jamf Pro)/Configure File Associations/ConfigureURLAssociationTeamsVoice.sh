@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ########################################################################
 #         Configure URL Association for Microsoft Teams (Voice)        #

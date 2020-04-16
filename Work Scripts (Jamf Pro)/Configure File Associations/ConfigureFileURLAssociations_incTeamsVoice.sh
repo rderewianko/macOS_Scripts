@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ########################################################################
 # Configure File/URL Associations for Outlook, Teams and Self Service  #
