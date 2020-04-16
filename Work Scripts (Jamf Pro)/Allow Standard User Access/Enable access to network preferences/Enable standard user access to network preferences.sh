@@ -17,10 +17,10 @@ security authorizationdb read system.preferences.network > /tmp/system.preferenc
 security authorizationdb read system.services.systemconfiguration.network > /tmp/system.services.systemconfiguration.network.modified
 
 # populate variables to check the values set
-USER_AUTH_PREF=$(/usr/libexec/PlistBuddy -c "print rule" /tmp/system.preferences.network.modified | sed '2q;d' | sed 's/\ //g')
-USER_AUTH_SERV=$(/usr/libexec/PlistBuddy -c "print rule" /tmp/system.services.systemconfiguration.network.modified | sed '2q;d' | sed 's/\ //g')
+userAuthSysPrefs=$(/usr/libexec/PlistBuddy -c "print rule" /tmp/system.preferences.network.modified | sed '2q;d' | sed 's/\ //g')
+userAuthServ=$(/usr/libexec/PlistBuddy -c "print rule" /tmp/system.services.systemconfiguration.network.modified | sed '2q;d' | sed 's/\ //g')
 
-if [[ $USER_AUTH_PREF == "allow" ]] && [[ $USER_AUTH_SERV == "allow" ]]; then
+if [[ "$userAuthSysPrefs" == "allow" ]] && [[ "$userAuthServ" == "allow" ]]; then
 
 	echo "Standard user granted access to Network preferences"
 
