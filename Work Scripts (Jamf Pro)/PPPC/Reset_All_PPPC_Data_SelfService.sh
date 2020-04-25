@@ -1,21 +1,33 @@
-#!/bin/sh
+#!/bin/bash
 
 ########################################################################
-#           Reset All Privacy Preferences Policy Control Data          #
-#################### Written by Phil Walker Mar 2020 ###################
+#  Reset Camera/Microphone/Screen Recording Privacy Consent Decisions  #
+#################### Written by Phil Walker Apr 2020 ###################
 ########################################################################
 
 # Self Service script
 
-# Kill System Preferences
-killall "System Preferences" >/dev/null 2>&1
+########################################################################
+#                            Variables                                 #
+########################################################################
 
-# Reset all privacy consent decisions
-tccutil reset All
-echo "All Privacy Preferences Policy Control Data Reset"
+# Get the logged in user
+loggedInUser=$(stat -f %Su /dev/console)
 
-# Reboot to apply all changes
-/usr/local/jamf/bin/jamf policy -event "immediate_restart"
-echo "Rebooting to complete the process"
+########################################################################
+#                         Script starts here                           #
+########################################################################
+
+if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "" ]]; then
+    echo "No user logged in, exiting..."
+    exit 0
+else
+    # Close System Preferences
+    killall "System Preferences" >/dev/null 2>&1
+    # Reset privacy consent for Camera, Microphone and Screen Recording
+    su -l "$loggedInUser" -c "tccutil reset Camera"
+    su -l "$loggedInUser" -c "tccutil reset Microphone"
+    su -l "$loggedInUser" -c "tccutil reset ScreenCapture"
+fi
 
 exit 0
