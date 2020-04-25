@@ -1,14 +1,18 @@
-#!/bin/sh
+#!/bin/bash
 
 ########################################################################
 #           Reset All Privacy Preferences Policy Control Data          #
 #################### Written by Phil Walker Mar 2020 ###################
 ########################################################################
 
-# For use during enrolment only
+# For use during enrolment only to avoid any issue with screen sharing
+# displaying a black screen only
 
-# Reset all privacy consent decisions
+########################################################################
+#                         Script starts here                           #
+########################################################################
+
+# Reset all privacy consent data (root database only)
 tccutil reset All
-echo "All Privacy Preferences Policy Control Data Reset"
 
 exit 0
