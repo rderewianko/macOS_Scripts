@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ########################################################################
 #            FileVault Deferral Plist - Extension Attribute            #
@@ -8,8 +8,7 @@
 # Deferral plist
 deferralPlist="/usr/local/bin/FileVaultEnablement.plist"
 
-#OS Version Full and Short
-osFull=$(sw_vers -productVersion)
+#OS Version Short
 osShort=$(sw_vers -productVersion | awk -F. '{print $2}')
 
 ########################################################################
