@@ -86,7 +86,7 @@ fi
 function promptUserPassword()
 {
 echo "Prompting $loggedInUser for their login password."
-userPass=$(/usr/bin/osascript << EOT
+userPass=$(su - $loggedInUser -c /usr/bin/osascript << EOT
 
 set user_password to display dialog ¬
 	"Please enter your BAUER-UK password" with title ¬
