@@ -22,7 +22,7 @@ helperIcon="/Library/Application Support/JAMF/bin/Management Action.app/Contents
 # Helper title
 helperTitle="Message from Bauer IT"
 # Log file
-logFile="/usr/local/bin/TempAdminRemoved.log"
+logFile="/usr/local/bin/BauerTempAdmin.log"
 # Date and time
 datetime=$(date +%d-%m-%Y\ %T)
 
