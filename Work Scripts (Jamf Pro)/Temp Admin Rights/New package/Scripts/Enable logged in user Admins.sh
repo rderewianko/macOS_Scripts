@@ -120,7 +120,7 @@ adminUsers=$(dscl . -read Groups/admin GroupMembership | cut -c 18-)
 
 # Check if the logged in user is in the admin group and show jamfHelper message
 if [[ "$adminUsers" =~ $loggedInUser ]]; then
-    echo "$datetime: $loggedInUser has been granted admin rights for $timeChosenHuman" >> "$logFile"
+    echo "${datetime}: $loggedInUser has been granted admin rights for $timeChosenHuman" >> "$logFile"
     # Kill bitbar to read new user rights when holding alt key
     killall BitBarDistro
     # Show jamfHelper message to advise admin rights given and how long the privileges will be in place for

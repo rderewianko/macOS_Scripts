@@ -53,10 +53,10 @@ do
     if [[ "$user" != "root" && "$user" != "admin" && "$user" != "casadmin" ]]; then
         dseditgroup -o edit -d "$user" -t user admin
         if [[ "$?" == "0" ]]; then
-            echo "$datetime: Removed user $user from the admin group" >> "$logFile"
+            echo "${datetime}: Removed user $user from the admin group" >> "$logFile"
         fi
     else
-        echo "$datetime: Admin user $user left alone"
+        echo "${datetime}: Admin user $user left alone"
     fi
 done
 }
