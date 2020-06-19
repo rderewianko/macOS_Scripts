@@ -87,26 +87,13 @@ function closeAllCS6 ()
 adobeCSProcs=$(ps aux | grep -v grep | grep -i "Adobe" | grep -i "cs6" | awk '{print $2}')
 while [[ "$adobeCSProcs" != "" ]]; do
     for proc in $adobeCSProcs; do
-        kill $proc 2>/dev/null
+        kill -9 "$proc" 2>/dev/null
     done
 sleep 2
 # re-populate variable
 adobeCSProcs=$(ps aux | grep -v grep | grep -i "Adobe" | grep -i "cs6" | awk '{print $2}')
 done
 echo "All Adobe CS6 processes killed"
-
-#for proc in $adobeCSProcs
-#do
-#    kill $proc 2>/dev/null
-#done
-#sleep 2
-# re-populate variable to check processes have been killed
-#adobeCSProcs=$(ps aux | grep -v grep | grep -i "Adobe" | grep -i "cs6" | awk '{print $2}')
-#if [[ "$adobeCSProcs" == "" ]]; then
-#    echo "All Adobe CS6 processes killed"
-#else
-#    echo "Failed to kill all CS6 processes"
-#fi
 }
 
 # The legacy version of Save as Adobe PDF should not be installed but if found, remove it (32bit app)
@@ -115,14 +102,14 @@ function removeSaveAsAdobePDF ()
 # Acrobat Save as PDF app
 saveAsAdobePDFApp="/Library/PDF Services/Save as Adobe PDF.app"
 if [[ -d "$saveAsAdobePDFApp" ]]; then
-    saveAsAdobePDFVersion=$(defaults read "/Library/PDF Services/Save as Adobe PDF.app/Contents/Info.plist" CFBundleShortVersionString | cut -c-2)
-    if [[ "$saveAsAdobePDFVersion" -le "11" ]]; then
+    saveAsAdobePDFVersion=$(defaults read "/Library/PDF Services/Save as Adobe PDF.app/Contents/Info.plist" CFBundleShortVersionString)
+    if [[ "$saveAsAdobePDFVersion" == "10.0.0" ]]; then
         rm -rf "/Library/PDF Services/Save as Adobe PDF.app"
         if [[ ! -d "saveAsPDFApp" ]]; then
             echo "Legacy Save as Adobe PDF app uninstalled"
         else
             echo "Failed to uninstall Legacy Save as Adobe PDF app"
-            echo "Manual clan-up required as this app is 32bit"
+            echo "Manual clean-up required as this app is 32bit"
         fi
     fi
 fi
