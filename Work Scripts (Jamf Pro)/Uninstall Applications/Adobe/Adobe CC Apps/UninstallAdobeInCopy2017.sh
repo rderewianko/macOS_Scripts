@@ -63,10 +63,24 @@ if [[ "$pkgReceipt" != "" ]] && [[ -d "/Applications/Adobe InCopy CC 2019" ]]; t
             done
             # Remove package receipt
             pkgutil --forget "com.adobe.Enterprise.install.0A83B18F-FB8F-43C8-BD41-8A44297A8FA8" >/dev/null 2>&1
-            echo "Adobe InCopy CC 2017 uninstalled successfully"
+            if [[ ! -e "/Applications/Adobe InCopy CC 2017" ]]; then
+                echo "Adobe InCopy CC 2017 uninstalled successfully"
+            else
+                echo "Failed to uninstall Adobe InCopy CC 2017"
+                exit 1
+            fi
         else
-            echo "Failed to uninstall InCopy CC 2017"
-            exit 1
+            echo "Adobe uninstaller failed, removing the app directory anyway"
+            # If the Adobe uninstall method fails then remove the directory anyway
+            rm -rf "/Applications/Adobe InCopy CC 2017" >/dev/null 2>&1
+            # Remove package receipt
+            pkgutil --forget "com.adobe.Enterprise.install.0A83B18F-FB8F-43C8-BD41-8A44297A8FA8" >/dev/null 2>&1
+            if [[ ! -e "/Applications/Adobe InCopy CC 2017" ]]; then
+                echo "Adobe InCopy CC 2017 uninstalled successfully"
+            else
+                echo "Failed to uninstall Adobe InCopy CC 2017"
+                exit 1
+            fi
         fi
     else
         echo "Adobe InCopy CC 2017 not found, nothing to do"
