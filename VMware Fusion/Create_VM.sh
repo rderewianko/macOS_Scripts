@@ -3,7 +3,7 @@
 #######################################################################
 #            Create a Virtual Machine for VMware Fusion               #
 #       (OS DMG created with AutoDMG, vfuse and qemu required)        #
-######################## written by Phil Walker ######################£
+######################### written by Phil Walker ######################
 #######################################################################
 
 ########################################################################
@@ -15,21 +15,19 @@ loggedInUser=$(stat -f %Su /dev/console)
 #Check VMware Fusion is installed
 vmwareFusion="/Applications/VMware Fusion.app"
 #Check VMware Fusion version
-vmwareFusionVersion=$(defaults read /Applications/VMware\ Fusion.app/Contents/Info CFBundleShortVersionString | cut -c -2)
-#vfuse binary
+VMwareFusionVersion=$(defaults read /Applications/VMware\ Fusion.app/Contents/Info CFBundleShortVersionString | cut -c -2)
+#Vfuse binary
 vfuse="/usr/local/vfuse/bin/vfuse"
 #qemu binary
 qemu="/usr/local/bin/qemu-img"
 #AutoDMG Image Location
-osImages=(/Users/$loggedInUser/Desktop/AutoDMG_Images/*)
-#Script location
-scriptDirectory="$(cd "$(dirname "$0")"; pwd)"
+DMGs=(/Users/"$loggedInUser"/Desktop/AutoDMG_Images/*)
 
 ########################################################################
 #                            Functions                                 #
 ########################################################################
 
-function checkDependencies () 
+function checkDependencies ()
 {
 if [[ ! -d "$vmwareFusion" ]]; then
   echo "VMware Fusion not installed, install VMware Fusion before running again. Exiting script..."
@@ -61,31 +59,32 @@ fi
 #                         Script starts here                           #
 ########################################################################
 
-echo "Script being run from directory: ${scriptDirectory}"
-echo "Checking all dependencies are installed..."
 checkDependencies
 
-read -p "Enter the VM name: " NAME
+read -p "Enter the VM name: " vmName
 
-read -p "Enter the serial number: " SERIAL
+read -p "Enter the serial number: " vmSerial
+
+read -p "Enter the model number identifier: " vmModel
 
 read -p "$(
         f=0
-        for dmgname in "${osImages[@]}" ; do
+        for dmgname in "${DMGs[@]}" ; do
                 echo "$((++f)): $dmgname"
         done
 
         echo -ne 'Please select a DMG > '
 )" selection
 
-selectedDMG="${osImages[$((selection-1))]}"
+selectedDMG="${DMGs[$((selection-1))]}"
 
 echo "Check details entered are correct before continuing"
-echo "---------------------------------------------------"
-echo "Virtual machine name entered: $NAME"
-echo "Serial number entered: $SERIAL"
+echo
+echo "Virtual machine name entered: $vmName"
+echo "Serial number entered: $vmSerial"
+echo "Model Identifier entered: $vmModel"
 echo "DMG selected: $selectedDMG"
-echo "---------------------------------------------------"
+echo
 
 read -p "Are all details entered correct? (Yy/Nn) " -n 1 -r
 echo    # (optional) move to a new line
@@ -95,22 +94,20 @@ then
     exit 0
 fi
 
-if [[ $vmwareFusionVersion -ge "11" ]]; then
+if [[ "$VMwareFusionVersion" -ge "11" ]]; then
   echo "VMware Fusion 11 installed, qemu will need to be used"
-      if [[ $SERIAL == "" ]]; then
-        "$vfuse" -i "$selectedDMG" --hw-model iMac16,2 --use-qemu -n "$NAME"
+      if [[ $vmSerial == "" ]]; then
+        "$vfuse" -i "$selectedDMG" --hw-model "$vmModel" --use-qemu -n "$vmName"
       else
-        "$vfuse" -i "$selectedDMG" -s $SERIAL --hw-model iMac16,2 --use-qemu -n "$NAME"
+        "$vfuse" -i "$selectedDMG" -s "$vmSerial" --hw-model "$vmModel" --use-qemu -n "$vmName"
       fi
 else
   echo "VMware Fusion version 10 or previous"
-      if [[ $SERIAL == "" ]]; then
-        "$vfuse" -i "$selectedDMG" --hw-model iMac16,2 -n "$NAME"
+      if [[ $vmSerial == "" ]]; then
+        "$vfuse" -i "$selectedDMG" --hw-model "$vmModel" -n "$vmName"
       else
-        "$vfuse" -i "$selectedDMG" -s $SERIAL --hw-model iMac16,2 -n "$NAME"
+        "$vfuse" -i "$selectedDMG" -s "$vmSerial" --hw-model "$vmModel" -n "$vmName"
       fi
 fi
 
-echo "Moving "$NAME" to Virtual Machines directory...."
-mv -v "$scriptDirectory/$NAME.vmwarevm" "/Users/$loggedInUser/Virtual Machines.localized/"
-echo "Virtual Machine created and moved to the correct directory"
+exit 0
