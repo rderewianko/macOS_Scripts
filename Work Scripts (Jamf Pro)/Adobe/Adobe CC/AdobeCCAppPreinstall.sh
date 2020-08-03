@@ -11,19 +11,18 @@
 #                            Variables                                 #
 ########################################################################
 
-#Get the logged in user
+# Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
-#Get all user Adobe Launch Agents/Daemons PIDs
-userPID=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
+# Get all user Adobe Launch Agents/Daemons PIDs
+userPIDs=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
 
 ########################################################################
 #                         Script starts here                           #
 ########################################################################
 
 #Kill all user Adobe Launch Agents and Daemons
-for pid in $userPID
-    do
-        kill $pid 2>/dev/null
+for pid in $userPIDs; do
+    kill -9 "$pid" 2>/dev/null
 done
 echo "All user Adobe Launch Agent and Daemon processes killed"
 

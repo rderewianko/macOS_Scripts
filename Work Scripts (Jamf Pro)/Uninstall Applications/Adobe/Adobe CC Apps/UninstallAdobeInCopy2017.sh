@@ -28,7 +28,7 @@ function killInCopy ()
 incopyPID=$(pgrep "Adobe InCopy CC 2017")
 if [[ "$incopyPID" != "" ]]; then
     while [[ "$incopyPID" != "" ]]; do
-        kill "$incopyPID" 2>/dev/null
+        kill -9 "$incopyPID" 2>/dev/null
         sleep 2
         # re-populate variable
         incopyPID=$(pgrep "Adobe InCopy CC 2017")

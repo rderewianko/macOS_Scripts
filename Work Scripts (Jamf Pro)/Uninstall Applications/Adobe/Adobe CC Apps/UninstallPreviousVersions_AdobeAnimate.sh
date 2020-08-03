@@ -26,7 +26,7 @@ function killAdobe ()
 {
 # Kill all user Adobe Launch Agents/Daemons
 for pid in $userPIDs; do
-    kill "$pid" 2>/dev/null
+    kill -9 "$pid" 2>/dev/null
 done
 # Unload user Adobe Launch Agents
 su -l "$loggedInUser" -c "/bin/launchctl unload /Library/LaunchAgents/com.adobe.* 2>/dev/null"
