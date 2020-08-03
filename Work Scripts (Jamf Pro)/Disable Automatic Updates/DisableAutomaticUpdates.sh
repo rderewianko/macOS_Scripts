@@ -74,7 +74,7 @@ if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
 else
     sysPrefsDockItem=$(su -l "$loggedInUser" -c "defaults read com.apple.dock" | grep "System%20Preferences.app")
     if [[ "$sysPrefsDockItem" != "" ]]; then
-        su -l $loggedInUser -c "defaults write com.apple.systempreferences AttentionPrefBundleIDs 0"
+        sudo -u "$loggedInUser" defaults write com.apple.systempreferences AttentionPrefBundleIDs 0
         killall Dock
     fi
 fi
