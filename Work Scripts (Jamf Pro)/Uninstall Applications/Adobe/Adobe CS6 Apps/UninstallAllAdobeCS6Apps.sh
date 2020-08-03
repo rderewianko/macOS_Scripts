@@ -59,7 +59,7 @@ adobeCSFiles=( "/private/etc/mach_init_per_user.d/com.adobe.SwitchBoard.monitor.
 "/Library/Fonts/RosewoodStd-Regular.otf" "/Library/Fonts/NuevaStd-Italic.otf" "/Library/Fonts/MyriadPro-BoldIt.otf" "/Library/Fonts/TektonPro-BoldExt.otf" \
 "/Library/Fonts/KozMinPro-Medium.otf" "/Library/Fonts/KozGoPr6N-Regular.otf" "/Library/Fonts/AdobeDevanagari-Bold.otf" "/Library/Fonts/MyriadArabic-BoldIt.otf" \
 "/Library/Fonts/KozGoPr6N-ExtraLight.otf" "/Library/Fonts/AdobeFanHeitiStd-Bold.otf" "/Library/Fonts/TektonPro-BoldCond.otf" "/Library/Fonts/MesquiteStd.otf" \
-"/Library/Fonts/AdobeHeitiStd-Regular.otf" "/Library/Fonts/KozMinPr6N-ExtraLight.otf" "/Library/Fonts/KozGoPro-Regular.ot" "/Library/Fonts/AdobeKaitiStd-Regular.otf" \
+"/Library/Fonts/AdobeHeitiStd-Regular.otf" "/Library/Fonts/KozMinPr6N-ExtraLight.otf" "/Library/Fonts/KozGoPro-Regular.otf" "/Library/Fonts/AdobeKaitiStd-Regular.otf" \
 "/Library/Fonts/MyriadArabic-Regular.otf" "/Library/Fonts/MyriadPro-It.otf" "/Library/Fonts/ACaslonPro-Bold.otf" "/Library/Fonts/BirchStd.otf" \
 "/Library/Fonts/BlackoakStd.otf" "/Library/Fonts/MyriadPro-Bold.otf" "/Library/Fonts/TektonPro-Bold.otf" "/Library/Fonts/MinionPro-BoldCn.otf" \
 "/Library/Fonts/KozGoPro-Heavy.otf" "/Library/Fonts/AGaramondPro-Bold.otf" "/Library/Fonts/AdobeArabic-Italic.otf" "/Library/Fonts/GiddyupStd.otf" \
