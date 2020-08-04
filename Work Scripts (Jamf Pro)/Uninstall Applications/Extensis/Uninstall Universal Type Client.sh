@@ -7,16 +7,6 @@
 # Email: support@extensis.com
 # Last Updated 24-04-2019
 
-echo "Closing System Preferences ..."
-# close system preferences on osx 10.7, 10.6 and 10.5 machines in case UTCore preference panel is open
-# note: unable to close on 10.4 machine
-SYSTEM_PREFERENCES=$(ps -ax | grep -i "/Applications/System Preferences.app/Contents/MacOS/System Preferences" | grep -vi "grep" | awk ' { print $1 } ')
-if [ -n "$SYSTEM_PREFERENCES" ]; then
-	kill -s KILL "$SYSTEM_PREFERENCES" > /dev/null 2>&1
-	sleep 3
-fi
-echo "... Done"
-
 # stop the QuickMatch process called QMRenderer
 echo "Shutting down QuickMatch/QMRenderer ..."
 QUICK_MATCH=$(ps -ax | grep -i "/Applications/Universal Type Client.app/Contents/Resources/QMRenderer" | grep -vi "grep" | awk ' { print $1 } ')
