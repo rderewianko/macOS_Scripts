@@ -85,15 +85,18 @@ adobeCSFiles=( "/private/etc/mach_init_per_user.d/com.adobe.SwitchBoard.monitor.
 function closeAllCS6 ()
 {
 adobeCSProcs=$(ps aux | grep -v grep | grep -i "Adobe" | grep -i "cs6" | awk '{print $2}')
-while [[ "$adobeCSProcs" != "" ]]; do
-    for proc in $adobeCSProcs; do
-        kill -9 "$proc" 2>/dev/null
+if [[ "$adobeCSProcs" != "" ]]; then
+    echo "Killing all Adobe CS6 processes..."
+    while [[ "$adobeCSProcs" != "" ]]; do
+        for proc in $adobeCSProcs; do
+            kill -9 "$proc" 2>/dev/null
+        done
+    sleep 2
+    # re-populate variable
+    adobeCSProcs=$(ps aux | grep -v grep | grep -i "Adobe" | grep -i "cs6" | awk '{print $2}')
     done
-sleep 2
-# re-populate variable
-adobeCSProcs=$(ps aux | grep -v grep | grep -i "Adobe" | grep -i "cs6" | awk '{print $2}')
-done
-echo "All Adobe CS6 processes killed"
+    echo "All Adobe CS6 processes killed"
+fi
 }
 
 # The legacy version of Save as Adobe PDF should not be installed but if found, remove it (32bit app)
