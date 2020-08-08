@@ -9,17 +9,20 @@
 #                            Variables                                 #
 ########################################################################
 
-# StuffIt Expander Application Directory
-stuffItExpander="/Applications/StuffIt"
+# StuffIt Expander Application
+stuffItExpander="/Applications/StuffIt Expander.app"
+# StuffIt Expander v14 Application Directory
+stuffItExpanderLegacy="/Applications/StuffIt"
 
 ########################################################################
 #                         Script starts here                           #
 ########################################################################
 
-if [[ -d "$stuffItExpander" ]]; then
+if [[ -d "$stuffItExpander" ]] || [[ -d "$stuffItExpanderLegacy" ]]; then
     echo "StuffIt Expander found"
     rm -rf "$stuffItExpander"
-    if [[ ! -d "$stuffItExpander" ]]; then
+    rm -rf "$stuffItExpanderLegacy" 2>/dev/null
+    if [[ ! -d "$stuffItExpander" ]] && [[ ! -d "$stuffItExpanderLegacy" ]]; then
         echo "StuffIt Expander uninstalled successfully"
     else
         echo "Failed to uninstall StuffIt Expander"
