@@ -114,7 +114,7 @@ function jamfHelperNoPower ()
 
 function jamfHelperNoMADLoginADMissing ()
 {
-"$jamfHelper" -windowType utility -icon "$helperIconProblem" -title "$helperTitle" -heading "NoMADLogin-AD not installed - upgrade cannot continue!" \
+"$jamfHelper" -windowType utility -icon "$helperIconProblem" -title "$helperTitle" -heading "NoMAD Login AD not installed - upgrade cannot continue!" \
 -description "Please contact the IT Service Desk on 0345 058 4444 before attempting this upgrade again." -button1 "Close" -defaultButton 1
 }
 
@@ -207,32 +207,20 @@ fi
 
 function checkNoMADLoginAD ()
 {
-# Make sure NoMADLogin-AD is installed and the logged in user has a local account
-echo "${macModelFull} running ${osFull}, confirming that NoMADLogin-AD is installed..."
+# Make sure NoMAD Login AD is installed and the logged in user has a local account
+echo "${macModelFull} running ${osFull}, confirming that NoMAD Login AD is installed..."
 if [[ ! -d "$noLoADBundle" ]]; then
-    if [[ "$loggedInUser" != "" ]]; then
-        echo "NoMADLogin-AD not installed, aborting OS Upgrade"
-        jamfHelperNoMADLoginADMissing
+    if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
+        echo "NoMAD Login AD not installed, Aborting OS Upgrade"
         exit 1
     else
-        echo "NoMADLogin-AD not installed, Aborting OS Upgrade"
+        echo "NoMAD Login AD not installed, aborting OS Upgrade"
+        jamfHelperNoMADLoginADMissing
         exit 1
     fi
 else
-    echo "NoMADLogin-AD installed"
-    if [[ "$loggedInUser" != "" ]]; then
-        echo "Confirming that $loggedInUser has a local account..."
-        if [[ "$mobileAccount" == "" ]]; then
-            echo "$loggedInUser has a local account, carry on with OS Upgrade"
-        else
-            echo "$loggedInUser has a mobile account, aborting OS Upgrade"
-            echo "Advising $loggedInUser via a jamfHelper that they will be logged out in 30 seconds as a logout/login is required"
-            jamfHelperMobileAccount
-            echo "killing the login session..."
-            killall loginwindow
-            exit 1
-        fi
-    else
+    echo "NoMAD Login AD installed"
+    if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
         fileVaultStatus=$(fdesetup status | sed -n 1p)
         if [[ "$fileVaultStatus" =~ "Off" ]]; then
             echo "FileVault off, carry on with OS upgrade"
@@ -254,29 +242,25 @@ else
                 fi
             done
         fi
-    fi
-fi
-}
-
-function deleteSleepImage ()
-{
-# Check for a sleepimage and if found delete, this should help with laptops and lack of space as the sleepimage is normally 4-8Gb
-if [[ -f /var/vm/sleepimage ]]; then
-    echo "sleepimage found deleting..."
-    rm -rf /var/vm/sleepimage
-    if [[ -f /var/vm/sleepimage ]]; then
-        echo "sleepimage NOT deleted!"
     else
-        echo "sleepimage DELETED"
+        echo "Confirming that $loggedInUser has a local account..."
+        if [[ "$mobileAccount" == "" ]]; then
+            echo "$loggedInUser has a local account, carry on with OS Upgrade"
+        else
+            echo "$loggedInUser has a mobile account, aborting OS Upgrade"
+            echo "Advising $loggedInUser via a jamfHelper that they will be logged out in 30 seconds as a logout/login is required"
+            jamfHelperMobileAccount
+            echo "Returning to the login window to demobilise the account on next login..."
+            killall loginwindow
+            exit 1
+        fi
     fi
-else
-    echo "No sleepimage found"
 fi
 }
 
 function runInstall ()
 {
-# Check NoMADLogin-AD is installed and the logged in user has a local account
+# Check NoMAD Login AD is installed and the logged in user has a local account
 checkNoMADLoginAD
 
 # Check power status
@@ -287,8 +271,6 @@ while ! [[  ${pwrStatus} == "OK" ]]; do
     sleep 5
     checkPower
 done
-
-deleteSleepImage
 
 # Check the Mac meets the space Requirements
 checkSpace
@@ -348,7 +330,6 @@ if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
     # Show status of NoLoAD, power and space for reporting. As no user is logged in no action can be taken to fix any issues.
     checkNoMADLoginAD
     checkPower
-    deleteSleepImage
     checkSpace
     # Begin Upgrade
     echo "--------------------------"
