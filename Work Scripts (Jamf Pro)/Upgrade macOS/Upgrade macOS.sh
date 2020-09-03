@@ -162,32 +162,20 @@ fi
 
 function checkNoMADLoginAD ()
 {
-# Make sure NoMADLogin-AD is installed and the logged in user has a local account
-echo "${macModelFull} running ${osFull}, confirming that NoMADLogin-AD is installed..."
+# Make sure NoMAD Login AD is installed and the logged in user has a local account
+echo "${macModelFull} running ${osFull}, confirming that NoMAD Login AD is installed..."
 if [[ ! -d "$noLoADBundle" ]]; then
-    if [[ "$loggedInUser" != "" ]]; then
-        echo "NoMADLogin-AD not installed, aborting OS Upgrade"
-        jamfHelperNoMADLoginADMissing
+    if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
+        echo "NoMAD Login AD not installed, Aborting OS Upgrade"
         exit 1
     else
-        echo "NoMADLogin-AD not installed, Aborting OS Upgrade"
+        echo "NoMAD Login AD not installed, aborting OS Upgrade"
+        jamfHelperNoMADLoginADMissing
         exit 1
     fi
 else
-    echo "NoMADLogin-AD installed"
-    if [[ "$loggedInUser" != "" ]]; then
-        echo "Confirming that $loggedInUser has a local account..."
-        if [[ "$mobileAccount" == "" ]]; then
-            echo "$loggedInUser has a local account, carry on with OS Upgrade"
-        else
-            echo "$loggedInUser has a mobile account, aborting OS Upgrade"
-            echo "Advising $loggedInUser via a jamfHelper that they will be logged out in 30 seconds as a logout/login is required"
-            jamfHelperMobileAccount
-            echo "killing the login session..."
-            killall loginwindow
-            exit 1
-        fi
-    else
+    echo "NoMAD Login AD installed"
+    if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
         fileVaultStatus=$(fdesetup status | sed -n 1p)
         if [[ "$fileVaultStatus" =~ "Off" ]]; then
             echo "FileVault off, carry on with OS upgrade"
@@ -208,6 +196,18 @@ else
                     fi
                 fi
             done
+        fi
+    else
+        echo "Confirming that $loggedInUser has a local account..."
+        if [[ "$mobileAccount" == "" ]]; then
+            echo "$loggedInUser has a local account, carry on with OS Upgrade"
+        else
+            echo "$loggedInUser has a mobile account, aborting OS Upgrade"
+            echo "Advising $loggedInUser via a jamfHelper that they will be logged out in 30 seconds as a logout/login is required"
+            jamfHelperMobileAccount
+            echo "Returning to the login window to demobilise the account on next login..."
+            killall loginwindow
+            exit 1
         fi
     fi
 fi
@@ -235,7 +235,7 @@ fi
 
 
 echo "Current logged in user is $loggedInUser"
-# Check NoMADLogin-AD is installed and the logged in user has a local account
+# Check NoMAD Login AD is installed and the logged in user has a local account
 checkNoMADLoginAD
 # Check power status
 checkPower
