@@ -27,19 +27,33 @@ cat "$tmp_users" | while read -r the_user; do
 	user_name=$(echo "$the_user" | awk '{$1 = ""; $2 = ""; sub("^ +","");print}' | cut -c8-)
 	# Remove users' Library files
     if [[ -n "$user_home" ]]; then
-        if [[ -d "${user_home}/Library/Application Support/Transmit/TransmitSync.app" ]] || [[ -d "${user_home}/Library/Application Support/RealNetworks/RealPlayer Downloader Agent.app" ]]; then
-            echo "Removing TransmitSync and RealPlayer Downloader Agent for ${user_name}"
-            echo "Both are 32-bit applications and must be removed before upgrading to macOS Catalina"
+        echo "Checking for legacy 32-bit applications in ${user_name}'s profile..."
+        if [[ -d "${user_home}/Library/Application Support/Transmit/TransmitSync.app" ]]; then
             # 32-bit app Transmit Sync
             rm -rf "${user_home}/Library/Application Support/Transmit/TransmitSync.app" 2>/dev/null
+            if [[ ! -d "${user_home}/Library/Application Support/Transmit/TransmitSync.app" ]]; then
+                echo "Removed TransmitSync successfully for ${user_name}"
+            fi
+        fi
+        if [[ -d "${user_home}/Library/Application Support/RealNetworks/RealPlayer Downloader Agent.app" ]]; then
             # 32-bit app RealPlayer Downloader Agent
             rm -rf "${user_home}/Library/Application Support/RealNetworks/RealPlayer Downloader Agent.app" 2>/dev/null
-            if [[ ! -d "${user_home}/Library/Application Support/Transmit/TransmitSync.app" ]] && [[ ! -d "${user_home}/Library/Application Support/RealNetworks/RealPlayer Downloader Agent.app" ]]; then
-                echo "Removed TransmitSync and RealPlayer Downloader Agent successfully for ${user_name}"
-                echo "-----------------------------------------------------------------------------------"
-            else
-                echo "32-bit apps still installed, process failed!"
-                exit 1
+            if [[ ! -d "${user_home}/Library/Application Support/RealNetworks/RealPlayer Downloader Agent.app" ]]; then
+                echo "Removed RealPlayer Downloader Agent successfully for ${user_name}"
+            fi
+        fi
+        if [[ -d "${user_home}/Library/Application Support/Roxio/Roxio Restore.app" ]]; then
+            # 32-bit app for Roxio Toast Titanium v9/v10
+            rm -rf "${user_home}/Library/Application Support/Roxio/Roxio Restore.app"
+            if [[ ! -d "${user_home}/Library/Application Support/Roxio/Roxio Restore.app" ]]; then
+                echo "Removed Roxio Restore successfully for ${user_name}"
+            fi
+        fi
+        if [[ -d "${user_home}/Library/Application Support/CitrixOnline/CitrixOnlineLauncher.app" ]]; then
+            # 32-bit app Citrix Online Launcher - Replaced with Citrix Workspace app in August 2018.
+            rm -rf "${user_home}/Library/Application Support/CitrixOnline/CitrixOnlineLauncher.app" 2>/dev/null
+            if [[ ! -d "${user_home}/Library/Application Support/CitrixOnline/CitrixOnlineLauncher.app" ]]; then
+                echo "Removed Citrix Online Launcher successfully for ${user_name}"
             fi
         fi
         # Android File Transfer used to be a 32-bit application so remove it anyway. It'll be re-created on the next launch of Android File Transfer
@@ -51,6 +65,12 @@ cat "$tmp_users" | while read -r the_user; do
             fi
             rm -rf "${user_home}/Library/Application Support/Google/Android File Transfer/Android File Transfer Agent.app" 2>/dev/null
         fi
+        # Legacy versions of GoToMeeting
+        if [[ -d "${user_home}/Applications/GoToMeeting" ]] || [[ -d "${user_home}/Applications/GoToMeeting.app" ]]; then
+            rm -rf "${user_home}/Applications/GoToMeeting*.app" 2>/dev/null
+            rm -rf "${user_home}/Applications/GoToMeeting"
+        fi
+        echo "-------------------------------------------------------------------------"
     fi
 done
 
