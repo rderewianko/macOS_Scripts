@@ -19,9 +19,8 @@ adobeReaderPID=$(ps aux | grep -v grep | grep "AdobeReader\|Adobe Acrobat Reader
 
 if [[ "$adobeReaderPID" != "" ]]; then
     echo "Closing Adobe Acrobat Reader DC before installation"
-    for pid in "$adobeReaderPID"
-        do
-            kill $pid 2>/dev/null
+    for pid in $adobeReaderPID; do
+        kill "$pid" 2>/dev/null
     done
     sleep 2
     # re-populate variable to confirm the app has been closed
