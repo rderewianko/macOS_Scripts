@@ -19,6 +19,8 @@ packageReceipt="$5"
 helperIconComplete="$6"
 ############ Variables for Jamf Pro Parameters - End ###################
 
+# Check for package receipt
+recieptCheck=$(pkgutil --pkgs | grep "$packageReceipt")
 # jamfHelper
 jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
 # Add fall back icon if the 
@@ -63,7 +65,7 @@ If you continue to have issues after that please contact the IT Service Desk" -a
 # Kill any open jamf Helper
 killall -13 "jamfHelper" >/dev/null 2>&1
 # Check for the package receipt
-if [[ "$packageReceipt" != "" ]]; then
+if [[ "$recieptCheck" != "" ]]; then
     echo "${installedAppName} installation successful"
     # jamf helper for completion
     jamfHelperComplete
@@ -74,5 +76,4 @@ else
     echo "jamf Helper displayed to advise the customer to install ${installedAppName} from Self Service"
     exit 1
 fi
-
 exit 0
