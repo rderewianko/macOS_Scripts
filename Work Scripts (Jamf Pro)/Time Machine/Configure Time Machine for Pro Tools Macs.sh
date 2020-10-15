@@ -145,6 +145,7 @@ if mount | grep "on $tmBackupDisk" > /dev/null; then
     unlockTMPrefPane
     checkAuthRights
     # Show helper with config settings
+    echo "Time Machine configuration completed and displayed in the helper window"
     tmConfigHelper
 else
     echo "Time Machine HDD not mounted, exiting..."
