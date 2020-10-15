@@ -14,16 +14,18 @@
 #Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
 #Get all user Adobe Launch Agents/Daemons PIDs
-userPID=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
+userPIDs=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
 
 ########################################################################
 #                         Script starts here                           #
 ########################################################################
 
 #Kill all user Adobe Launch Agents and Daemons
-for pid in $userPID; do
-    kill -9 "$pid" 2>/dev/null
-done
+if [[ "$userPIDs" != "" ]]; then
+    while IFS= read -r line; do
+        kill -9 "$line" 2>/dev/null
+    done <<< "$userPIDs"
+fi
 echo "All user Adobe Launch Agent and Daemon processes killed"
 
 #Unload user Adobe Launch Agents
@@ -41,6 +43,5 @@ pkill -9 "Crash Reporter"
 echo "All remaining Adobe processes killed"
 # Kill Safari processes - can cause install failure (Error DW046 - Conflicting processes are running)
 killall -9 "Safari"
-
 
 exit 0
