@@ -36,9 +36,11 @@ helperHeading="     Adobe CC Application Updates     "
 function killAdobe ()
 {
 #Kill all user Adobe Launch Agents/Daemons
-for pid in $userPIDs; do
-    kill -9 "$pid" 2>/dev/null
-done
+if [[ "$userPIDs" != "" ]]; then
+    while IFS= read -r line; do
+        kill -9 "$line" 2>/dev/null
+    done <<< "$userPIDs"
+fi
 # Unload user Adobe Launch Agents
 su -l "$loggedInUser" -c "/bin/launchctl unload /Library/LaunchAgents/com.adobe.* 2>/dev/null"
 # Unload Adobe Launch Daemons
