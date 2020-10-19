@@ -16,6 +16,8 @@
 ############ Variables for Jamf Pro Parameters - Start #################
 # CC App name for helper windows e.g. Adobe Photoshop 2020
 installedAppName="$4"
+# CC App bundle
+installedAppBundle="$5"
 ############ Variables for Jamf Pro Parameters - End ###################
 
 # Get the logged in user
@@ -30,10 +32,14 @@ jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/
 helperIcon="/Applications/Utilities/Adobe Creative Cloud/Utils/Creative Cloud Desktop App.app/Contents/Resources/CreativeCloudApp.icns"
 # Helper Icon for update check
 helperUpdateCheckIcon="/System/Library/CoreServices/Install Command Line Developer Tools.app/Contents/Resources/SoftwareUpdate.icns"
+# Helper Icon Problem
+helperIconProblem="/System/Library/CoreServices/Problem Reporter.app/Contents/Resources/ProblemReporter.icns"
 # Helper Title
 helperTitle="Message from Bauer IT"
 # Helper heading
 helperHeading="     Adobe CC Application Updates     "
+# Failure Helper eading
+failureHelperHeading="          ${installedAppName}          "
 
 ########################################################################
 #                            Functions                                 #
@@ -69,6 +75,16 @@ function jamfHelperCheckUpdates ()
 -description "${installedAppName} Installation Complete ✅
 
 Checking for all available Adobe CC application updates..." -alignDescription natural -timeout 10 -button1 "Ok" -defaultButton "1"
+}
+
+function jamfHelperFailed ()
+{
+# check for updates available helper
+"$jamfHelper" -windowType utility -icon "$helperIconProblem" \
+-title "$helperTitle" -heading "$failureHelperHeading" -alignHeading natural \
+-description "${installedAppName} Installation Failed ⚠️
+
+Please reboot your Mac and install ${installedAppName} from Self Service again." -alignDescription natural -timeout 20 -button1 "Ok" -defaultButton "1"
 }
 
 function jamfHelperUpdatesToInstall ()
@@ -165,67 +181,76 @@ if [[ ! -e "$rumBinary" ]]; then
     echo "No updates can be installed at this time"
     exit 0
 else
-    # jamf Helper for update check
-    jamfHelperCheckUpdates
-    # Remove previous log
-    if [[ -f "$rumLog" ]]; then
-        rm -f "$rumLog"
+    if [[ -d "$installedAppBundle" ]]; then
+        echo "Installation successful, checking for all available updates..."
+        # jamf Helper for update check
+        jamfHelperCheckUpdates
+        # Remove previous log
         if [[ -f "$rumLog" ]]; then
-            echo "Previous log file removal failed, info displayed in jamfHelper windows will be incorrect" 
+            rm -f "$rumLog"
+            if [[ -f "$rumLog" ]]; then
+                echo "Previous log file removal failed, info displayed in jamfHelper windows will be incorrect" 
+            fi
         fi
-    fi
-    # Create log file, check for available updates and output results to the log
-    touch "$rumLog"
-    "$rumBinary" --action=list > "$rumLog"
-    # Read the log file to check which updates are available for install for use in a jamf Helper window
-    updatesAvailable=$(sed -n '/Following*/,/\*/p' $rumLog \
-        | sed 's/Following Updates are applicable on the system :/*/g'  | grep -v "*" \
-        | sed 's/Following Acrobat\/\Reader updates are applicable on the system :/*/g' | grep -v "*" \
-        | sed 's/AEFT/After\ Effects/g' \
-        | sed 's/FLPR/Animate/g' \
-        | sed 's/AUDT/Audition/g' \
-        | sed 's/KBRG/Bridge/g' \
-        | sed 's/CHAR/Character\ Animator/g' \
-        | sed 's/ESHR/Dimension/g' \
-        | sed 's/DRWV/Dreamweaver/g' \
-        | sed 's/ILST/Illustrator/g' \
-        | sed 's/AICY/InCopy/g' \
-        | sed 's/IDSN/InDesign/g' \
-        | sed 's/LRCC/Lightroom/g' \
-        | sed 's/LTRM/Lightroom\ Classic/g' \
-        | sed 's/AME/Media\ Encoder/g' \
-        | sed 's/PHSP/Photoshop/g' \
-        | sed 's/PRLD/Prelude/g' \
-        | sed 's/PPRO/Premiere\ Pro/g' \
-        | sed 's/RUSH/Premiere\ Rush/g' \
-        | sed 's/SPRK/XD/g' \
-        | sed 's/ACR/Camera Raw/g' \
-        | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
-    	| sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
-        | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
-        | sed 's/[()]//g' | sed 's/osx10-64//g' | sed 's/osx10//g' | sed 's/\// /g' \
-        | grep -v "*")
-    # Check if any updates are required
-    updatesCheck=$(cat "$rumLog")
-    if [[ "$updatesCheck" =~ "Following" ]]; then
-        echo "Updates available"
-        # Updates installing helper
-        jamfHelperUpdatesToInstall
-        echo "Installing updates listed below"
-        echo "------------------------------------------"
-        echo "$updatesAvailable"
-        echo "------------------------------------------"
-        # Kill all open CC apps
-        killAdobe
-        # Install all updates
-        installUpdates
-        # Updates installed helper
-        jamfHelperUpdatesInstalled
+        # Create log file, check for available updates and output results to the log
+        touch "$rumLog"
+        "$rumBinary" --action=list > "$rumLog"
+        # Read the log file to check which updates are available for install for use in a jamf Helper window
+        updatesAvailable=$(sed -n '/Following*/,/\*/p' $rumLog \
+            | sed 's/Following Updates are applicable on the system :/*/g'  | grep -v "*" \
+            | sed 's/Following Acrobat\/\Reader updates are applicable on the system :/*/g' | grep -v "*" \
+            | sed 's/AEFT/After\ Effects/g' \
+            | sed 's/FLPR/Animate/g' \
+            | sed 's/AUDT/Audition/g' \
+            | sed 's/KBRG/Bridge/g' \
+            | sed 's/CHAR/Character\ Animator/g' \
+            | sed 's/ESHR/Dimension/g' \
+            | sed 's/DRWV/Dreamweaver/g' \
+            | sed 's/ILST/Illustrator/g' \
+            | sed 's/AICY/InCopy/g' \
+            | sed 's/IDSN/InDesign/g' \
+            | sed 's/LRCC/Lightroom/g' \
+            | sed 's/LTRM/Lightroom\ Classic/g' \
+            | sed 's/AME/Media\ Encoder/g' \
+            | sed 's/PHSP/Photoshop/g' \
+            | sed 's/PRLD/Prelude/g' \
+            | sed 's/PPRO/Premiere\ Pro/g' \
+            | sed 's/RUSH/Premiere\ Rush/g' \
+            | sed 's/SPRK/XD/g' \
+            | sed 's/ACR/Camera Raw/g' \
+            | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
+    	    | sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
+            | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
+            | sed 's/[()]//g' | sed 's/osx10-64//g' | sed 's/osx10//g' | sed 's/\// /g' \
+            | grep -v "*")
+        # Check if any updates are required
+        updatesCheck=$(cat "$rumLog")
+        if [[ "$updatesCheck" =~ "Following" ]]; then
+            echo "Updates available"
+            # Updates installing helper
+            jamfHelperUpdatesToInstall
+            echo "Installing updates listed below"
+            echo "------------------------------------------"
+            echo "$updatesAvailable"
+            echo "------------------------------------------"
+            # Kill all open CC apps
+            killAdobe
+            # Install all updates
+            installUpdates
+            # Updates installed helper
+            jamfHelperUpdatesInstalled
+        else
+            # jame Helper for no updates available 
+            jamfHelperNoUpdates
+            # No updates found so nothing to do
+            echo "All applications are up to date"
+        fi
     else
-        # jame Helper for no updates available 
-        jamfHelperNoUpdates
-        # No updates found so nothing to do
-        echo "All applications are up to date"
+        # Jamf Helper to advise the user to reboot and try the install again
+        jamfHelperFailed
+        echo "Installation failed!"
+        echo "jamf Helper displayed to advise the customer to reboot and try installing ${installedAppName} from Self Service again"
+        exit 1
     fi
 fi
 
