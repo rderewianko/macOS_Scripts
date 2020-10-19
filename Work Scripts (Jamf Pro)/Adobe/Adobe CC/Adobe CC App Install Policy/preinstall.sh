@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-#          Adobe CC Application Install Policy Script - Pre            #
+#       Adobe CC Application Install Policy Script - Preinstall        #
 ################### Written by Phil Walker Aug 2020 ####################
 ########################################################################
 # Must be set to run before the package install
@@ -68,10 +68,10 @@ else
     su -l "$loggedInUser" -c "/bin/launchctl unload /Library/LaunchAgents/com.adobe.* 2>/dev/null"
     # Unload Adobe Launch Daemons
     /bin/launchctl unload /Library/LaunchDaemons/com.adobe.* 2>/dev/null
-    pkill -9 "obe"
+    pkill -9 "obe" >/dev/null 2>&1
     sleep 5
     # Close any Adobe Crash Reporter windows (e.g. Bridge)
-    pkill -9 "Crash Reporter"
+    pkill -9 "Crash Reporter" >/dev/null 2>&1
 fi
 }
 
@@ -99,7 +99,7 @@ function jamfHelperDownloadInProgress ()
 
 # jamf Helper for killing apps and uninstalling previous versions
 jamfHelperCleanUp
-# All a few seconds for the helper message to be seen before closing the apps
+# Wait a few seconds for the helper message to be seen before closing the apps
 sleep 5
 # Kill processes to allow uninstall
 killAdobe
