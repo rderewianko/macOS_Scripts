@@ -51,24 +51,22 @@ helperHeading="     Legacy ${appNameForRemoval} Removal     "
 
 function killAdobe ()
 {
-if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
-    echo "No user logged in"
-else
-    # Get all user Adobe Launch Agents/Daemons PIDs
-    userPIDs=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
-    # Kill all user Adobe Launch Agents/Daemons
-    for pid in $userPIDs; do
-        kill -9 "$pid" 2>/dev/null
-    done
-    # Unload user Adobe Launch Agents
-    su -l "$loggedInUser" -c "/bin/launchctl unload /Library/LaunchAgents/com.adobe.* 2>/dev/null"
-    # Unload Adobe Launch Daemons
-    /bin/launchctl unload /Library/LaunchDaemons/com.adobe.* 2>/dev/null
-    pkill -9 "obe"
-    sleep 5
-    # Close any Adobe Crash Reporter windows (e.g. Bridge)
-    pkill -9 "Crash Reporter"
+# Get all user Adobe Launch Agents/Daemons PIDs
+userPIDs=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
+# Kill all user Adobe Launch Agents/Daemons
+if [[ "$userPIDs" != "" ]]; then
+    while IFS= read -r line; do
+        kill -9 "$line" 2>/dev/null
+    done <<< "$userPIDs"
 fi
+# Unload user Adobe Launch Agents
+su -l "$loggedInUser" -c "/bin/launchctl unload /Library/LaunchAgents/com.adobe.* 2>/dev/null"
+# Unload Adobe Launch Daemons
+/bin/launchctl unload /Library/LaunchDaemons/com.adobe.* 2>/dev/null
+pkill -9 "obe" >/dev/null 2>&1
+sleep 5
+# Close any Adobe Crash Reporter windows (e.g. Bridge)
+pkill -9 "Crash Reporter" >/dev/null 2>&1
 }
 
 function jamfHelperConfirm ()
@@ -97,20 +95,8 @@ function jamfHelperComplete ()
 -alignDescription natural -timeout 20 -button1 "Ok" -defaultButton "1"
 }
 
-########################################################################
-#                         Script starts here                           #
-########################################################################
-
-# Advise the user what is happening and get confirmation or run anyway in 2 hours time
-jamfHelperConfirm
-# Jamf Helper for app closure and removal
-jamfHelperCleanUp
-# All a few seconds for the helper message to be seen before closing the apps
-sleep 5
-# Kill processes to allow uninstall
-killAdobe
-# Wait before uninstalling
-sleep 10
+function removePreviousVersions ()
+{
 echo "Uninstalling previous verisons of ${appNameForRemoval}..."
 # Uninstall 2015 - Look for 2015.1-5 first as they can be uninstalled via command line
 "$binaryPath" --uninstall=1 --sapCode="$sapCode" --baseVersion="$version2015" --platform=osx10-64 --deleteUserPreferences=false >/dev/null 2>&1
@@ -149,9 +135,33 @@ if [[ "$uninstallResult2019" -eq "0" ]]; then
     echo "${appNameForRemoval} 2019 uninstalled"
 fi
 rm -rf "/Applications/${appNameForRemoval} 2019" >/dev/null 2>&1
-# Kill the cleaning up helper
-killall -13 "jamfHelper" >/dev/null 2>&1
-# Jamf Helper for app download+install
-jamfHelperComplete
+}
 
+########################################################################
+#                         Script starts here                           #
+########################################################################
+
+if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
+    echo "No user logged in, starting process..."
+    # Remove all previous versions
+    removePreviousVersions
+else
+    echo "Jamf helper displayed to ${loggedInUser} to start the process"
+    # Advise the user what is happening and get confirmation or run anyway in 2 hours time
+    jamfHelperConfirm
+    # Jamf Helper for app closure and removal
+    jamfHelperCleanUp
+    # All a few seconds for the helper message to be seen before closing the apps
+    sleep 5
+    # Kill processes to allow uninstall
+    killAdobe
+    # Wait before uninstalling
+    sleep 10
+    # Remove all previous versions
+    removePreviousVersions
+    # Kill the cleaning up helper
+    killall -13 "jamfHelper" >/dev/null 2>&1
+    # Jamf Helper for app download+install
+    jamfHelperComplete
+fi
 exit 0

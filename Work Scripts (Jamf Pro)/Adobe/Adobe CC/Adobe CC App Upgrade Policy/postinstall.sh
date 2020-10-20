@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################
-#    Adobe Creative Cloud Application Upgrade Policy Script - Post     #
+# Adobe Creative Cloud Application Upgrade Policy Script - Postinstall #
 ################### Written by Phil Walker Aug 2020 ####################
 ########################################################################
 # Must be set to run after the package install
@@ -19,6 +19,8 @@ packageReceipt="$5"
 helperIconComplete="$6"
 ############ Variables for Jamf Pro Parameters - End ###################
 
+# Get the logged in user
+loggedInUser=$(stat -f %Su /dev/console)
 # Check for package receipt
 recieptCheck=$(pkgutil --pkgs | grep "$packageReceipt")
 # jamfHelper
@@ -62,18 +64,28 @@ If you continue to have issues after that please contact the IT Service Desk" -a
 #                         Script starts here                           #
 ########################################################################
 
-# Kill any open jamf Helper
-killall -13 "jamfHelper" >/dev/null 2>&1
-# Check for the package receipt
-if [[ "$recieptCheck" != "" ]]; then
-    echo "${installedAppName} installation successful"
-    # jamf helper for completion
-    jamfHelperComplete
+if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
+    echo "No user logged in, checking upgrade status..."
+    if [[ "$recieptCheck" != "" ]]; then
+        echo "${installedAppName} installation successful"
+    else
+        echo "${installedAppName} installation failed!"
+        echo "${installedAppName} will need to be installed via Self Service or deployed via Jamf Remote"
+    fi
 else
-    echo "${installedAppName} installation failed!"
-    # jamf Helper for failure
-    jamfHelperFailed
-    echo "jamf Helper displayed to advise the customer to install ${installedAppName} from Self Service"
-    exit 1
+    # Kill any open jamf Helper
+    killall -13 "jamfHelper" >/dev/null 2>&1
+    # Check for the package receipt
+    if [[ "$recieptCheck" != "" ]]; then
+        echo "${installedAppName} installation successful"
+        # jamf helper for completion
+        jamfHelperComplete
+    else
+        echo "${installedAppName} installation failed!"
+        # jamf Helper for failure
+        jamfHelperFailed
+        echo "jamf Helper displayed to advise the customer to install ${installedAppName} from Self Service"
+        exit 1
+    fi
 fi
 exit 0
