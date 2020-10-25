@@ -13,16 +13,14 @@
 ############ Variables for Jamf Pro Parameters - Start #################
 # CC App name for helper windows e.g. Adobe Photoshop 2020
 installedAppName="$4"
-# Package Receipt
-packageReceipt="$5"
+# CC App bundle
+installedAppBundle="$5"
 # Helper complete icon
 helperIconComplete="$6"
 ############ Variables for Jamf Pro Parameters - End ###################
 
 # Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
-# Check for package receipt
-recieptCheck=$(pkgutil --pkgs | grep "$packageReceipt")
 # jamfHelper
 jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
 # Add fall back icon if the 
@@ -66,7 +64,7 @@ If you continue to have issues after that please contact the IT Service Desk" -a
 
 if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
     echo "No user logged in, checking upgrade status..."
-    if [[ "$recieptCheck" != "" ]]; then
+    if [[ -d "$installedAppBundle" ]]; then
         echo "${installedAppName} installation successful"
     else
         echo "${installedAppName} installation failed!"
@@ -75,8 +73,8 @@ if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
 else
     # Kill any open jamf Helper
     killall -13 "jamfHelper" >/dev/null 2>&1
-    # Check for the package receipt
-    if [[ "$recieptCheck" != "" ]]; then
+    # Check for the app bundle
+    if [[ -d "$installedAppBundle" ]]; then
         echo "${installedAppName} installation successful"
         # jamf helper for completion
         jamfHelperComplete
