@@ -319,7 +319,7 @@ echo "$requiredSpace GB will be required to complete."
 # Check the installer is downloaded if it's not there exit
 if [[ ! -d "$osInstallerLocation" ]]; then
     echo "No Installer found!"
-    echo "Check available disk space and the result of the policy to install macOS Mojave"
+    echo "Check available disk space and the result of the policy to install macOS Catalina"
     exit 1
 else
     echo "Installer found, continuing with upgrade"
