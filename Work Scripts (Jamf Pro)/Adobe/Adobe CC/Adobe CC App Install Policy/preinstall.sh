@@ -115,7 +115,7 @@ fi
 # if version 2015 is installed then the directory must be removed
 if [[ -d "/Applications/${appNameForRemoval} 2015" ]]; then
     rm -rf "/Applications/${appNameForRemoval} 2015" >/dev/null 2>&1
-    sleep 3
+    sleep 2
     # Sometimes the directory stays behind empty so delete again to make sure
     rm -rf "/Applications/${appNameForRemoval} 2015" >/dev/null 2>&1
     if [[ ! -d "/Applications/${appNameForRemoval} 2015" ]]; then
@@ -128,24 +128,33 @@ uninstallResult2017="$?"
 if [[ "$uninstallResult2017" -eq "0" ]]; then
     echo "${appNameForRemoval} 2017 uninstalled"
 fi
-sleep 3
-rm -rf "/Applications/${appNameForRemoval} 2017" >/dev/null 2>&1
+sleep 2
+# Confirm the directory has been deleted - manually installed plugins can result in the directory not being removed
+if [[ -d "/Applications/${appNameForRemoval} 2017" ]]; then
+    rm -rf "/Applications/${appNameForRemoval} 2017" >/dev/null 2>&1
+fi
 # Uninstall 2018
 "$binaryPath" --uninstall=1 --sapCode="$sapCode" --baseVersion="$version2018" --platform=osx10-64 --deleteUserPreferences=false >/dev/null 2>&1
 uninstallResult2018="$?"
 if [[ "$uninstallResult2018" -eq "0" ]]; then
     echo "${appNameForRemoval} 2018 uninstalled"
 fi
-sleep 3
-rm -rf "/Applications/${appNameForRemoval} 2018" >/dev/null 2>&1
+sleep 2
+# Confirm the directory has been deleted - manually installed plugins can result in the directory not being removed
+if [[ -d "/Applications/${appNameForRemoval} 2018" ]]; then
+    rm -rf "/Applications/${appNameForRemoval} 2018" >/dev/null 2>&1
+fi
 # Uninstall 2019
 "$binaryPath" --uninstall=1 --sapCode="$sapCode" --baseVersion="$version2019" --platform=osx10-64 --deleteUserPreferences=false >/dev/null 2>&1
 uninstallResult2019="$?"
 if [[ "$uninstallResult2019" -eq "0" ]]; then
     echo "${appNameForRemoval} 2019 uninstalled"
 fi
-sleep 3
-rm -rf "/Applications/${appNameForRemoval} 2019" >/dev/null 2>&1
+sleep 2
+# Confirm the directory has been deleted - manually installed plugins can result in the directory not being removed
+if [[ -d "/Applications/${appNameForRemoval} 2019" ]]; then
+    rm -rf "/Applications/${appNameForRemoval} 2019" >/dev/null 2>&1
+fi
 # Kill the cleaning up helper
 killall -13 "jamfHelper" >/dev/null 2>&1
 # Jamf Helper for app download+install
