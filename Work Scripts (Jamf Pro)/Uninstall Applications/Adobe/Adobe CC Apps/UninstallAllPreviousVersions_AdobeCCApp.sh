@@ -129,17 +129,22 @@ uninstallResult2018="$?"
 if [[ "$uninstallResult2018" -eq "0" ]]; then
     echo "${appNameForRemoval} 2018 uninstalled"
 fi
-rm -rf "/Applications/${appNameForRemoval} 2018" >/dev/null 2>&1
+if [[ -d "/Applications/${appNameForRemoval} 2018" ]]; then
+    rm -rf "/Applications/${appNameForRemoval} 2018" >/dev/null 2>&1
+fi
 # Uninstall 2019
 if [[ "$appNameForRemoval" =~ "InCopy" ]] || [[ "$appNameForRemoval" =~ "InDesign" ]]; then
-    echo "Policy is for ${appNameForRemoval} so 2019 version will not be removed"
+    echo "Policy is for ${appNameForRemoval}"
+    echo "If installed, CC 2019 will not be removed"
 else
     "$binaryPath" --uninstall=1 --sapCode="$sapCode" --baseVersion="$version2019" --platform=osx10-64 --deleteUserPreferences=false >/dev/null 2>&1
     uninstallResult2019="$?"
     if [[ "$uninstallResult2019" -eq "0" ]]; then
         echo "${appNameForRemoval} 2019 uninstalled"
     fi
-    rm -rf "/Applications/${appNameForRemoval} 2019" >/dev/null 2>&1
+    if [[ -d "/Applications/${appNameForRemoval} 2019" ]]; then
+        rm -rf "/Applications/${appNameForRemoval} 2019" >/dev/null 2>&1
+    fi
 fi
 }
 
