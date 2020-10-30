@@ -104,7 +104,8 @@ function removePreviousVersions ()
 echo "Uninstalling previous verisons of ${appNameForRemoval}..."
 # Uninstall 2019
 if [[ "$appNameForRemoval" =~ "InCopy" ]] || [[ "$appNameForRemoval" =~ "InDesign" ]]; then
-    echo "Policy is for ${appNameForRemoval} so 2019 version will not be removed"
+    echo "Policy is for ${appNameForRemoval}"
+    echo "If installed, CC 2019 will not be removed"
 else
     "$binaryPath" --uninstall=1 --sapCode="$sapCode" --baseVersion="$version2019" --platform=osx10-64 --deleteUserPreferences=false >/dev/null 2>&1
     uninstallResult2019="$?"
