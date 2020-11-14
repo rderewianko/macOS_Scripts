@@ -1,9 +1,10 @@
-#!/bin/bash
+#!/bin/zsh
 
 ########################################################################
-#         Disable Automatic Software Updates (macOS Mojave Only)       #
+#        Disable Automatic Software Updates (Pre Big Sur Only)         #
 ################### Written by Phil Walker Apr 2020 ####################
 ########################################################################
+# Edit Nov 12th 2020
 
 ########################################################################
 #                            Variables                                 #
@@ -11,9 +12,10 @@
 
 # Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
-# OS Version Full and Short
-osFull=$(sw_vers -productVersion)
-osShort=$(sw_vers -productVersion | awk -F. '{print $2}')
+# OS Version
+osVersion=$(sw_vers -productVersion)
+# macOS Big Sur base version
+bigSur="11"
 # Software Update plist
 plistPath="/Library/Preferences/com.apple.SoftwareUpdate.plist"
 
@@ -58,12 +60,12 @@ else
     echo "Automatic install of macOS enabled"
     exit 1
 fi
-# check the Catalina upgrade has been ignored successfully
-postCheck=$(softwareupdate --ignore | grep -v "Ignored updates:" | sed -e 's/[()]//g' | awk NF | xargs)
-if [[ "$postCheck" == "macOS Catalina" ]]; then
-    echo "Catalina upgrade via software update now blocked"
+# check the Big Sur upgrade has been ignored successfully
+postCheck=$(softwareupdate --ignore | grep -v "Ignored updates:" | sed -n 2p | xargs)
+if [[ "$postCheck" =~ "macOS Big Sur" ]]; then
+    echo "Big Sur upgrade via software update now blocked"
 else
-    echo "Catalina upgrade still available via software update, admin rights required to complete the install!"
+    echo "Big Sur upgrade still available via software update, admin rights still required to complete the install!"
 fi
 }
 
@@ -75,7 +77,7 @@ else
     sysPrefsDockItem=$(su -l "$loggedInUser" -c "defaults read com.apple.dock" | grep "System%20Preferences.app")
     if [[ "$sysPrefsDockItem" != "" ]]; then
         sudo -u "$loggedInUser" defaults write com.apple.systempreferences AttentionPrefBundleIDs 0
-        killall Dock
+        echo "Badge app icon will be gone the next time the dock is relaunched"
     fi
 fi
 }
@@ -84,24 +86,28 @@ fi
 #                         Script starts here                           #
 ########################################################################
 
-# Confirm OS version is Mojave
-if [[ "$osShort" -eq 14 ]]; then
+# Confirm OS version is Catalina or earlier
+autoload is-at-least
+if ! is-at-least "$bigSur" "$osVersion"; then
+    echo "Mac running ${osVersion}, disabling auto updates and ignoring Big Sur..."
     # Disable automatic background check for macOS software updates
-    /usr/bin/defaults write "$plistPath" AutomaticCheckEnabled -bool false
+    defaults write "$plistPath" AutomaticCheckEnabled -bool false
     # Disable automatic download of macOS software updates
-    /usr/bin/defaults write "$plistPath" AutomaticDownload -bool false
+    defaults write "$plistPath" AutomaticDownload -bool false
     # Disable automatic installation of macOS updates
-    /usr/bin/defaults write "$plistPath" AutomaticallyInstallMacOSUpdates -bool false
+    defaults write "$plistPath" AutomaticallyInstallMacOSUpdates -bool false
     # Disable automatic download and installation of XProtect, MRT and Gatekeeper updates
-    /usr/bin/defaults write "$plistPath" ConfigDataInstall -bool false
+    defaults write "$plistPath" ConfigDataInstall -bool false
     # Disable automatic download and installation of automatic security updates
-    /usr/bin/defaults write "$plistPath" CriticalUpdateInstall -bool false
-    # Ignore the Catalina update
-    /usr/sbin/softwareupdate --ignore "macOS Catalina" >/dev/null 2>&1
+    defaults write "$plistPath" CriticalUpdateInstall -bool false
+    # Ignore the Big Sur update
+    softwareupdate --reset-ignored >/dev/null 2>&1
+    softwareupdate --ignore "macOS Big Sur" >/dev/null 2>&1
     # Check all settings have been applied successfully
     postCheck
+    # Remove the badge icon
+    removeBadgeAppIcon
 else
-    echo "Mac running ${osFull}, no changes required"
+    echo "Mac running ${osVersion}, no changes required"
 fi
-
 exit 0
