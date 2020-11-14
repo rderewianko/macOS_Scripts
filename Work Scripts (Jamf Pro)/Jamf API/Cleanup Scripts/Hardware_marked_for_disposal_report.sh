@@ -24,7 +24,7 @@ apipass="API_Password"
 jssurl="https://yourjamfprourl"
 
 #Jamf Pro decomission department
-decomDept="YourDisposalDepartment"
+disposalDept="YourDisposalDepartment"
 
 #Date
 date=$(date +"%d-%m-%Y")
