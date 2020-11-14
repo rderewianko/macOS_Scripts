@@ -37,7 +37,7 @@ else
     profileStatus=$(profiles status -type enrollment | grep "Approved")
     while [[ "$profileStatus" == "" ]]; do
 	    echo "Waiting for user approval..."
-	    sleep 120
+	    sleep 300
         # Kill Self Service so that the information on verifying the MDM profile is shown
         pkill "Self Service"
         # Open Self Service to make sure the user is shown the information
@@ -46,6 +46,7 @@ else
 	    profileStatus=$(profiles status -type enrollment | grep "Approved")
     done
     echo "MDM Profile approved by ${loggedInUser}"
+    # Call the cancel all failed commands policy
+    "$jamfBinary" policy -event cancel_failed_commands
 fi
-
 exit 0
