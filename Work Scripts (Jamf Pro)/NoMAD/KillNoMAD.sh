@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 ########################################################################
 #      Kill NoMAD post successful password change to force alert       #
@@ -6,21 +6,13 @@
 ########################################################################
 
 ########################################################################
-#                            Variables                                 #
-########################################################################
-
-NoMADPID=$(ps -ef | grep -i "NoMAD" | grep -v grep | awk '{ print $2 }' | head -n 1)
-
-########################################################################
 #                         Script starts here                           #
 ########################################################################
 
-if [[ $NoMADPID == "" ]]; then
-        echo "NoMAD process not running, nothing to kill"
-        exit 0
+if [[ "$(pgrep NoMAD)" == "" ]]; then
+    echo "NoMAD process not running, nothing to kill"
 else
-        kill $NoMADPID
-        echo "NoMAD process killed!"
+    pkill -9 "NoMAD"
+    echo "NoMAD process killed!"
 fi
-
 exit 0

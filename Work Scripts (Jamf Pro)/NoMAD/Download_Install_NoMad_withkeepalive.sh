@@ -74,19 +74,15 @@ fi
 
 
 log "Writing KillNoMAD script..."
-/bin/cat <<EOF > /usr/local/KillNoMAD.sh
+/bin/cat << "EOF" > /usr/local/KillNoMAD.sh
 #!/bin/bash
 
-NoMADPID=\$(ps -ef | grep -i "NoMAD" | grep -v grep | awk '{ print \$2 }' | head -n 1)
-
-if [[ \$NoMADPID == "" ]]; then
-        echo "NoMAD process not running, nothing to kill"
-        exit 0
+if [[ "$(pgrep NoMAD)" == "" ]]; then
+    echo "NoMAD process not running, nothing to kill"
 else
-        kill \$NoMADPID
-        echo "NoMAD process killed!"
+    pkill -9 "NoMAD"
+    echo "NoMAD process killed!"
 fi
-
 exit 0
 EOF
 
