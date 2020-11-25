@@ -10,7 +10,7 @@
 #                         Jamf Variables                               #
 ########################################################################
 
-# The path the to macOS installer is pulled in from the policy for flexability e.g /Applications/Install macOS Catalina.app SPACES ARE PRESERVED
+# The path the to macOS installer is pulled in from the policy for flexability e.g /Applications/Install macOS Big Sur.app SPACES ARE PRESERVED
 osInstallerLocation="$4"
 
 ########################################################################
@@ -20,4 +20,3 @@ osInstallerLocation="$4"
 if [[ -e "$osInstallerLocation" ]]; then
     "$osInstallerLocation"/Contents/Resources/startosinstall --usage &>/dev/null
 fi
-exit 0
