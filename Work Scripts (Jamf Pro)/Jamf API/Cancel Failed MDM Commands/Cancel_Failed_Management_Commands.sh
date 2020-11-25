@@ -1,9 +1,10 @@
 #!/bin/bash
 
 ########################################################################
-#                 Cancel failed management commands                    #
+#                 Cancel Failed Management Commands                    #
 ################ Written by Phil Walker November 2019 ##################
 ########################################################################
+# Edit Nov 2020
 
 ## API Username & Password
 ## Note: API account must have READ and UPDATE access to:
@@ -15,47 +16,47 @@
 #                            Variables                                 #
 ########################################################################
 
-#API creds for connection
+# API creds for connection
 apiUser="API_User" #defined in the policy
 apiPass="API_Password" #defined in the policy
-#JSS URL (Leave off trailing slash)
-jssURL="https://yourjamfprourl" #defined in the policy
-#Get serial number
-serialNumber=$(/usr/sbin/ioreg -c IOPlatformExpertDevice -d 2 | awk -F\" '/IOPlatformSerialNumber/{print $(NF-1)}')
+# Jamf Pro URL (Leave off trailing slash)
+jamfProURL="https://yourjamfprourl/JSSResource" #defined in the policy
+# Get serial number
+serialNumber=$(system_profiler SPHardwareDataType | awk '/Serial Number/{print $4}')
 
 ########################################################################
 #                         Script starts here                           #
 ########################################################################
 
-#Check for failed management commands
-failedCommands=$(curl -X GET "${jssURL}/JSSResource/computerhistory/serialnumber/${serialNumber}/subset/Commands" -H "accept: application/xml" -sku "${apiUser}:${apiPass}" | xmllint --format --xpath /computer_history/commands/failed -)
-#If failed commands are found, clear them all
-if [[ "$failedCommands" =~ "command" ]]; then
-
-	#Getting the computer ID
-  ComputerID=$(curl -X GET "${jssURL}/JSSResource/computers/serialnumber/$serialNumber" -H "accept: application/xml" -sku "${apiUser}:${apiPass}" | xmllint --format --xpath /computer/general/id - | awk -F '>|<' '{print $3}')
-
-	echo "Removing failed management commands ..."
-
-	#Clear all failed commands
-  curl -X DELETE "${jssURL}/JSSResource/commandflush/computers/id/"$ComputerID"/status/Failed" -H "accept: application/xml" -sku "${apiUser}:${apiPass}" > /dev/null 2>&1
-	#Allow time for commands to clear
-	sleep 2
-
-		#Re-populate variable
-		failedCommands=$(curl -X GET "${jssURL}/JSSResource/computerhistory/serialnumber/${serialNumber}/subset/Commands" -H "accept: application/xml" -sku "${apiUser}:${apiPass}" | xmllint --format --xpath /computer_history/commands/failed -)
-
-		if [[ "$failedCommands" =~ "command" ]]; then
-      echo "Failed management commands found, removal FAILED!"
-      exit 1
-		else
-			echo "All failed management commands removed"
-		fi
-
+# Check for failed Management Commands
+failedCommands=$(curl -sku "${apiUser}:${apiPass}" -H "accept: application/xml" "${jamfProURL}/computerhistory/serialnumber/${serialNumber}/subset/Commands" \
+| xmllint --xpath '/computer_history/commands/failed' - | grep -i "command")
+# If failed commands are found, clear them all
+if [[ "$failedCommands" != "" ]]; then
+    echo "Failed Management Commands found"
+	# Getting the computer ID
+	computerID=$(curl -sku "${apiUser}:${apiPass}" -H "accept: application/xml" "${jamfProURL}/computers/serialnumber/$serialNumber" \
+     | xmllint --xpath '/computer/general/id/text()' -)
+    untilCount="0"
+    maxAttempts="5"
+    until [[ "$failedCommands" == "" ]] || [[ "$untilCount" -eq "$maxAttempts" ]]; do
+        (( untilCount++ ))
+        echo "Attempt ${untilCount}: Removing failed Management Commands..."
+        # Cancel all failed commands (run the command a maximum of 5 times)
+  	    curl -sku "${apiUser}:${apiPass}" -H "accept: application/xml" "${jamfProURL}/commandflush/computers/id/${computerID}/status/Failed" -X DELETE > /dev/null 2>&1
+        sleep 5
+        # Re-populate variable
+		failedCommands=$(curl -sku "${apiUser}:${apiPass}" -H "accept: application/xml" "${jamfProURL}/computerhistory/serialnumber/${serialNumber}/subset/Commands" \
+        | xmllint --xpath '/computer_history/commands/failed' - | grep -i "command")
+    done
+    if [[ "$failedCommands" == "" ]]; then
+		echo "All failed Management Commands removed"
+    else
+        echo "Failed commands still found"
+        echo "Investigatation required, possible User Approved MDM issue"
+        exit 1
+    fi
 else
-
-	echo "No failed management commands found"
-
+	echo "No failed Management Commands found"
 fi
-
 exit 0
