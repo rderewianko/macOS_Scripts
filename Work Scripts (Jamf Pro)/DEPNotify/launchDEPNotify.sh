@@ -214,11 +214,13 @@ echo "Disable caffinate"
 /bin/kill "$caffeinatePID"
 
 # Delete the DEPNotify application
-rm -r "$depLoc"
- #Delete the Company logo used for depnotify
-  rm /var/tmp/company.png
+rm -rf "$depLoc"
+# Delete the Company logo used for depnotify
+rm -f "/var/tmp/company.png"
+# Delete the Launch Daemon
+rm -f "/Library/LaunchDaemons/com.bauer.launch.depnotify.plist"
 # Delete this script
-rm "$0"
+rm -f "$0"
 # Reboot to finalise
 shutdown -r now
 exit 0
@@ -329,6 +331,7 @@ else
     /bin/echo "Command: MainText: This process can take 10-20 minutes to complete.\n\nPlease do not turn this Mac off." >> /var/tmp/depnotify.log
     /usr/local/jamf/bin/jamf policy -event remove_temp_fv_admin
     /usr/local/jamf/bin/jamf policy -event remove_non_vpp_apps
+    /usr/local/jamf/bin/jamf policy -event provisioning_update_ownership
     /usr/local/jamf/bin/jamf policy
     /bin/sleep 3
 
