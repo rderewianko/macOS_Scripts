@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 ########################################################################
 #           Set Bauer Media Group Desktop Background Image             #
@@ -16,18 +16,34 @@
 #                            Variables                                 #
 ########################################################################
 
-# Get the current logged in user
+# Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
-
+# Get the logged in users ID
+loggedInUserID=$(id -u "$loggedInUser")
 # desktoppr binary
 desktopprBinary="/usr/local/bin/desktoppr"
-
 # Desktop Background Image path
 imagePath="/usr/local/BauerMediaGroup/Desktop/BauerMediaGroupDesktop.heic"
-
 # OS Version Full and Short
-osFull=$(sw_vers -productVersion)
-osShort=$(sw_vers -productVersion | awk -F. '{print $2}')
+osVersion=$(sw_vers -productVersion)
+# macOS Catalina version number
+catalinaOS="10.15"
+# load is-at-least
+autoload is-at-least
+
+########################################################################
+#                            Functions                                 #
+########################################################################
+
+function runAsUser ()
+{  
+# Run commands as the logged in user
+if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
+    echo "No user logged in, unable to run commands as a user"
+else
+    launchctl asuser "$loggedInUserID" sudo -u "$loggedInUser" "$@"
+fi
+}
 
 ########################################################################
 #                         Script starts here                           #
@@ -39,8 +55,8 @@ if [[ "$loggedInUser" == "root" ]] || [[ "$loggedInUser" == "" ]]; then
     exit 0
 else
     # Check the OS version and exit if it's Mojave or earlier
-    if [[ "$osShort" -le "14" ]]; then
-        echo "Mac running ${osFull}, nothing to do"
+    if ! is-at-least "$catalinaOS" "$osVersion"; then
+        echo "Mac running ${osVersion}, nothing to do"
         exit 0
     else
         # Confirm the image exists
@@ -60,13 +76,13 @@ else
             dockStatus=$(pgrep -x Dock)
         done
         # Set the Desktop Background for the logged in user
-        su -l "$loggedInUser" -c "$desktopprBinary $imagePath"
-        if [[ "$?" == "0" ]]; then
+        runAsUser "$desktopprBinary" "$imagePath"
+        commandResult="$?"
+        if [[ "$commandResult" -eq "0" ]]; then
             echo "Bauer Media Group image set as the Desktop Background for ${loggedInUser}"
         else
             echo "Process to set the Desktop Background for ${loggedInUser} FAILED!"
         fi
     fi
 fi
-
 exit 0
