@@ -61,13 +61,13 @@ fi
 
 checkDependencies
 
-read -p "Enter the VM name: " vmName
+read -rp "Enter the VM name: " vmName
 
-read -p "Enter the serial number: " vmSerial
+read -rp "Enter the serial number: " vmSerial
 
-read -p "Enter the model number identifier: " vmModel
+read -rp "Enter the model number identifier: " vmModel
 
-read -p "$(
+read -rp "$(
         f=0
         for dmgname in "${DMGs[@]}" ; do
                 echo "$((++f)): $dmgname"
