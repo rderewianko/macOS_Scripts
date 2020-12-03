@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 #######################################################################
 #                 Revoke Temporary Admin Privileges                   #
@@ -15,6 +15,10 @@ loggedInUser=$(stat -f %Su /dev/console)
 hostName=$(scutil --get HostName)
 # Get a list of users who are in the admin group
 adminUsers=$(dscl . -read Groups/admin GroupMembership | cut -c 18-)
+# Launch Daemon
+launchDaemon="/Library/LaunchDaemons/com.bauer.tempadmin.plist"
+# Script
+removalScript="/usr/local/bin/removeadmin.sh"
 # Jamf Helper
 jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
 # Helper icon
@@ -22,7 +26,7 @@ helperIcon="/Library/Application Support/JAMF/bin/Management Action.app/Contents
 # Helper title
 helperTitle="Message from Bauer IT"
 # Log file
-logFile="/usr/local/bin/BauerTempAdmin.log"
+logFile="/Library/Logs/Bauer/TempAdmin/TempAdmin.log"
 # Date and time
 datetime=$(date +%d-%m-%Y\ %T)
 
@@ -47,12 +51,12 @@ fi
 
 function removeTempAdminRights () 
 {
-# Loop through each account found and remove from the admin group (excluding root, admin and casadmin).
-for user in $adminUsers
-do
-    if [[ "$user" != "root" && "$user" != "admin" && "$user" != "casadmin" ]]; then
+# Loop through each account found and remove from the admin group (excluding root, admin, casadmin and jamfcloudadmin).
+for user in ${(z)adminUsers}; do
+    if [[ "$user" != "root" && "$user" != "admin" && "$user" != "casadmin" && "$user" != "jamfcloudadmin" ]]; then
         dseditgroup -o edit -d "$user" -t user admin
-        if [[ "$?" == "0" ]]; then
+        commandResult="$?"
+        if [[ "$commandResult" -eq "0" ]]; then
             echo "${datetime}: Removed user $user from the admin group" >> "$logFile"
         fi
     else
@@ -73,22 +77,18 @@ killall BitBarDistro
 function removeLDAndScript () 
 {
 # Remove this script
-if [[ -f /usr/local/bin/removeadmin.sh ]]; then
-    rm -f /usr/local/bin/removeadmin.sh
-    if [[ ! -f /usr/local/bin/removeadmin.sh ]]; then
-        echo "Remove admin script deleted"
+if [[ -f "$removalScript" ]]; then
+    rm -f "$removalScript"
+    if [[ ! -f "$removalScript" ]]; then
+        echo "Admin rights removal script deleted"
     else
-        echo "Failed to deleted remove admin script, manual clean-up required"
+        echo "Failed to delete the admin rights removal script, manual clean-up required"
     fi
 fi
-# Stop and unload the LaunchDaemons
-if [[ -f /Library/LaunchDaemons/com.bauer.tempadmin.plist ]]; then
-    launchctl stop /Library/LaunchDaemons/com.bauer.tempadmin.plist
-    echo "LaunchDaemon stopped"
-fi
-if [[ -f /Library/LaunchDaemons/com.bauer.tempadmin.plist ]]; then
-    launchctl unload /Library/LaunchDaemons/com.bauer.tempadmin.plist
-    echo "LaunchDaemon unloaded"
+# Bootout the Launch Daemon
+if [[ -f "$launchDaemon" ]]; then
+    launchctl bootout system "$launchDaemon"
+    echo "Launch Daemon booted out"
 fi
 }
 
@@ -98,13 +98,18 @@ fi
 
 if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
     echo "No user logged in, remove temp admin and display no helper"
+    # Remove temp admin rights
     removeTempAdminRights
+    # Remove the content
     removeLDAndScript
 else
+    # Get the users real name for helper windows
     getRealName
+    # Remove temp admin rights
     removeTempAdminRights
+    # Display a helper window to advise that admin has been removed
     jamfHelperAdminRemoved
+    # Remove the content
     removeLDAndScript
 fi
-
 exit 0

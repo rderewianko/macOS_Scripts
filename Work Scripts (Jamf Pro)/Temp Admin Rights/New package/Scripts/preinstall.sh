@@ -1,16 +1,16 @@
-#!/bin/bash
+#!/bin/zsh
 
 ########################################################################
-#                  Grant Temporary Admin Privileges                    #
+#           Grant Temporary Admin Privileges - preinstall              #
 ####################### written by Phil Walker #########################
 ########################################################################
-
-# preinstall
 
 ########################################################################
 #                            Variables                                 #
 ########################################################################
 
+# Launch Daemon
+launchDaemon="/Library/LaunchDaemons/com.bauer.tempadmin.plist"
 # Jamf Helper
 jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
 # Helper icon
@@ -36,25 +36,24 @@ Please contact the IT Service Desk for assistance" -button1 "Ok" -defaultButton 
 ########################################################################
 
 if [[ $(launchctl list | grep "com.bauer.tempadmin") == "" ]]; then
-    echo "Temp Admin Launch Daemon not currently loaded"
+    echo "Temp Admin Launch Daemon not currently bootstrapped"
 else
-    launchctl stop /Library/LaunchDaemons/com.bauer.tempadmin.plist 2>/dev/null
-    launchctl unload /Library/LaunchDaemons/com.bauer.tempadmin.plist 2>/dev/null
+    launchctl bootout system "$launchDaemon" 2>/dev/null
     sleep 2
     if [[ $(launchctl list | grep "com.bauer.tempadmin") == "" ]]; then
-        echo "Temp Admin Launch Daemon stopped and unloaded successfully"
+        echo "Temp Admin Launch Daemon booted out successfully"
     else
-        echo "Temp Admin Launch Daemon still loaded"
+        echo "Temp Admin Launch Daemon still boostrapped"
     fi
 fi
 
-if [[ -f /Library/LaunchDaemons/com.bauer.tempadmin.plist ]]; then
-    rm -f /Library/LaunchDaemons/com.bauer.tempadmin.plist
-    if [[ ! -f /Library/LaunchDaemons/com.bauer.tempadmin.plist ]]; then
+if [[ -f "$launchDaemon" ]]; then
+    rm -f "$launchDaemon"
+    if [[ ! -f "$launchDaemon" ]]; then
         echo "Temp Admin Launch Daemon deleted"
         exit 0
     fi
-elif [[ ! -f /Library/LaunchDaemons/com.bauer.tempadmin.plist ]]; then
+elif [[ ! -f "$launchDaemon" ]]; then
     echo "No previous content found"
     exit 0
 else

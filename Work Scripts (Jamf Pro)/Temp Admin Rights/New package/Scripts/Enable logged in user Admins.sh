@@ -1,11 +1,9 @@
-#!/bin/bash
+#!/bin/zsh
 
 ########################################################################
-#                  Grant Temporary Admin Privileges                    #
+#            Grant Temporary Admin Privileges - postinstall            #
 ####################### written by Phil Walker #########################
 ########################################################################
-
-# postinstall
 
 ########################################################################
 #                            Variables                                 #
@@ -20,6 +18,8 @@ deferralOption4="28800"
 loggedInUser=$(stat -f %Su /dev/console)
 # Get the hostname
 hostName=$(scutil --get HostName)
+# Launch Daemon
+launchDaemon="/Library/LaunchDaemons/com.bauer.tempadmin.plist"
 # Jamf Helper
 jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
 # Helper icon
@@ -27,7 +27,7 @@ helperIcon="/Library/Application Support/JAMF/bin/Management Action.app/Contents
 # Helper title
 helperTitle="Message from Bauer IT"
 # Log file
-logFile="/usr/local/bin/BauerTempAdmin.log"
+logFile="/Library/Logs/Bauer/TempAdmin/TempAdmin.log"
 # Date and time
 datetime=$(date +%d-%m-%Y\ %T)
 
@@ -100,24 +100,42 @@ Please contact the IT Service Desk for assistance" -button1 "Ok" -defaultButton 
 #                         Script starts here                           #
 ########################################################################
 
+# Create the log directory if required
+if [[ ! -d "/Library/Logs/Bauer/TempAdmin" ]]; then
+    mkdir -p "/Library/Logs/Bauer/TempAdmin"
+fi
+# Create the log file if required
+if [[ ! -e "$logFile" ]]; then
+    touch "$logFile"
+fi
+# Get the users real name for helper windows
 getRealName
+# Provide time period options
 jamfHelperAdminPeriod
-timeChosen="${HELPER%?}" #Removes the 1 added to the time period chosen
+# Removes the 1 added to the time period chosen
+timeChosen="${HELPER%?}"
+# Convrt the time period chosen for the helper window
 convertTimePeriod
-
 # Promote the logged in user to an admin
 dseditgroup -o edit -a "$loggedInUser" -t user admin
-
 # Add time period to LaunchDaemon
-/usr/libexec/PlistBuddy -c "Set StartInterval $timeChosen" /Library/LaunchDaemons/com.bauer.tempadmin.plist
-
-# Start the Launch Daemon to remove admin rights after the chosen period has elapsed
-launchctl load /Library/LaunchDaemons/com.bauer.tempadmin.plist
-launchctl start /Library/LaunchDaemons/com.bauer.tempadmin.plist
-
+/usr/libexec/PlistBuddy -c "Set StartInterval $timeChosen" "$launchDaemon"
+# Boostrap the Launch Daemon to remove admin rights after the chosen period has elapsed
+launchctl bootstrap system "$launchDaemon"
+if [[ $(launchctl list | grep "com.bauer.tempadmin") != "" ]]; then
+    echo "Temp Admin Launch Daemon now bootstrapped"
+else
+    echo "Attempting to boostrap the Launch Daemon again..."
+    launchctl bootstrap system "$launchDaemon"
+    if [[ $(launchctl list | grep "com.bauer.tempadmin") != "" ]]; then
+        echo "Temp Admin Launch Daemon now bootstrapped"
+    else
+        echo "Failed to boostrap the Launch Daemon"
+        echo "It should be boostrapped on the next boot"
+    fi
+fi
 # Get a list of users who are in the admin group
 adminUsers=$(dscl . -read Groups/admin GroupMembership | cut -c 18-)
-
 # Check if the logged in user is in the admin group and show jamfHelper message
 if [[ "$adminUsers" =~ $loggedInUser ]]; then
     echo "${datetime}: $loggedInUser has been granted admin rights for $timeChosenHuman" >> "$logFile"
