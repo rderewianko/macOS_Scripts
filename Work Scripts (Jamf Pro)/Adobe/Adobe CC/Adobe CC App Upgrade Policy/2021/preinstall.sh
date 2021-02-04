@@ -24,10 +24,14 @@ version2019="$6"
 version2020="$7"
 # CC App name for helper windows e.g. Adobe Photoshop 2020
 appNameForInstall="$8"
-############ Variables for Jamf Pro Parameters - End ###################
+# Jamf Helper timeout setting e.g 7200 for 2 hours
+helperTimeout="$9"
+############ Vari#ables for Jamf Pro Parameters - End ###################
 
 # Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
+# Get the logged in users ID
+loggedInUserID=$(id -u "$loggedInUser")
 # path to binary
 binaryPath="/Library/Application Support/Adobe/Adobe Desktop Common/HDBox/Setup"
 # Jamf Helper
@@ -52,22 +56,26 @@ helperHeading="     Upgrade to ${appNameForInstall}     "
 
 function killAdobe ()
 {
-# Get all user Adobe Launch Agents/Daemons PIDs
-userPIDs=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
-# Kill all user Adobe Launch Agents/Daemons
-if [[ "$userPIDs" != "" ]]; then
-    while IFS= read -r line; do
-        kill -9 "$line" 2>/dev/null
-    done <<< "$userPIDs"
+if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
+    echo "No user logged in"
+else
+    # Get all user Adobe Launch Agents/Daemons PIDs
+    userPIDs=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
+    # Kill all user Adobe Launch Agents/Daemons
+    if [[ "$userPIDs" != "" ]]; then
+        while IFS= read -r line; do
+            kill -9 "$line" 2>/dev/null
+        done <<< "$userPIDs"
+    fi
+    # Bootout all user Adobe Launch Agents
+    launchctl bootout gui/"$loggedInUserID" /Library/LaunchAgents/com.adobe.* 2>/dev/null
+    # Bootout Adobe Launch Daemons
+    launchctl bootout system /Library/LaunchDaemons/com.adobe.* 2>/dev/null
+    pkill -9 "obe"
+    sleep 5
+    # Close any Adobe Crash Reporter windows (e.g. Bridge)
+    pkill -9 "Crash Reporter"
 fi
-# Unload user Adobe Launch Agents
-su -l "$loggedInUser" -c "/bin/launchctl unload /Library/LaunchAgents/com.adobe.* 2>/dev/null"
-# Unload Adobe Launch Daemons
-/bin/launchctl unload /Library/LaunchDaemons/com.adobe.* 2>/dev/null
-pkill -9 "obe" >/dev/null 2>&1
-sleep 5
-# Close any Adobe Crash Reporter windows (e.g. Bridge)
-pkill -9 "Crash Reporter" >/dev/null 2>&1
 }
 
 function jamfHelperConfirm ()
@@ -77,7 +85,7 @@ function jamfHelperConfirm ()
 -description "To keep your Mac secure ${appNameForRemoval} will now be upgraded to the latest version (All previous versions will be removed).
 For this to complete successfully all Adobe CC applications must be closed during the process.
 
-Please save all of your work before clicking Start" -timeout 7200 -countdown -alignCountdown center -button1 "Start" -defaultButton "1"
+Please save all of your work before clicking Start" -timeout "$helperTimeout" -countdown -alignCountdown center -button1 "Start" -defaultButton "1"
 }
 
 function jamfHelperCleanUp ()
