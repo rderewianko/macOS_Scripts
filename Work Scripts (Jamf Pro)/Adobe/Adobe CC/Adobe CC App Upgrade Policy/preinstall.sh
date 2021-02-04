@@ -24,6 +24,8 @@ version2018="$8"
 version2019="$9"
 # CC App name for helper windows e.g. Adobe Photoshop 2020
 appNameForInstall="${10}"
+# Jamf Helper timeout setting
+helperTimeout="${11}"
 ############ Variables for Jamf Pro Parameters - End ###################
 
 # Get the logged in user
@@ -77,7 +79,7 @@ function jamfHelperConfirm ()
 -description "To keep your Mac secure ${appNameForRemoval} will now be upgraded to the latest version (All previous versions will be removed).
 For this to complete successfully all Adobe CC applications must be closed during the process.
 
-Please save all of your work before clicking Start" -timeout 7200 -countdown -alignCountdown center -button1 "Start" -defaultButton "1"
+Please save all of your work before clicking Start" -timeout "$helperTimeout" -countdown -alignCountdown center -button1 "Start" -defaultButton "1"
 }
 
 function jamfHelperCleanUp ()
@@ -148,12 +150,12 @@ else
     "$binaryPath" --uninstall=1 --sapCode="$sapCode" --baseVersion="$version2019" --platform=osx10-64 --deleteUserPreferences=false >/dev/null 2>&1
     uninstallResult2019="$?"
     if [[ "$uninstallResult2019" -eq "0" ]]; then
-        echo "${appNameForRemoval} CC 2019 uninstalled"
+        echo "${appNameForRemoval} 2019 uninstalled"
     fi
     sleep 2
     # Confirm the directory has been deleted - manually installed plugins can result in the directory not being removed
-    if [[ -d "/Applications/${appNameForRemoval} CC 2019" ]]; then
-        rm -rf "/Applications/${appNameForRemoval} CC 2019" >/dev/null 2>&1
+    if [[ -d "/Applications/${appNameForRemoval} 2019" ]]; then
+        rm -rf "/Applications/${appNameForRemoval} 2019" >/dev/null 2>&1
     fi
 fi
 }
