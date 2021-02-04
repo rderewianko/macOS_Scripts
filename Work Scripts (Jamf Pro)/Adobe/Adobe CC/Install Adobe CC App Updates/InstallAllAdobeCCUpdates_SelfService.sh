@@ -4,6 +4,7 @@
 #     Install All Adobe CC Application Updates Self Service Policy     #
 #################### Written by Phil Walker Mar 2020 ###################
 ########################################################################
+# Edit Nov 2020
 
 # Credit to John Mahlman, University of the Arts Philadelphia (jmahlman@uarts.edu) for his script
 # Adobe-RUMWithProgress-jamfhelper which I used as the basis for this script
@@ -14,12 +15,14 @@
 
 # Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
+# Get the logged in users ID
+loggedInUserID=$(id -u "$loggedInUser")
 # Kill all user Adobe Launch Agents/Daemons
 userPIDs=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
 # Adobe Remote Update Manager binary
 rumBinary="/usr/local/bin/RemoteUpdateManager"
 # RUM log file
-rumLog="/var/tmp/SelfServiceAdobeCCUpdates.log"
+logFile="/Library/Logs/Bauer/AdobeUpdates/AdobeCCUpdates_SelfService.log"
 # jamfHelper
 jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
 # Helper Icon
@@ -35,20 +38,20 @@ helperHeading="     Adobe CC Application Updates     "
 
 function killAdobe ()
 {
-#Kill all user Adobe Launch Agents/Daemons
+# Kill all user Adobe Launch Agents/Daemons
 if [[ "$userPIDs" != "" ]]; then
     while IFS= read -r line; do
         kill -9 "$line" 2>/dev/null
     done <<< "$userPIDs"
 fi
-# Unload user Adobe Launch Agents
-su -l "$loggedInUser" -c "/bin/launchctl unload /Library/LaunchAgents/com.adobe.* 2>/dev/null"
-# Unload Adobe Launch Daemons
-/bin/launchctl unload /Library/LaunchDaemons/com.adobe.* 2>/dev/null
-pkill "obe"
+# Bootout all user Adobe Launch Agents
+launchctl bootout gui/"$loggedInUserID" /Library/LaunchAgents/com.adobe.* 2>/dev/null
+# Bootout Adobe Launch Daemons
+launchctl bootout system /Library/LaunchDaemons/com.adobe.* 2>/dev/null
+pkill -9 "obe"
 sleep 5
 # Close any Adobe Crash Reporter windows (e.g. Bridge)
-pkill "Crash Reporter"
+pkill -9 "Crash Reporter"
 }
 
 function jamfHelperUpdatesAvailable ()
@@ -95,12 +98,12 @@ function installUpdates ()
 # Install in progress Jamf Helper
 jamfHelperInstallInProgress
 # Install all available updates and output result to the log
-$rumBinary --action=install > $rumLog
+"$rumBinary" --action=install >> "$logFile"
 # Kill install in progress helper
-pkill "jamfHelper"
+pkill -13 "jamfHelper"
 sleep 2
 # Read the log file to check which updates installed successfully for use in a jamf Helper window
-updatesInstalled=$(sed -n '/Following Updates were successfully installed*/,/\*/p' $rumLog \
+updatesInstalled=$(sed -n '/Following Updates were successfully installed*/,/\*/p' "$logFile" \
     | sed 's/Following Updates were successfully installed :/*/g' | grep -v "*" \
     | sed 's/AEFT/After\ Effects/g' \
     | sed 's/FLPR/Animate/g' \
@@ -121,6 +124,7 @@ updatesInstalled=$(sed -n '/Following Updates were successfully installed*/,/\*/
     | sed 's/RUSH/Premiere\ Rush/g' \
     | sed 's/SPRK/XD/g' \
     | sed 's/ACR/Camera\ Raw/g' \
+    | sed 's/COSY/CoreSync/g' \
     | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
     | sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
     | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
@@ -137,24 +141,34 @@ echo "------------------------------------------"
 ########################################################################
 
 # Confirm RUM is installed
-if [ ! -e $rumBinary ]; then
+if [[ ! -e "$rumBinary" ]]; then
     # RUM not installed, do nothing
     echo "Adobe Remote Update Manager not installed"
     echo "No updates can be installed at this time"
     exit 0
 else
-    # Remove previous log
-    if [[ -f $rumLog ]]; then
-        rm -f $rumLog
-        if [[ -f $rumLog ]]; then
+    # Remove previous log. No need to store more than the latest check for updates.
+    if [[ -f "$logFile" ]]; then
+        rm -f "$logFile"
+        if [[ -f "$logFile" ]]; then
             echo "Previous log file removal failed, info displayed in jamfHelper windows will be incorrect" 
         fi
     fi
-    # Create log file, check for available updates and output results to the log
-    touch $rumLog
-    $rumBinary --action=list > $rumLog
+    # Create the log directory if required
+    if [[ ! -d "/Library/Logs/Bauer/AdobeUpdates" ]]; then
+        mkdir -p "/Library/Logs/Bauer/AdobeUpdates"
+    fi
+    # Create log file
+    touch "$logFile"
+    {
+    echo "Script started at: $(date +"%H-%M-%S (%d-%m-%Y)")"
+    echo "Checking for updates..."
+    echo "--------------------------------------------------"
+    } >> "$logFile"
+    # check for available updates
+    "$rumBinary" --action=list >> "$logFile"
     # Read the log file to check which updates are available for install for use in a jamf Helper window
-    updatesAvailable=$(sed -n '/Following*/,/\*/p' $rumLog \
+    updatesAvailable=$(sed -n '/Following*/,/\*/p' "$logFile" \
         | sed 's/Following Updates are applicable on the system :/*/g'  | grep -v "*" \
         | sed 's/Following Acrobat\/\Reader updates are applicable on the system :/*/g' | grep -v "*" \
         | sed 's/AEFT/After\ Effects/g' \
@@ -176,13 +190,14 @@ else
         | sed 's/RUSH/Premiere\ Rush/g' \
         | sed 's/SPRK/XD/g' \
         | sed 's/ACR/Camera Raw/g' \
+        | sed 's/COSY/CoreSync/g' \
         | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
     	| sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
         | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
         | sed 's/[()]//g' | sed 's/osx10-64//g' | sed 's/osx10//g' | sed 's/\// /g' \
         | grep -v "*")
     # Check if any updates are required
-    updatesCheck=$(cat $rumLog)
+    updatesCheck=$(cat "$logFile")
     if [[ "$updatesCheck" =~ "Following" ]]; then
         echo "Updates available"
         # Updates available helper
@@ -190,6 +205,10 @@ else
         # Confirm user choice
         if [[ "$installHelper" == "0" ]]; then
             echo "$loggedInUser selected install"
+            {
+            echo "$loggedInUser selected install"
+            echo "--------------------------------------------------"
+            } >> "$logFile"
             echo "Installing updates listed below"
             echo "------------------------------------------"
             echo "$updatesAvailable"
@@ -200,8 +219,13 @@ else
             installUpdates
             # Updates installed helper
             jamfHelperUpdatesInstalled
+            echo "Script completed at: $(date +"%H-%M-%S (%d-%m-%Y)")" >> "$logFile"
         elif [ "$installHelper" == "2" ]; then
-            echo "User selected cancel, no updates will be installed"
+            echo "$loggedInUser selected cancel, no updates will be installed"
+            {
+            echo "$loggedInUser selected cancel, no updates will be installed"
+            echo "Script completed at: $(date +"%H-%M-%S (%d-%m-%Y)")"
+            } >> "$logFile"
             exit 0
         fi
     else
@@ -209,7 +233,7 @@ else
         echo "All applications are up to date"
         # No updates available helper
         jamfHelperNoUpdates
+        echo "Script completed at: $(date +"%H-%M-%S (%d-%m-%Y)")" >> "$logFile"
     fi
 fi
-
 exit 0
