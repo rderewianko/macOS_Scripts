@@ -6,7 +6,7 @@
 ########################################################################
 # Must be set to run before the package install
 # Process:
-# 1. Stop+unload Adobe Launch Agents/Daemons and kill all Adobe processes
+# 1. Stop+bootout Adobe Launch Agents/Daemons and kill all Adobe processes
 # 2. Uninstall all previous versions of the application being installed
 
 # Edit for 2021 app releases
@@ -23,12 +23,14 @@ appNameForRemoval="$5"
 # base version (https://helpx.adobe.com/enterprise/kb/apps-deployed-without-base-versions.html)
 version2019="$6"
 version2020="$7"
-# CC App name for helper windows e.g. Adobe Photoshop 2020
+# CC App name for helper windows e.g. Adobe Photoshop 2021
 appNameForInstall="$8"
 ############ Variables for Jamf Pro Parameters - End ###################
 
 # Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
+# Get the logged in users ID
+loggedInUserID=$(id -u "$loggedInUser")
 # path to binary
 binaryPath="/Library/Application Support/Adobe/Adobe Desktop Common/HDBox/Setup"
 # Jamf Helper
@@ -64,14 +66,14 @@ else
             kill -9 "$line" 2>/dev/null
         done <<< "$userPIDs"
     fi
-    # Unload user Adobe Launch Agents
-    su -l "$loggedInUser" -c "/bin/launchctl unload /Library/LaunchAgents/com.adobe.* 2>/dev/null"
-    # Unload Adobe Launch Daemons
-    /bin/launchctl unload /Library/LaunchDaemons/com.adobe.* 2>/dev/null
-    pkill -9 "obe" >/dev/null 2>&1
+    # Bootout all user Adobe Launch Agents
+    launchctl bootout gui/"$loggedInUserID" /Library/LaunchAgents/com.adobe.* 2>/dev/null
+    # Bootout Adobe Launch Daemons
+    launchctl bootout system /Library/LaunchDaemons/com.adobe.* 2>/dev/null
+    pkill -9 "obe"
     sleep 5
     # Close any Adobe Crash Reporter windows (e.g. Bridge)
-    pkill -9 "Crash Reporter" >/dev/null 2>&1
+    pkill -9 "Crash Reporter"
 fi
 }
 
