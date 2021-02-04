@@ -22,6 +22,8 @@ installedAppBundle="$5"
 
 # Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
+# Get the logged in users ID
+loggedInUserID=$(id -u "$loggedInUser")
 # Adobe Remote Update Manager binary
 rumBinary="/usr/local/bin/RemoteUpdateManager"
 # RUM log file
@@ -53,13 +55,15 @@ else
     # Get all user Adobe Launch Agents/Daemons PIDs
     userPIDs=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
     # Kill all user Adobe Launch Agents/Daemons
-    for pid in $userPIDs; do
-        kill -9 "$pid" 2>/dev/null
-    done
-    # Unload user Adobe Launch Agents
-    su -l "$loggedInUser" -c "/bin/launchctl unload /Library/LaunchAgents/com.adobe.* 2>/dev/null"
-    # Unload Adobe Launch Daemons
-    /bin/launchctl unload /Library/LaunchDaemons/com.adobe.* 2>/dev/null
+    if [[ "$userPIDs" != "" ]]; then
+        while IFS= read -r line; do
+            kill -9 "$line" 2>/dev/null
+        done <<< "$userPIDs"
+    fi
+    # Bootout all user Adobe Launch Agents
+    launchctl bootout gui/"$loggedInUserID" /Library/LaunchAgents/com.adobe.* 2>/dev/null
+    # Bootout Adobe Launch Daemons
+    launchctl bootout system /Library/LaunchDaemons/com.adobe.* 2>/dev/null
     pkill -9 "obe"
     sleep 5
     # Close any Adobe Crash Reporter windows (e.g. Bridge)
@@ -157,6 +161,7 @@ updatesInstalled=$(sed -n '/Following Updates were successfully installed*/,/\*/
     | sed 's/RUSH/Premiere\ Rush/g' \
     | sed 's/SPRK/XD/g' \
     | sed 's/ACR/Camera\ Raw/g' \
+    | sed 's/COSY/CoreSync/g' \
     | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
     | sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
     | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
@@ -218,6 +223,7 @@ else
             | sed 's/RUSH/Premiere\ Rush/g' \
             | sed 's/SPRK/XD/g' \
             | sed 's/ACR/Camera Raw/g' \
+            | sed 's/COSY/CoreSync/g' \
             | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
     	    | sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
             | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
