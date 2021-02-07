@@ -7,9 +7,10 @@
 # Edited July 2020
 
 ########################################################################
-#                         Jamf Variables                               #
+#                            Variables                                 #
 ########################################################################
 
+############ Variables for Jamf Pro Parameters - Start #################
 osInstallerLocation="$4" #The path the to Mac OS installer is pulled in from the policy for flexability e.g /Applications/Install macOS Catalina.app SPACES ARE PRESERVED
 requiredSpace="$5" #In GB how many are requried to compelte the update
 osName="$6" #The nice name for jamfHelper e.g. macOS Catalina.
@@ -18,10 +19,7 @@ osName="$6" #The nice name for jamfHelper e.g. macOS Catalina.
 #osInstallerLocation="/Applications/Install macOS Catalina.app"
 #requiredSpace="15"
 #osName="macOS Catalina"
-
-########################################################################
-#                            Variables                                 #
-########################################################################
+############ Variables for Jamf Pro Parameters - End ###################
 
 # Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
@@ -221,7 +219,7 @@ fi
 # Clear any jamfHelper windows
 killall jamfHelper 2>/dev/null
 
-echo "Starting Upgrade to $osName with $osInstallerLocation"
+echo "Starting upgrade to $osName with $osInstallerLocation"
 echo "$requiredSpace GB will be required to complete."
 
 # Check the installer is downloaded if it's not there throw a jamf helper message
