@@ -33,7 +33,7 @@ linkID="$4"
 # 869428 - Teams
 # 525134 - Word 2019 SKUless download
 # sha256 Checksum e.g. "67b1e8e036c575782b1c9188dd48fa94d9eabcb81947c8632fd4acac7b01644b"
-sha256Checksum="$5"
+sha256Checksum="$5" # This is not required. Install will start with no value in this parameter.
 # Package Name
 pkgName="$6"
 ############ Variables for Jamf Pro Parameters - End ###################
