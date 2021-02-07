@@ -34,13 +34,11 @@ linkID="$4"
 # 869428 - Teams
 # 525134 - Word 2019 SKUless download
 # sha256 Checksum e.g. "67b1e8e036c575782b1c9188dd48fa94d9eabcb81947c8632fd4acac7b01644b"
-sha256Checksum="$5"
+sha256Checksum="$5" # This is not required. Install will start with no value in this parameter.
 # Package Name
 pkgName="$6"
 # App to be installed
 appNameForInstall="$7"
-# helper Icon for install complete
-helperIconComplete="$8"
 
 ############ Variables for Jamf Pro Parameters - End ###################
 # Full fwlink URL
@@ -57,11 +55,6 @@ helperHeading="          ${appNameForInstall}          "
 helperIconProblem="/System/Library/CoreServices/Problem Reporter.app/Contents/Resources/ProblemReporter.icns"
 # Get the icons for the complete helper
 curl -s --url https://images.bauermedia.co.uk/JamfPro/Office365Icon.png > /var/tmp/Office365Icon.png
-curl -s --url https://images.bauermedia.co.uk/JamfPro/MicrosoftEdge.png > /var/tmp/MicrosoftEdge.png
-# helper Icon for install complete
-if [[ ! -e "$helperIconComplete" ]]; then
-    helperIconComplete="/System/Library/CoreServices/Installer.app/Contents/PlugIns/Summary.bundle/Contents/Resources/Success.pdf"
-fi
 
 ########################################################################
 #                            Functions                                 #
@@ -102,6 +95,20 @@ killall -13 "jamfHelper" >/dev/null 2>&1
 jamfHelperFailed
 }
 
+function cleanUp ()
+{
+# Remove the temporary working directory when done
+/bin/rm -Rf "$tempDirectory"
+echo "Deleting temporary directory '$tempDirectory' and its contents"
+if [[ ! -d "$tempDirectory" ]]; then
+    echo "Temporary directory deleted"
+else
+    echo "Failed to delete the temporary directory"
+fi
+# Remove temp icon
+/bin/rm -f "/var/tmp/Office365Icon.png" >/dev/null 2>&1
+}
+
 ########################################################################
 #                         Script starts here                           #
 ########################################################################
@@ -120,6 +127,8 @@ if [[ "$commandResult" -ne "0" ]]; then
     echo "Failed to download the package, exiting..."
     # kill previous helper and show a failure helper
     failureKillHelper
+    # Remove temp content
+    cleanUp
     exit 1
 fi
 # Checksum the download
@@ -133,7 +142,8 @@ if [ "$sha256Checksum" = "$downloadChecksum" ] || [ "$sha256Checksum" = "" ]; th
     if [[ "$commandResult" -ne "0" ]]; then
         echo "Failed to install the package"
         # kill previous helper and show a failure helper
-        failureKillHelper
+        # Remove temp content
+        cleanUp
         exit 1
     else
         # Kill the download helper
@@ -143,19 +153,18 @@ else
 	echo "Checksum failed. Recalculate the SHA 256 checksum and try again. Or download may not be valid."
     # kill previous helper and show a failure helper
     failureKillHelper
+    # Remove temp content
+    cleanUp
 	exit 1
 fi
-# Remove the temporary working directory when done
-/bin/rm -Rf "$tempDirectory"
-echo "Deleting temporary directory '$tempDirectory' and its contents"
-if [[ ! -d "$tempDirectory" ]]; then
-    echo "Temporary directory deleted"
-else
-    echo "Failed to delete the temporary directory"
-fi
 sleep 2
+# Define helper complete icon. This is defined later so that the app icon can be used post install
+helperIconComplete="$8" # defined as a parameter in Jamf Pro
+if [[ ! -e "$helperIconComplete" ]]; then
+    helperIconComplete="/System/Library/CoreServices/Installer.app/Contents/PlugIns/Summary.bundle/Contents/Resources/Success.pdf"
+fi
 # Install success helper
 jamfHelperInstallComplete
-# Remove temp icon
-/bin/rm -f "/var/tmp/Office365Icon.png" >/dev/null 2>&1
+# Remove temp content
+cleanUp
 exit 0
