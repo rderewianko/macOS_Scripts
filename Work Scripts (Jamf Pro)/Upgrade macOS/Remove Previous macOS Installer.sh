@@ -6,13 +6,15 @@
 ########################################################################
 
 ########################################################################
-#                         Jamf Variables                               #
+#                            Variables                                 #
 ########################################################################
 
+############ Variables for Jamf Pro Parameters - Start #################
 # The path the to macOS installer is pulled in from the policy for flexability e.g /Applications/Install macOS Big Sur.app SPACES ARE PRESERVED
 osInstallerLocation="$4"
 # OS name e.g Big Sur
 osName="$5"
+############ Variables for Jamf Pro Parameters - End ###################
 
 ########################################################################
 #                         Script starts here                           #
@@ -29,6 +31,6 @@ if [[ -e "$osInstallerLocation" ]]; then
         echo "If disk space is already low this may cause the package to fail"
     fi
 fi
-# Submit inventory to avoid the upgrade policy running if with no installer available if the package fails
+# Submit inventory to avoid the upgrade policy running if there is no installer available post package install
 /usr/local/jamf/bin/jamf recon
 exit 0
