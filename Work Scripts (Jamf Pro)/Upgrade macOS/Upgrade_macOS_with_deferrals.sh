@@ -6,26 +6,26 @@
 ########################################################################
 # Edited July 2020
 
-#Installer to be deployed separately
+# Installer to be deployed separately
 
 ########################################################################
-#                         Jamf Variables                               #
+#                            Variables                                 #
 ########################################################################
 
+############ Variables for Jamf Pro Parameters - Start #################
 osInstallerLocation="$4" #The path the to Mac OS installer is pulled in from the policy for flexability e.g /Applications/Install macOS Catalina.app SPACES ARE PRESERVED
 requiredSpace="$5" #In GB how many are requried to compelte the update
 osName="$6" #The nice name for jamfHelper e.g. macOS Catalina.
-policyName="$9" #Policy name for deferral file.
+policyName="$7" #Policy name for deferral file.
+deferralLimit="$8" #Deferral limit in days
 
 ##DEBUG
 #osInstallerLocation="/Applications/Install macOS Catalina.app"
 #requiredSpace="15"
 #osName="macOS Catalina"
 #policyName="macOSCatalinaUpgrade" #Policy name for deferral file.
-
-########################################################################
-#                            Variables                                 #
-########################################################################
+#deferralLimit="3" #Deferral limit in days
+############ Variables for Jamf Pro Parameters - End ###################
 
 # Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
@@ -37,20 +37,17 @@ osFull=$(sw_vers -productVersion)
 noLoADBundle="/Library/Security/SecurityAgentPlugins/NoMADLoginAD.bundle"
 # Check the logged in user is a local account
 mobileAccount=$(dscl . read /Users/"$loggedInUser" OriginalNodeName 2>/dev/null)
-# Check we have the timer file and if not create it and populate with 3
-# which represents the number of defers the end user will have
+# Check we have the timer file and if not create it and populate with the number of permitted deferrals
 if [[ ! -e "/Library/Application Support/JAMF/.UpgradeDeferral-${policyName}.txt" ]]; then
-    echo "3" > "/Library/Application Support/JAMF/.UpgradeDeferral-${policyName}.txt"
+    echo "$deferralLimit" > "/Library/Application Support/JAMF/.UpgradeDeferral-${policyName}.txt"
 fi
 # Get the value of the timer file and store for later
 Timer=$(cat "/Library/Application Support/JAMF/.UpgradeDeferral-${policyName}.txt")
-# Go get the Catalina icon
-curl -s --url https://images.bauermedia.co.uk/JamfPro/macOS-Catalina-icon.png > /var/tmp/macOS-Catalina-icon.png
 # Jamf Helper variables
 jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
 # Icons
-helperIconCatalina="/var/tmp/macOS-Catalina-icon.png"
-helperIconCatalinaInstall="${osInstallerLocation}/Contents/Resources/InstallAssistant.icns"
+helperIconOSIcon="${osInstallerLocation}/Contents/Resources/ProductPageIcon.icns"
+helperIconOSInstall="${osInstallerLocation}/Contents/Resources/InstallAssistant.icns"
 helperIconProblem="/System/Library/CoreServices/Problem Reporter.app/Contents/Resources/ProblemReporter.icns"
 # Title
 helperTitle="Message from Bauer IT"
@@ -77,7 +74,7 @@ You can also trigger the upgrade via the Self Service Application at any time e.
 
 function jamfHelperAsktoUpgrade ()
 {
-HELPER=$( "$jamfHelper" -windowType utility -icon "$helperIconCatalina" -title "$helperTitle" -alignHeading center \
+HELPER=$( "$jamfHelper" -windowType utility -icon "$helperIconOSIcon" -title "$helperTitle" -alignHeading center \
 -heading "$helperHeading" -description "$helperDescription" -timeout 14400 -countdown -alignCountdown center \
 -button1 "Later" -button2 "Upgrade Now" -defaultButton "2" )
 }
@@ -85,7 +82,7 @@ HELPER=$( "$jamfHelper" -windowType utility -icon "$helperIconCatalina" -title "
 function jamfHelperUpdateConfirm ()
 {
 # Show a message via Jamf Helper that the update is ready, this is after it has been deferred
-"$jamfHelper" -windowType utility -icon "$helperIconCatalinaInstall" -title "$helperTitle" -heading "    ${osName} upgrade is now ready to be installed     " \
+"$jamfHelper" -windowType utility -icon "$helperIconOSInstall" -title "$helperTitle" -heading "    ${osName} upgrade is now ready to be installed     " \
 -description "This upgrade includes new features, security updates and performance enhancements.
 
 Your Mac will restart once complete!
@@ -95,7 +92,7 @@ Please save all of your work before clicking install" -timeout 14400 -countdown 
 
 function jamfHelperInProgress ()
 {
-"$jamfHelper" -windowType utility -icon "$helperIconCatalinaInstall" -title "$helperTitle" -heading "Please wait as we prepare your computer for ${osName}..." \
+"$jamfHelper" -windowType utility -icon "$helperIconOSInstall" -title "$helperTitle" -heading "Please wait as we prepare your computer for ${osName}..." \
 -description "This process will take approximately 5-10 minutes. Please do not open any documents or applications.
 Once completed your computer will reboot and begin the upgrade.
 
@@ -319,7 +316,7 @@ echo "$requiredSpace GB will be required to complete."
 # Check the installer is downloaded if it's not there exit
 if [[ ! -d "$osInstallerLocation" ]]; then
     echo "No Installer found!"
-    echo "Check available disk space and the result of the policy to install macOS Catalina"
+    echo "Check available disk space and the result of the policy to install ${osName}"
     exit 1
 else
     echo "Installer found, continuing with upgrade"
