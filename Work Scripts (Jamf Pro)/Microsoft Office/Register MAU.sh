@@ -45,7 +45,6 @@ fi
 #Confirm that a user is logged in
 if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
      echo "No one is home, exiting..."
-     exit 1
 else
      if [[ -d "$mauApp" ]]; then
           /usr/bin/sudo -u "$loggedInUser" "$lsRegister" -R -f -trusted "$mauApp"
