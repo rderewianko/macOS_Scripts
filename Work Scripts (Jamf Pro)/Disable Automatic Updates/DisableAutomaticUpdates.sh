@@ -18,6 +18,8 @@ macModel=$(system_profiler SPHardwareDataType | grep "Model Name" | sed 's/Model
 bigSur="11"
 # Software Update plist
 suPlist="/Library/Preferences/com.apple.SoftwareUpdate.plist"
+# App Store plist
+masPlist="/Library/Preferences/com.apple.commerce.plist"
 
 ########################################################################
 #                         Script starts here                           #
@@ -28,7 +30,7 @@ autoload is-at-least
 if ! is-at-least "$bigSur" "$osVersion"; then
     echo "${macModel} running ${osVersion}, checking update settings..."
     # Automatic background check
-    autoCheck=$(/usr/bin/defaults read "$suPlist" AutomaticCheckEnabled)
+    autoCheck=$(/usr/bin/defaults read "$suPlist" AutomaticCheckEnabled 2>/dev/null)
     if [[ "$autoCheck" == "0" ]] || [[ "$autoCheck" == "false" ]]; then
         echo "Automatic update background check already disabled"
     else
@@ -44,7 +46,7 @@ if ! is-at-least "$bigSur" "$osVersion"; then
         fi
     fi
     # Automatic download
-    autoDownload=$(/usr/bin/defaults read "$suPlist" AutomaticDownload)
+    autoDownload=$(/usr/bin/defaults read "$suPlist" AutomaticDownload 2>/dev/null)
     if [[ "$autoDownload" == "0" ]] || [[ "$autoDownload" == "false" ]]; then
         echo "Automatic update download already disabled"
     else
@@ -60,7 +62,7 @@ if ! is-at-least "$bigSur" "$osVersion"; then
         fi
     fi
     # Automatic macOS update install
-    autoInstallMacOS=$(/usr/bin/defaults read "$suPlist" AutomaticallyInstallMacOSUpdates)
+    autoInstallMacOS=$(/usr/bin/defaults read "$suPlist" AutomaticallyInstallMacOSUpdates 2>/dev/null)
     if [[ "$autoInstallMacOS" == "0" ]] || [[ "$autoInstallMacOS" == "false" ]]; then
         echo "Automatic install of macOS updates already disabled"
     else
@@ -76,7 +78,7 @@ if ! is-at-least "$bigSur" "$osVersion"; then
         fi
     fi
     # Automatic download and install of config updates
-    autoInstallConfig=$(/usr/bin/defaults read "$suPlist" ConfigDataInstall)
+    autoInstallConfig=$(/usr/bin/defaults read "$suPlist" ConfigDataInstall 2>/dev/null)
     if [[ "$autoInstallConfig" == "0" ]] || [[ "$autoInstallConfig" == "false" ]]; then
         echo "Automatic install of config data updates already disabled"
     else
@@ -92,7 +94,7 @@ if ! is-at-least "$bigSur" "$osVersion"; then
         fi
     fi
     # Automatic download and install of critical updates
-    autoInstallCritical=$(/usr/bin/defaults read "$suPlist" CriticalUpdateInstall)
+    autoInstallCritical=$(/usr/bin/defaults read "$suPlist" CriticalUpdateInstall 2>/dev/null)
     if [[ "$autoInstallCritical" == "0" ]] || [[ "$autoInstallCritical" == "false" ]]; then
         echo "Automatic install of critical updates already disabled"
     else
@@ -104,6 +106,22 @@ if ! is-at-least "$bigSur" "$osVersion"; then
             echo "Automatic install of critical updates now disabled"
         else
             echo "Automatic install of critical updates still enabled"
+            exit 1
+        fi
+    fi
+    # Automatic app updates from the App Store
+    autoInstallMAS=$(/usr/bin/defaults read "$masPlist" AutoUpdate 2>/dev/null)
+    if [[ "$autoInstallMAS" == "0" ]] || [[ "$autoInstallMAS" == "false" ]]; then
+        echo "Automatic install of app updates from the App Store already disabled"
+    else
+        # Disable automatic install of app updates from the App Store
+        defaults write "$masPlist" AutoUpdate -bool false
+        # re-populate variable
+        autoInstallMAS=$(/usr/bin/defaults read "$masPlist" AutoUpdate 2>/dev/null)
+        if [[ "$autoInstallMAS" == "0" ]] || [[ "$autoInstallMAS" == "false" ]]; then
+            echo "Automatic install of app updates from the App Store now disabled"
+        else
+            echo "Automatic install of app updates from the App Store still enabled"
             exit 1
         fi
     fi
