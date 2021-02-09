@@ -22,24 +22,22 @@ jdkCheck=$(find /Library/Java/JavaVirtualMachines -iname "*jdk*" -maxdepth 1 | a
 
 function checkJREVersion ()
 {
-# Check installed JDK version so that removal is only on Macs without Oracle JDK 8 as the active version
+# Check installed JDK version so that removal is only on Macs without Oracle JDK 8 Update 201 as the active version
 if [[ "$jdkCheck" -gt "0" ]]; then
     activeJDK=$(java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}')
-    if [[ "$activeJDK" =~ "1.8" ]]; then
-        jdkVersion="8"
-    else
-        jdkVersion=""
-    fi
+else
+    activeJDK="None"
 fi
 # Get installed JRE version
 if [[ -f "${internetPlugin}/Contents/Enabled.plist" ]]; then
-	currentVersion=$(/usr/bin/defaults read "${internetPlugin}/Contents/Enabled.plist" CFBundleVersion)
-	majorVersion=$(/usr/bin/defaults read "${internetPlugin}/Contents/Enabled.plist" CFBundleVersion | /usr/bin/awk -F'.' '{print $2}')
-	if [[ "$majorVersion" -eq "8" ]] && [[ "$jdkVersion" -ne "8" ]]; then
-		echo "JRE version ${currentVersion} installed"
+	majorVersion=$(defaults read "${internetPlugin}/Contents/Enabled.plist" CFBundleVersion | awk -F'.' '{print $2}')
+    minorVersion=$(defaults read "${internetPlugin}/Contents/Enabled.plist" CFBundleVersion | awk -F'.' '{print $3}')
+    currentVersion="1.${majorVersion}.${minorVersion}"
+	if [[ "$currentVersion" == "1.8.201" ]] && [[ "$activeJDK" != "1.8.0_201" ]]; then
+		echo "JRE version: ${currentVersion} and JDK version: ${activeJDK} installed"
         echo "Uninstalling JRE version: ${currentVersion}..."
 	else
-		echo "JRE version:${currentVersion} and JDK version: ${activeJDK} installed"
+		echo "JRE version: ${currentVersion} and JDK version: ${activeJDK} installed"
         echo "Nothing has been uninstalled"
         exit 0
 	fi
