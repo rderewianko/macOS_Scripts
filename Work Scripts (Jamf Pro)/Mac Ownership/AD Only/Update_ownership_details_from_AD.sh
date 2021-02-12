@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #Get the logged in users username
-LoggedInUser=`python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");'`
+LoggedInUser=$(stat -f %Su /dev/console)
 
 #Get UniqueID
-accountType=$(dscl . -read /Users/$LoggedInUser | grep UniqueID | /usr/bin/awk '{ print $2 }')
+accountType=$(dscl . -read /Users/"$LoggedInUser" | grep UniqueID | /usr/bin/awk '{ print $2 }')
 
-if [ -z $LoggedInUser ]; then
+if [ -z "$LoggedInUser" ]; then
         echo "No one logged in, quit."
         exit 0
 else
@@ -15,24 +15,24 @@ else
         if (( "$accountType" > 1000 )); then
           echo "AD account being used"
           #if [[ $LoggedInUser == *"admin"* ]]; then
-          if [[ $LoggedInUser == "admin" ]]; then
+          if [[ "$LoggedInUser" == "admin" ]]; then
             echo "Umm, looks to be an admin quitting..."
             exit 0
           else
             echo "Not an admin, carry on"
             #Get Real Name
-            userRealName=`dscl . -read /Users/$LoggedInUser | grep -A1 "RealName:" | sed -n 2p | awk '{print $2, $1}' | sed 's/,$//'`
+            userRealName=$(dscl . -read /Users/$LoggedInUser | grep -A1 "RealName:" | sed -n 2p | awk '{print $2, $1}' | sed 's/,$//')
             #Get logged in users email address
-            userEMail=`dscl . -read /Users/$LoggedInUser | grep EMailAddress: | awk '{print $2}'`
+            userEMail=$(dscl . -read /Users/$LoggedInUser | grep EMailAddress: | awk '{print $2}')
             #Get logged in users position
-            userPosition=`dscl . -read /Users/$LoggedInUser | awk '/^JobTitle:/,/^LastName:/' | sed -n 2p | cut -c 2-`
+            userPosition=$(dscl . -read /Users/$LoggedInUser | awk '/^JobTitle:/,/^LastName:/' | sed -n 2p | cut -c 2-)
             #Get logged in users Phone Number
-            userPhoneNumber=`dscl . -read /Users/$LoggedInUser  | grep -A1 "PhoneNumber:" | sed -n 2p`
+            userPhoneNumber=$(dscl . -read /Users/$LoggedInUser  | grep -A1 "PhoneNumber:" | sed -n 2p)
             #Get logged in users Department
-            userDepartment=`dscl /Active\ Directory/BAUER-UK/bauer-uk.bauermedia.group -read /Users/$LoggedInUser | grep -A1 "physicalDeliveryOfficeName" | sed -n 2p`
+            userDepartment=$(dscl /Active\ Directory/BAUER-UK/bauer-uk.bauermedia.group -read /Users/$LoggedInUser | grep -A1 "physicalDeliveryOfficeName" | sed -n 2p)
 
             #Check connection to the JSS before submitting ownership details
-            jssConnection=`jamf checkjssconnection | tail -1`
+            jssConnection=$(jamf checkjssconnection | tail -1)
 
             #Check for values and if not populated populate with predefined data
             #If $userRealName is blank
