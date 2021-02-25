@@ -3,11 +3,12 @@
 ########################################################################
 #              Download and Install Microsoft Applications             #
 #                     (Self Service only version)                      #
+################### written by Phil Walker Jan 2021 ####################
 ########################################################################
 
 # Credit to Written William Smith (Professional Services Engineer @Jamf bill@talkingmoose.net
 # https://gist.github.com/talkingmoose/a16ca849416ce5ce89316bacd75fc91a
-# Edited by Phil Walker Jan 2021
+# Edited by Phil Walker Feb 2021
 
 ########################################################################
 #                            Variables                                 #
@@ -33,12 +34,10 @@ linkID="$4"
 # 832978 - Skype for Business download
 # 869428 - Teams
 # 525134 - Word 2019 SKUless download
-# sha256 Checksum e.g. "67b1e8e036c575782b1c9188dd48fa94d9eabcb81947c8632fd4acac7b01644b"
-sha256Checksum="$5" # This is not required. Install will start with no value in this parameter.
 # Package Name
-pkgName="$6"
+pkgName="$5"
 # App to be installed
-appNameForInstall="$7"
+appNameForInstall="$6"
 
 ############ Variables for Jamf Pro Parameters - End ###################
 # Full fwlink URL
@@ -119,11 +118,13 @@ tempDirectory=$(/usr/bin/mktemp -d "/private/tmp/MicrosoftAppDownload.XXXXXX")
 # Jamf Helper for download in progress
 jamfHelperDownloadInProgress
 # Download the installer package and name using the value found in parameter 6
-echo "Downloading package $pkgName.pkg"
+echo "Downloading ${appNameForInstall} package..."
 /usr/bin/curl --location --silent "$fullURL" -o "${tempDirectory}/${pkgName}.pkg"
 # Check if the download completed
 commandResult="$?"
-if [[ "$commandResult" -ne "0" ]]; then
+if [[ "$commandResult" -eq "0" ]]; then
+    echo "Successfully downloaded ${appNameForInstall} package"
+else
     echo "Failed to download the package, exiting..."
     # kill previous helper and show a failure helper
     failureKillHelper
@@ -131,35 +132,23 @@ if [[ "$commandResult" -ne "0" ]]; then
     cleanUp
     exit 1
 fi
-# Checksum the download
-downloadChecksum=$(/usr/bin/shasum -a 256 "${tempDirectory}/${pkgName}.pkg" | /usr/bin/awk '{ print $1 }')
-echo "Checksum for downloaded package: $downloadChecksum"
-# Install the package if checksum validates
-if [ "$sha256Checksum" = "$downloadChecksum" ] || [ "$sha256Checksum" = "" ]; then
-	echo "Checksum verified. Installing package $pkgName.pkg"
-	/usr/sbin/installer -pkg "${tempDirectory}/${pkgName}.pkg" -target /
-    commandResult="$?"
-    if [[ "$commandResult" -ne "0" ]]; then
-        echo "Failed to install the package"
-        # kill previous helper and show a failure helper
-        # Remove temp content
-        cleanUp
-        exit 1
-    else
-        # Kill the download helper
-        killall -13 "jamfHelper" >/dev/null 2>&1
-    fi
+/bin/echo "Installing ${appNameForInstall}..."
+/usr/sbin/installer -pkg "${tempDirectory}/${pkgName}.pkg" -target /
+commandResult="$?"
+if [[ "$commandResult" -eq "0" ]]; then
+    # Kill the download helper
+    killall -13 "jamfHelper" >/dev/null 2>&1
 else
-	echo "Checksum failed. Recalculate the SHA 256 checksum and try again. Or download may not be valid."
+    echo "Failed to install the package, exiting..."
     # kill previous helper and show a failure helper
     failureKillHelper
     # Remove temp content
     cleanUp
-	exit 1
+    exit 1
 fi
 sleep 2
 # Define helper complete icon. This is defined later so that the app icon can be used post install
-helperIconComplete="$8" # defined as a parameter in Jamf Pro
+helperIconComplete="$7" # defined as a parameter in Jamf Pro
 if [[ ! -e "$helperIconComplete" ]]; then
     helperIconComplete="/System/Library/CoreServices/Installer.app/Contents/PlugIns/Summary.bundle/Contents/Resources/Success.pdf"
 fi
