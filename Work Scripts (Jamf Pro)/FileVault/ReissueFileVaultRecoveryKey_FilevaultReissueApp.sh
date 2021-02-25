@@ -22,7 +22,7 @@ filevaultReissue="/private/var/tmp/Filevault Reissue.app"
 # FileVault Reissue app binary
 appBinary="/private/var/tmp/Filevault Reissue.app/Contents/MacOS/Filevault Reissue"
 # Bauer logo
-imagePath="/usr/local/bauer/loginwindow/Bauer-Logo-icons1.png"
+imagePath="/usr/local/BauerMediaGroup/FileVaultReissue/Bauer-Logo-icons1.png"
 
 ########################################################################
 #                            Functions                                 #
@@ -83,22 +83,11 @@ else
         echo "$loggedInUser has a SecureToken, is a FileVault enabled user and FileVault is enabled"
         # Confirm the content is there
         if [[ -d "$filevaultReissue" ]] && [[ -f "$imagePath" ]]; then
-            echo "Opening Filevault Reissue"
+            echo "Opening Filevault Reissue..."
+            # App must be run as root or another admin user
             "$appBinary"
-            # sleep for 5 minutes to allow time for the user to enter their credentials
-            /bin/sleep 300
-            # If the user hasn't interacted with the application force it to close so that the policy can run again the following day
-            fvReissueProcess=$(pgrep "Filevault Reissue")
-            if [[ "$fvReissueProcess" != "" ]]; then
-                /usr/bin/pkill -9 "Filevault Reissue"
-                echo "Filevault Reissue application closed"
-            else
-                echo "Filevault Reissue application closed by the user" 
-                # Run recon twice to make sure the new key is available in Jamf Pro
-                /usr/local/jamf/bin/jamf recon
-                /usr/local/jamf/bin/jamf recon
-            fi
-            cleanUp
+            echo "If after 5 minutes the app is closed an inventory update will be run"
+            echo "If the app is still open it will be automatically closed and the policy will run again tomorrow"
         else
             echo "Required content not found"
             cleanUp
