@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 ########################################################################
 #                   Register Microsoft AutoUpdate                      #
@@ -15,6 +15,8 @@
 
 # Get the current logged in user
 loggedInUser=$(stat -f %Su /dev/console)
+# Get the logged in users ID
+loggedInUserID=$(id -u "$loggedInUser")
 # lsregister - command to query and manage the Launch Services database
 lsRegister="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
 # Microsoft AutoUpdate Application
@@ -26,11 +28,21 @@ mauAssistant="/Library/Application Support/Microsoft/MAU2.0/Microsoft AutoUpdate
 #                            Functions                                 #
 ########################################################################
 
+function runAsUser ()
+{  
+# Run commands as the logged in user
+if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
+    echo "No user logged in, unable to run commands as a user"
+else
+    launchctl asuser "$loggedInUserID" sudo -u "$loggedInUser" "$@"
+fi
+}
+
 postCheck ()
 {
 # Confirm MAU has been registered successfully
-checkMAU=$(/usr/bin/sudo -u "$loggedInUser" "$lsRegister" -dump | grep "$mauApp" | grep -v "Contents")
-checkMAUAssistant=$(/usr/bin/sudo -u "$loggedInUser" "$lsRegister" -dump | grep "$mauAssistant")
+checkMAU=$(runAsUser "$lsRegister" -dump | grep "$mauApp" | grep -v "Contents")
+checkMAUAssistant=$(runAsUser "$lsRegister" -dump | grep "$mauAssistant")
 if [[ "$checkMAU" != "" ]] && [[ "$checkMAUAssistant" != "" ]]; then
      echo "Microsoft AutoUpdate registered successfully for $loggedInUser"
 else
@@ -47,13 +59,13 @@ if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
      echo "No one is home, exiting..."
 else
      if [[ -d "$mauApp" ]]; then
-          /usr/bin/sudo -u "$loggedInUser" "$lsRegister" -R -f -trusted "$mauApp"
-          /usr/bin/sudo -u "$loggedInUser" "$lsRegister" -R -f -trusted "$mauAssistant"
+          echo "Registering Microsoft AutoUpdate for $loggedInUser..."
+          runAsUser "$lsRegister" -R -f -trusted "$mauApp"
+          runAsUser "$lsRegister" -R -f -trusted "$mauAssistant"
           postCheck
      else
           echo "Microsoft AutoUpdate not found"
-          exit 1
+          echo "Please install Microsoft Office for Mac and run this again"
      fi
 fi
-
 exit 0
