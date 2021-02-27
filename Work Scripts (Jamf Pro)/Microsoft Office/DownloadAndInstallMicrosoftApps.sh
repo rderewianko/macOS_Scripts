@@ -59,7 +59,6 @@ if [[ "$depNotify" != "" ]]; then
     /bin/echo "Mac is being provisioned, progress will be displayed in DEPNotify"
     # Set determinate to Manual - Used to pause the status bar during the download/install process
     /bin/echo "Command: DeterminateManual: ${determinateLevel}" >> "$logFile"
-    /bin/echo "Command: DeterminateManualStep: 1" >> "$logFile"
     /bin/echo "Status: Downloading ${appName}..." >> "$logFile"
     /bin/sleep 1
     /bin/echo "Command: DeterminateManualStep: 1" >> "$logFile"
@@ -81,7 +80,6 @@ if [[ "$depNotify" != "" ]]; then
     /bin/echo "Command: DeterminateManualStep: 1" >> "$logFile"
     /bin/echo "Status: Installing ${appName}..." >> "$logFile"
     /bin/sleep 1
-    /bin/echo "Command: DeterminateManualStep: 1" >> "$logFile"
     # Run installer in verboseR mode to give installer percentage and then output to DEPNotify
     /bin/echo "Installing ${appName}..."
 	#/usr/sbin/installer -pkg "${tempDirectory}/${pkgName}.pkg" -target / -verboseR 2>&1 | while read -r -n1 char; do # bash version
@@ -94,7 +92,6 @@ if [[ "$depNotify" != "" ]]; then
     /bin/echo "Command: DeterminateManualStep: 1" >> "$logFile"
     /bin/echo "Status: ${appName} install complete" >> "$logFile"
     /bin/sleep 1
-    /bin/echo "Command: DeterminateManualStep: 1" >> "$logFile"
     # Set determinate back to auto
     /bin/echo "Command: Determinate: ${determinateLevel}" >> "$logFile"
 else
