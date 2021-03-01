@@ -6,7 +6,7 @@
 ################### written by Phil Walker Jan 2021 ####################
 ########################################################################
 
-# Credit to Written William Smith (Professional Services Engineer @Jamf bill@talkingmoose.net
+# Credit to William Smith (Professional Services Engineer @Jamf bill@talkingmoose.net
 # https://gist.github.com/talkingmoose/a16ca849416ce5ce89316bacd75fc91a
 # Edited by Phil Walker Feb 2021
 
@@ -34,14 +34,22 @@ linkID="$4"
 # 832978 - Skype for Business download
 # 869428 - Teams
 # 525134 - Word 2019 SKUless download
-# Package Name
-pkgName="$5"
 # App to be installed
-appNameForInstall="$6"
+appName="$5"
 
 ############ Variables for Jamf Pro Parameters - End ###################
 # Full fwlink URL
 fullURL="https://go.microsoft.com/fwlink/?linkid=$linkID"
+# Target package
+targetPKG=$(/usr/bin/curl --head --location --silent "$fullURL" | grep -i "location" | grep -i ".pkg" | awk -F '/' '{print $NF}' | tr -d '\r')
+# Target package size - Some apps return multiple headers, find the Content-Length that isn't 0
+targetPKGSizeCheck=$(/usr/bin/curl --head --location --silent "$fullURL" | grep -i "Content-Length" | grep -v "Access-Control-Expose-Headers" | sed 's/[^0-9]//g')
+#targetPKGSize=$(/usr/bin/curl --head --location --silent "$fullURL" | sed '/^HTTP\/1.1 3[0-9][0-9]/,/^\r$/d' | grep "Content-Length" | sed 's/[^0-9]//g') # works on Big Sur but not Catalina
+for pkgSize in ${(f)targetPKGSizeCheck}; do
+    if [[ "$pkgSize" -ne "0" ]]; then
+        targetPKGSize="$pkgSize"
+    fi
+done
 # jamf Helper
 jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
 # Helper icon Download
@@ -49,7 +57,7 @@ helperIconDownload="/System/Library/CoreServices/Install in Progress.app/Content
 # Helper title
 helperTitle="Message from Bauer IT"
 # Helper heading
-helperHeading="          ${appNameForInstall}          "
+helperHeading="          ${appName}          "
 # Helper Icon Problem
 helperIconProblem="/System/Library/CoreServices/Problem Reporter.app/Contents/Resources/ProblemReporter.icns"
 # Get the icons for the complete helper
@@ -63,7 +71,7 @@ function jamfHelperDownloadInProgress ()
 {
 # Download in progress helper window
 "$jamfHelper" -windowType utility -icon "$helperIconDownload" -title "$helperTitle" \
--heading "$helperHeading" -alignHeading natural -description "Downloading and Installing ${appNameForInstall}...
+-heading "$helperHeading" -alignHeading natural -description "Downloading and Installing ${appName}...
 
 ** Download time will depend on the speed of your current internet connection **" -alignDescription natural &
 }
@@ -73,7 +81,7 @@ function jamfHelperInstallComplete ()
 # Install complete helper
 "$jamfHelper" -windowType utility -icon "$helperIconComplete" \
 -title "$helperTitle" -heading "$helperHeading" -alignHeading natural \
--description "${appNameForInstall} Installation Complete ✅" -alignDescription natural -timeout 10 -button1 "Ok" -defaultButton "1"
+-description "${appName} Installation Complete ✅" -alignDescription natural -timeout 10 -button1 "Ok" -defaultButton "1"
 }
 
 function jamfHelperFailed ()
@@ -81,9 +89,9 @@ function jamfHelperFailed ()
 # check for updates available helper
 "$jamfHelper" -windowType utility -icon "$helperIconProblem" \
 -title "$helperTitle" -heading "$helperHeading" -alignHeading natural \
--description "${appNameForInstall} Installation Failed ⚠️
+-description "${appName} Installation Failed ⚠️
 
-Please reboot your Mac and install ${appNameForInstall} from Self Service again." -alignDescription natural -timeout 20 -button1 "Ok" -defaultButton "1"
+Please reboot your Mac and install ${appName} from Self Service again." -alignDescription natural -timeout 20 -button1 "Ok" -defaultButton "1"
 }
 
 function failureKillHelper ()
@@ -115,15 +123,19 @@ fi
 # Create a temporary working directory
 echo "Creating temporary directory for the download"
 tempDirectory=$(/usr/bin/mktemp -d "/private/tmp/MicrosoftAppDownload.XXXXXX")
+echo "Target package: $targetPKG"
+echo "Target package size: $targetPKGSize bytes"
 # Jamf Helper for download in progress
 jamfHelperDownloadInProgress
-# Download the installer package and name using the value found in parameter 6
-echo "Downloading ${appNameForInstall} package..."
-/usr/bin/curl --location --silent "$fullURL" -o "${tempDirectory}/${pkgName}.pkg"
+# Download the installer package
+echo "Downloading ${appName} package..."
+/usr/bin/curl --location --silent "$fullURL" -o "${tempDirectory}/${targetPKG}"
 # Check if the download completed
-commandResult="$?"
-if [[ "$commandResult" -eq "0" ]]; then
-    echo "Successfully downloaded ${appNameForInstall} package"
+downloadedPKG=$(stat -f%z "${tempDirectory}/${targetPKG}")
+echo "Downloaded package size: ${downloadedPKG} bytes"
+if [[ "$targetPKGSize" -eq "$downloadedPKG" ]]; then
+    echo "Target package and downloaded package file sizes match"
+    echo "${appName} download complete"
 else
     echo "Failed to download the package, exiting..."
     # kill previous helper and show a failure helper
@@ -132,8 +144,8 @@ else
     cleanUp
     exit 1
 fi
-/bin/echo "Installing ${appNameForInstall}..."
-/usr/sbin/installer -pkg "${tempDirectory}/${pkgName}.pkg" -target /
+/bin/echo "Installing ${appName}..."
+/usr/sbin/installer -pkg "${tempDirectory}/${targetPKG}" -target /
 commandResult="$?"
 if [[ "$commandResult" -eq "0" ]]; then
     # Kill the download helper
@@ -148,7 +160,7 @@ else
 fi
 sleep 2
 # Define helper complete icon. This is defined later so that the app icon can be used post install
-helperIconComplete="$7" # defined as a parameter in Jamf Pro
+helperIconComplete="$6" # defined as a parameter in Jamf Pro
 if [[ ! -e "$helperIconComplete" ]]; then
     helperIconComplete="/System/Library/CoreServices/Installer.app/Contents/PlugIns/Summary.bundle/Contents/Resources/Success.pdf"
 fi

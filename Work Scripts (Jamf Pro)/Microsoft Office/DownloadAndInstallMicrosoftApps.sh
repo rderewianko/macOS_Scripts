@@ -33,83 +33,36 @@ linkID="$4"
 # 832978 - Skype for Business download
 # 869428 - Teams
 # 525134 - Word 2019 SKUless download
-# Package Name
-pkgName="$5"
 # Friendly name for DEPNotify
-appName="$6"
+appName="$5"
+# Path for installed application e.g /Applications/Microsoft Outlook.app (For Office only check for Outlook)
+installedApp="$6"
 # Determinate level for DEPNotify
 determinateLevel="$7"
 ############ Variables for Jamf Pro Parameters - End ###################
 # Full fwlink URL
 fullURL="https://go.microsoft.com/fwlink/?linkid=$linkID"
+# Target package
+targetPKG=$(/usr/bin/curl --head --location --silent "$fullURL" | grep -i "location" | grep -i ".pkg" | awk -F '/' '{print $NF}' | tr -d '\r')
+#targetPKG=$(/usr/bin/curl --head --location --silent "$fullURL" | sed '/^HTTP\/1.1 3[0-9][0-9]/,/^\r$/d' | grep "Content-Disposition" | awk -F '[=]' '{print $2}' | tr -d '\r') # Alt method
+# Target package size - Some apps return multiple headers, find the Content-Length that isn't 0
+targetPKGSizeCheck=$(/usr/bin/curl --head --location --silent "$fullURL" | grep -i "Content-Length" | grep -v "Access-Control-Expose-Headers" | sed 's/[^0-9]//g')
+for pkgSize in ${(f)targetPKGSizeCheck}; do
+    if [[ "$pkgSize" -ne "0" ]]; then
+        targetPKGSize="$pkgSize"
+    fi
+done
 # DEPNotify process
-depNotify=$(pgrep "DEPNotify")
+depNotify=$(/usr/bin/pgrep "DEPNotify")
 # DEPNotify log
 logFile="/var/tmp/depnotify.log"
 
 ########################################################################
-#                         Script starts here                           #
+#                            Functions                                 #
 ########################################################################
 
-# Create a temporary working directory
-/bin/echo "Creating temporary directory for the download"
-tempDirectory=$(/usr/bin/mktemp -d "/private/tmp/MicrosoftAppDownload.XXXXXX")
-# Show download and install info in DEPNotify if the Mac is being provisioned
-if [[ "$depNotify" != "" ]]; then
-    /bin/echo "Mac is being provisioned, progress will be displayed in DEPNotify"
-    # Set determinate to Manual - Used to pause the status bar during the download/install process
-    /bin/echo "Command: DeterminateManual: ${determinateLevel}" >> "$logFile"
-    /bin/echo "Status: Downloading ${appName}..." >> "$logFile"
-    /bin/sleep 1
-    /bin/echo "Command: DeterminateManualStep: 1" >> "$logFile"
-    # Download the installer package and name using the value found in parameter 5
-    /bin/echo "Downloading ${appName} package..."
-    #/usr/bin/curl -L -# "$fullURL" -o "${tempDirectory}/${pkgName}.pkg" 2>&1 | while IFS= read -r -n1 char; do # bash version
-    /usr/bin/curl -L -# "$fullURL" -o "${tempDirectory}/${pkgName}.pkg" 2>&1 | while IFS= read -u 0 -sk 1 char; do
-        [[ $char =~ [0-9] ]] && keep=1;
-        [[ $char == % ]] && /bin/echo "Status: Downloading ${appName}... ${progress}%" >> "$logFile" && progress="" && keep=0;
-        [[ $keep == 1 ]] && progress="$progress$char";
-    done
-    # Check if the download completed
-    if [[ -e "${tempDirectory}/${pkgName}.pkg" ]]; then
-        /bin/echo "Successfully downloaded ${appName} package"
-    else
-        /bin/echo "Failed to download the package, exiting..."
-        exit 1
-    fi
-    /bin/echo "Command: DeterminateManualStep: 1" >> "$logFile"
-    /bin/echo "Status: Installing ${appName}..." >> "$logFile"
-    /bin/sleep 1
-    # Run installer in verboseR mode to give installer percentage and then output to DEPNotify
-    /bin/echo "Installing ${appName}..."
-	#/usr/sbin/installer -pkg "${tempDirectory}/${pkgName}.pkg" -target / -verboseR 2>&1 | while read -r -n1 char; do # bash version
-    /usr/sbin/installer -pkg "${tempDirectory}/${pkgName}.pkg" -target / -verboseR 2>&1 | while read -u 0 -sk 1 char; do
-        [[ $char == % ]] && keep=1;
-        [[ $char =~ [0-9] ]] && [[ $keep == 1 ]] && progress="$progress$char";
-        [[ $char == . ]] && [[ $keep == 1 ]] && /bin/echo "Status: Installing ${appName}... ${progress}%" >> "$logFile" && progress="" && keep=0;
-    done
-    /bin/echo "${appName} install complete"
-    /bin/echo "Command: DeterminateManualStep: 1" >> "$logFile"
-    /bin/echo "Status: ${appName} install complete" >> "$logFile"
-    /bin/sleep 1
-    # Set determinate back to auto
-    /bin/echo "Command: Determinate: ${determinateLevel}" >> "$logFile"
-else
-	/bin/echo "Mac not being provisioned, install silently"
-    # Download the installer package and name using the value found in parameter 5
-    /bin/echo "Downloading ${appName} package..."
-    /usr/bin/curl --location --silent "$fullURL" -o "${tempDirectory}/${pkgName}.pkg"
-    # Check if the download completed
-    commandResult="$?"
-    if [[ "$commandResult" -eq "0" ]]; then
-        /bin/echo "Successfully downloaded ${appName} package"
-    else
-        /bin/echo "Failed to download the package, exiting..."
-        exit 1
-    fi
-	/bin/echo "Installing ${appName}..."
-	/usr/sbin/installer -pkg "${tempDirectory}/${pkgName}.pkg" -target /
-fi
+function cleanUp ()
+{
 # Remove the temporary working directory when done
 /bin/rm -Rf "$tempDirectory"
 /bin/echo "Deleting temporary directory ${tempDirectory} and its contents"
@@ -118,4 +71,111 @@ if [[ ! -d "$tempDirectory" ]]; then
 else
     /bin/echo "Failed to delete the temporary directory"
 fi
+}
+
+########################################################################
+#                         Script starts here                           #
+########################################################################
+
+# Create a temporary working directory
+/bin/echo "Creating temporary directory for the download"
+tempDirectory=$(/usr/bin/mktemp -d "/private/tmp/MicrosoftAppDownload.XXXXXX")
+echo "Target package: $targetPKG"
+echo "Target package size: $targetPKGSize bytes"
+# Show download and install info in DEPNotify if the Mac is being provisioned
+if [[ "$depNotify" != "" ]]; then
+    /bin/echo "Mac is being provisioned, progress will be displayed in DEPNotify"
+    # Set determinate to Manual - Used to pause the status bar during the download/install process
+    /bin/echo "Command: DeterminateManual: ${determinateLevel}" >> "$logFile"
+    /bin/echo "Status: Downloading ${appName}..." >> "$logFile"
+    /bin/sleep 1
+    /bin/echo "Command: DeterminateManualStep: 1" >> "$logFile"
+    # Download the installer package
+    /bin/echo "Downloading ${appName}..."
+    #/usr/bin/curl -L -# "$fullURL" -o "${tempDirectory}/${targetPKG}" 2>&1 | while IFS= read -r -n1 char; do # bash version
+    /usr/bin/curl -L -# "$fullURL" -o "${tempDirectory}/${targetPKG}" 2>&1 | while IFS= read -u 0 -sk 1 char; do
+        [[ $char =~ [0-9] ]] && keep=1;
+        [[ $char == % ]] && /bin/echo "Status: Downloading ${appName} ${progress}%" >> "$logFile" && progress="" && keep=0;
+        [[ $keep == 1 ]] && progress="$progress$char";
+    done
+    # Check if the download completed
+    downloadedPKG=$(stat -f%z "${tempDirectory}/${targetPKG}")
+    echo "Downloaded package size: $downloadedPKG bytes"
+    if [[ "$targetPKGSize" -eq "$downloadedPKG" ]]; then
+        /bin/echo "Target package and downloaded package file sizes match"
+        /bin/echo "${appName} download complete"
+    else
+        /bin/echo "${appName} download failed!"
+        /bin/echo "Status: ${appName} download failed!" >> "$logFile"
+        /bin/sleep 2
+        /bin/echo "Status: ${appName} is available for install in Self Service" >> "$logFile"
+        /bin/sleep 2
+        # Set determinate back to auto
+        /bin/echo "Command: Determinate: ${determinateLevel}" >> "$logFile"
+        # Remove temp content
+        cleanUp
+        exit 1
+    fi
+    /bin/echo "Command: DeterminateManualStep: 1" >> "$logFile"
+    /bin/echo "Status: Installing ${appName}..." >> "$logFile"
+    /bin/sleep 1
+    # Run installer in verboseR mode to give installer percentage and then output to DEPNotify
+    /bin/echo "Installing ${appName}..."
+	#/usr/sbin/installer -pkg "${tempDirectory}/${targetPKG}" -target / -verboseR 2>&1 | while read -r -n1 char; do # bash version
+    /usr/sbin/installer -pkg "${tempDirectory}/${targetPKG}" -target / -verboseR 2>&1 | while read -u 0 -sk 1 char; do
+        [[ $char == % ]] && keep=1;
+        [[ $char =~ [0-9] ]] && [[ $keep == 1 ]] && progress="$progress$char";
+        [[ $char == . ]] && [[ $keep == 1 ]] && /bin/echo "Status: Installing ${appName}... ${progress}%" >> "$logFile" && progress="" && keep=0;
+    done
+    # Check the app installed successfully (Unable to use exit code due to method used to output to DEPNotify)
+    # For Office for Mac we check for 1 app only e.g Outlook
+    if [[ -d "$installedApp" ]]; then
+        /bin/echo "${appName} install complete"
+        /bin/echo "Command: DeterminateManualStep: 1" >> "$logFile"
+        /bin/echo "Status: ${appName} install complete" >> "$logFile"
+        /bin/sleep 1
+        # Set determinate back to auto
+        /bin/echo "Command: Determinate: ${determinateLevel}" >> "$logFile"
+    else
+        /bin/echo "${appName} install failed!"
+        /bin/echo "Status: ${appName} install failed!" >> "$logFile"
+        /bin/sleep 2
+        /bin/echo "Status: ${appName} is available for install in Self Service" >> "$logFile"
+        /bin/sleep 2
+        # Set determinate back to auto
+        /bin/echo "Command: Determinate: ${determinateLevel}" >> "$logFile"
+        # Remove temp content
+        cleanUp
+        exit 1
+    fi
+else
+	/bin/echo "Mac not being provisioned, install silently"
+    # Download the installer package
+    /bin/echo "Downloading ${appName}..."
+    /usr/bin/curl --location --silent "$fullURL" -o "${tempDirectory}/${targetPKG}"
+    # Check if the download completed
+    downloadedPKG=$(stat -f%z "${tempDirectory}/${targetPKG}")
+    echo "Downloaded package size: ${downloadedPKG} bytes"
+    if [[ "$targetPKGSize" -eq "$downloadedPKG" ]]; then
+        /bin/echo "Target package and downloaded package file sizes match"
+        /bin/echo "${appName} download complete"
+    else
+        /bin/echo "${appName} download failed!, exiting..."
+        # Remove temp content
+        cleanUp
+        exit 1
+    fi
+	/bin/echo "Installing ${appName}..."
+	/usr/sbin/installer -pkg "${tempDirectory}/${targetPKG}" -target /
+    # Check the app installed successfully
+    commandResult="$?"
+    if [[ "$commandResult" -ne "0" ]]; then
+        /bin/echo "${appName} install failed!"
+        # Remove temp content
+        cleanUp
+        exit 1
+    fi
+fi
+# Remove temp content
+cleanUp
 exit 0
