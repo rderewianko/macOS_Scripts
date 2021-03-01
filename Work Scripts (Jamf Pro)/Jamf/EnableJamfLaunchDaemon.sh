@@ -9,10 +9,15 @@
 #                            Variables                                 #
 ########################################################################
 
+############ Variables for Jamf Pro Parameters - Start #################
+# Check-in frequency
+checkFreq="$4"
+############ Variables for Jamf Pro Parameters - End ###################
+
 # Jamf Recurring Check-In Launch Daemon
 launchDaemon="/Library/LaunchDaemons/com.jamfsoftware.task.1.plist"
 # Launch Daemon status
-launchDaemonStatus=$(launchctl list | grep "com.jamfsoftware.task.Every")
+launchDaemonStatus=$(launchctl list | grep "com.jamfsoftware.task.Every $checkFreq Minutes")
 
 ########################################################################
 #                         Script starts here                           #
@@ -25,7 +30,7 @@ if [[ -f "$launchDaemon" ]]; then
         launchctl load -w "$launchDaemon"
         sleep 5
         # re-populate variable
-        launchDaemonStatus=$(launchctl list | grep "com.jamfsoftware.task.Every")
+        launchDaemonStatus=$(launchctl list | grep "com.jamfsoftware.task.Every $checkFreq Minutes")
         if [[ "$launchDaemonStatus" != "" ]]; then
             echo "Jamf Pro Recurring Check-In Launch Daemon enabled"
         else
