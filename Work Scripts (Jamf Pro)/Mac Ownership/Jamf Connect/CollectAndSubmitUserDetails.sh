@@ -4,6 +4,7 @@
 #                   Submit User Details to Jamf Pro                    #
 ################### written by Phil Walker Dec 2020 ####################
 ########################################################################
+# Edit Feb 2021
 
 ########################################################################
 #                            Variables                                 #
@@ -11,8 +12,6 @@
 
 # Get the logged in users username
 loggedInUser=$(stat -f %Su /dev/console)
-# Remove the period from the username
-userShortName=$(stat -f %Su /dev/console | tr -d .)
 # API creds for connection
 apiUser="API_Departments"
 apiPass="API_Departments"
@@ -34,26 +33,22 @@ else
     else
         echo "Not an admin, carry on"
         if [[ -f "/Users/${loggedInUser}/Library/Preferences/com.jamf.connect.state.plist" ]]; then
-            # Get the user UPN
-            userUPN=$(sudo -u "$loggedInUser" defaults read com.jamf.connect.state UserUPN 2>/dev/null)
             # Get Real Name
             userRealName=$(sudo -u "$loggedInUser" defaults read com.jamf.connect.state UserCN 2>/dev/null)
             # Get logged in users email address
             UserEmail=$(sudo -u "$loggedInUser" defaults read com.jamf.connect.state UserEmail 2>/dev/null)
             # Get logged in users position
-            userPosition=$(dscl "/Active Directory/BAUER-UK/bauer-uk.bauermedia.group" -read /Users/"$userShortName" | awk '/^JobTitle:/,/^LastName:/' | sed -n 2p | xargs 2>/dev/null)
+            userPosition=$(dscl "/Active Directory/BAUER-UK/bauer-uk.bauermedia.group" -read /Users/"$loggedInUser" | awk '/^JobTitle:/,/^LastName:/' | sed -n 2p | xargs 2>/dev/null)
             # Get logged in users Phone Number
-            userPhoneNumber=$(dscl "/Active Directory/BAUER-UK/bauer-uk.bauermedia.group" -read /Users/"$userShortName" | awk '/PhoneNumber:/ {print $2}' 2>/dev/null)
+            userPhoneNumber=$(dscl "/Active Directory/BAUER-UK/bauer-uk.bauermedia.group" -read /Users/"$loggedInUser" | awk '/PhoneNumber:/ {print $2}' 2>/dev/null)
             # Get logged in users Office location
-            userOffice=$(dscl "/Active Directory/BAUER-UK/bauer-uk.bauermedia.group" -read /Users/"$userShortName" | grep -A1 "physicalDeliveryOfficeName" | sed -n 2p | xargs 2>/dev/null)
+            userOffice=$(dscl "/Active Directory/BAUER-UK/bauer-uk.bauermedia.group" -read /Users/"$loggedInUser" | grep -A1 "physicalDeliveryOfficeName" | sed -n 2p | xargs 2>/dev/null)
             # Check connection to the JSS before submitting ownership details
             jssConnection=$(/usr/local/jamf/bin/jamf checkJSSConnection | tail -1)    
 
             ### DEBUG
             #echo "loggedInUser:$loggedInUser"
             #echo "-------------"
-            #echo "userShortName:$userShortName"
-            #echo "userUPN:$userUPN"
             #echo "userRealName:$userRealName"
             #echo "UserEmail:$UserEmail"
             #echo "userPosition:$userPosition"
@@ -64,18 +59,12 @@ else
             if [[ "$jssConnection" == "The JSS is available." ]]; then
                 echo "$jssConnection"
                 echo "Submitting ownership for account $loggedInUser..."
-                # Add the ShortName to the record in Jamf Pro (On-Prem Only)
-                if [[ "$userShortName" != "" ]]; then
+                # Add the username to the record in Jamf Pro
+                if [[ "$loggedInUser" != "" ]]; then
                     curl -sku "${apiUser}:${apiPass}" -H "Content-Type: application/xml" "${jssUrl}JSSResource/computers/udid/${hardwareUUID}" \
-                    -X PUT -d "<computer><location><username>$userShortName</username></location></computer>" >/dev/null 2>&1
-                    echo "Username now set to ${userShortName} in Jamf Pro"
+                    -X PUT -d "<computer><location><username>$loggedInUser</username></location></computer>" >/dev/null 2>&1
+                    echo "Username now set to ${loggedInUser} in Jamf Pro"
                 fi
-                # Add the UPN to the record in Jamf Pro (Cloud Only)
-                #if [[ "$userUPN" != "" ]]; then  
-                    #curl -sku "${apiUser}:${apiPass}" -H "Content-Type: application/xml" "${jssUrl}JSSResource/computers/udid/${hardwareUUID}" \
-                    #-X PUT -d "<computer><location><username>$userUPN</username></location></computer>" >/dev/null 2>&1
-                    #echo "Username now set to ${userUPN} in Jamf Pro"
-                #fi   
                 # Add the Full Name to the record in Jamf Pro
                 if [[ "$userRealName" != "" ]]; then
                     curl -sku "${apiUser}:${apiPass}" -H "Content-Type: application/xml" "${jssUrl}JSSResource/computers/udid/${hardwareUUID}" \
