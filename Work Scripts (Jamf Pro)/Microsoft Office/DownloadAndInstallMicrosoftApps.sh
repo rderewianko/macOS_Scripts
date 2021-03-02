@@ -91,11 +91,11 @@ if [[ "$depNotify" != "" ]]; then
     /bin/sleep 1
     /bin/echo "Command: DeterminateManualStep: 1" >> "$logFile"
     # Download the installer package
-    /bin/echo "Downloading ${appName}..."
+    /bin/echo "Downloading ${appName} package..."
     #/usr/bin/curl -L -# "$fullURL" -o "${tempDirectory}/${targetPKG}" 2>&1 | while IFS= read -r -n1 char; do # bash version
     /usr/bin/curl -L -# "$fullURL" -o "${tempDirectory}/${targetPKG}" 2>&1 | while IFS= read -u 0 -sk 1 char; do
         [[ $char =~ [0-9] ]] && keep=1;
-        [[ $char == % ]] && /bin/echo "Status: Downloading ${appName} ${progress}%" >> "$logFile" && progress="" && keep=0;
+        [[ $char == % ]] && /bin/echo "Status: Downloading ${appName}... ${progress}%" >> "$logFile" && progress="" && keep=0;
         [[ $keep == 1 ]] && progress="$progress$char";
     done
     # Check if the download completed
