@@ -90,7 +90,7 @@ function jamfHelperDownloadInProgress ()
 
 ⚠️ Please do not open any Adobe CC app ⚠️
 
-** Download time will depend on the speed of your current internet connection **" -alignDescription natural &
+            ⏱ Download time will vary ⏱" -alignDescription natural &
 }
 
 ########################################################################
