@@ -220,7 +220,6 @@ else
         # If the logged in user has a SecureToken, is a FileVault enabled user and FileVault has already been enabled, do nothing
         if [[ "$userSecureToken" == "Token" ]] && [[ "$userGUID" == "$userFVEnabled" ]] && [[ "$fvStatus" == "Enabled" ]]; then
             echo "$loggedInUser has a SecureToken, is a FileVault enabled user and FileVault is enabled, nothing to do!"
-	        jamfHelperNothingToDo
 	        exit 0
         else
             # Display full screen jamf Helper
