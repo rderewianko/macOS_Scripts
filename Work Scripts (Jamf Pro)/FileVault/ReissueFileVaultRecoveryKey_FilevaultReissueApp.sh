@@ -11,6 +11,8 @@
 
 # Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
+# Get the logged in users ID
+loggedInUserID=$(id -u "$loggedInUser")
 # Get the logged in users GUID
 userGUID=$(/usr/bin/dscl . -read /Users/$loggedInUser GeneratedUID | awk '{print $2}')
 # Check if the logged in user is FileVault enabled already
@@ -27,6 +29,16 @@ imagePath="/usr/local/BauerMediaGroup/FileVaultReissue/Bauer-Logo-icons1.png"
 ########################################################################
 #                            Functions                                 #
 ########################################################################
+
+function runAsUser ()
+{  
+# Run commands as the logged in user
+if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
+    echo "No user logged in, unable to run commands as a user"
+else
+    launchctl asuser "$loggedInUserID" sudo -u "$loggedInUser" "$@"
+fi
+}
 
 function checkUserSecureToken ()
 {
@@ -75,30 +87,41 @@ if [[ "$loggedInUser" == "root" ]] || [[ "$loggedInUser" == "" ]]; then
     echo "No one is home, exiting..."
     exit 0
 else
-    checkUserSecureToken
-    checkFileVault
-    # Confirm that FileVault is on and the logged in user has a SecureToken and is FileVault enabled
-    # If the logged in user has a SecureToken, is a FileVault enabled user and FileVault has already been enabled, start the process
-    if [[ "$userSecureToken" == "Token" ]] && [[ "$userGUID" == "$userFVEnabled" ]] && [[ "$fvStatus" == "Enabled" ]]; then
-        echo "$loggedInUser has a SecureToken, is a FileVault enabled user and FileVault is enabled"
-        # Confirm the content is there
-        if [[ -d "$filevaultReissue" ]] && [[ -f "$imagePath" ]]; then
-            echo "Opening Filevault Reissue..."
-            # App must be run as root or another admin user
-            "$appBinary"
-            echo "If after 5 minutes the app is closed an inventory update will be run"
-            echo "If the app is still open it will be automatically closed and the policy will run again tomorrow"
+    # Check if the screen is locked
+    lockScreenStatus=$(runAsUser /usr/bin/python -c 'import sys,Quartz; d=Quartz.CGSessionCopyCurrentDictionary(); print d' | grep "CGSSessionScreenIsLocked")
+    # If the lockScreenStatus check is not empty, then the screensaver is on or the screen is locked
+    if [[ -n "$lockScreenStatus" ]]; then
+        echo "${loggedInUser} is logged in, but the screen is locked, or the screensaver is active."
+        echo "Policy will run again tomorrow, exiting"
+        exit 0
+    else
+        echo "${loggedInUser} is logged in, and the screen is not locked. Continuing..."
+        checkUserSecureToken
+        checkFileVault
+        # Confirm that FileVault is on and the logged in user has a SecureToken and is FileVault enabled
+        # If the logged in user has a SecureToken, is a FileVault enabled user and FileVault has already been enabled, start the process
+        if [[ "$userSecureToken" == "Token" ]] && [[ "$userGUID" == "$userFVEnabled" ]] && [[ "$fvStatus" == "Enabled" ]]; then
+            echo "$loggedInUser has a SecureToken, is a FileVault enabled user and FileVault is enabled"
+            # Confirm the content is there
+            if [[ -d "$filevaultReissue" ]] && [[ -f "$imagePath" ]]; then
+                echo "Opening Filevault Reissue..."
+                # App must be run as root or another admin user
+                "$appBinary"
+                echo "Waiting for user interaction..."
+                echo "If after 5 minutes the app is closed an inventory update will be run"
+                echo "If the app is still open it will be automatically closed and the policy will run again tomorrow"
+            else
+                echo "Required content not found"
+                cleanUp
+                exit 1
+            fi
         else
-            echo "Required content not found"
+            echo "Requirements not met!"
+            echo "SecureToken Status for ${loggedInUser}: ${userSecureToken}"
+            echo "FileVault Status: ${fvStatus}"
             cleanUp
             exit 1
         fi
-    else
-        echo "Requirements not met!"
-        echo "SecureToken Status for ${loggedInUser}: ${userSecureToken}"
-        echo "FileVault Status: ${fvStatus}"
-        cleanUp
-        exit 1
     fi
 fi
 exit 0
