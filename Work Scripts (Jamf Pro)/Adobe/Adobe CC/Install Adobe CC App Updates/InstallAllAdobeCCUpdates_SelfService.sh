@@ -17,7 +17,7 @@
 loggedInUser=$(stat -f %Su /dev/console)
 # Get the logged in users ID
 loggedInUserID=$(id -u "$loggedInUser")
-# Kill all user Adobe Launch Agents/Daemons
+# Kill all user Adobe Launch Agents
 userPIDs=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
 # Adobe Remote Update Manager binary
 rumBinary="/usr/local/bin/RemoteUpdateManager"
@@ -38,7 +38,7 @@ helperHeading="     Adobe CC Application Updates     "
 
 function killAdobe ()
 {
-# Kill all user Adobe Launch Agents/Daemons
+# Kill all processes
 if [[ "$userPIDs" != "" ]]; then
     while IFS= read -r line; do
         kill -9 "$line" 2>/dev/null
@@ -125,6 +125,8 @@ updatesInstalled=$(sed -n '/Following Updates were successfully installed*/,/\*/
     | sed 's/SPRK/XD/g' \
     | sed 's/ACR/Camera\ Raw/g' \
     | sed 's/COSY/CoreSync/g' \
+    | sed 's/CCXP/CCXProcess/g' \
+    | sed 's/COMP/Color\ Profiles/g' \
     | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
     | sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
     | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
@@ -189,8 +191,10 @@ else
         | sed 's/PPRO/Premiere\ Pro/g' \
         | sed 's/RUSH/Premiere\ Rush/g' \
         | sed 's/SPRK/XD/g' \
-        | sed 's/ACR/Camera Raw/g' \
+        | sed 's/ACR/Camera\ Raw/g' \
         | sed 's/COSY/CoreSync/g' \
+        | sed 's/CCXP/CCXProcess/g' \
+        | sed 's/COMP/Color\ Profiles/g' \
         | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
     	| sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
         | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
