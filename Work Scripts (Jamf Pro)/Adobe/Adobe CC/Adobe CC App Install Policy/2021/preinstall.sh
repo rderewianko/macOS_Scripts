@@ -6,7 +6,7 @@
 ########################################################################
 # Must be set to run before the package install
 # Process:
-# 1. Stop+bootout Adobe Launch Agents/Daemons and kill all Adobe processes
+# 1. Bootout Adobe Launch Agents/Daemons and kill all Adobe processes
 # 2. Uninstall all previous versions of the application being installed
 
 # Edit for 2021 app releases
@@ -58,9 +58,9 @@ function killAdobe ()
 if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
     echo "No user logged in"
 else
-    # Get all user Adobe Launch Agents/Daemons PIDs
+    # Get all user Adobe Launch Agents PIDs
     userPIDs=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
-    # Kill all user Adobe Launch Agents/Daemons
+    # Kill all processes
     if [[ "$userPIDs" != "" ]]; then
         while IFS= read -r line; do
             kill -9 "$line" 2>/dev/null
@@ -132,5 +132,4 @@ fi
 killall -13 "jamfHelper" >/dev/null 2>&1
 # Jamf Helper for app download+install
 jamfHelperDownloadInProgress
-
 exit 0

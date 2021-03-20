@@ -6,7 +6,7 @@
 ########################################################################
 # Must be set to run before the package install
 # Process:
-# 1. Stop+unload Adobe Launch Agents/Daemons and kill all Adobe processes
+# 1. Bootout Adobe Launch Agents/Daemons and kill all Adobe processes
 # 2. Uninstall all previous versions of the application being installed
 
 ########################################################################
@@ -29,6 +29,8 @@ appNameForInstall="${10}"
 
 # Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
+# Get the logged in users ID
+loggedInUserID=$(id -u "$loggedInUser")
 # path to binary
 binaryPath="/Library/Application Support/Adobe/Adobe Desktop Common/HDBox/Setup"
 # Jamf Helper
@@ -56,18 +58,18 @@ function killAdobe ()
 if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
     echo "No user logged in"
 else
-    # Get all user Adobe Launch Agents/Daemons PIDs
+    # Get all user Adobe Launch Agents PIDs
     userPIDs=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
-    # Kill all user Adobe Launch Agents/Daemons
+    # Kill all processes
     if [[ "$userPIDs" != "" ]]; then
         while IFS= read -r line; do
             kill -9 "$line" 2>/dev/null
         done <<< "$userPIDs"
     fi
-    # Unload user Adobe Launch Agents
-    su -l "$loggedInUser" -c "/bin/launchctl unload /Library/LaunchAgents/com.adobe.* 2>/dev/null"
-    # Unload Adobe Launch Daemons
-    /bin/launchctl unload /Library/LaunchDaemons/com.adobe.* 2>/dev/null
+    # Bootout all user Adobe Launch Agents
+    launchctl bootout gui/"$loggedInUserID" /Library/LaunchAgents/com.adobe.* 2>/dev/null
+    # Bootout Adobe Launch Daemons
+    launchctl bootout system /Library/LaunchDaemons/com.adobe.* 2>/dev/null
     pkill -9 "obe" >/dev/null 2>&1
     sleep 5
     # Close any Adobe Crash Reporter windows (e.g. Bridge)
@@ -159,5 +161,4 @@ fi
 killall -13 "jamfHelper" >/dev/null 2>&1
 # Jamf Helper for app download+install
 jamfHelperDownloadInProgress
-
 exit 0
