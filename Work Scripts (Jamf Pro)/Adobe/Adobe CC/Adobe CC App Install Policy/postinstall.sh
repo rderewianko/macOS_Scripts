@@ -14,9 +14,9 @@
 ########################################################################
 
 ############ Variables for Jamf Pro Parameters - Start #################
-# CC App name for helper windows e.g. Adobe Photoshop 2020
+# CC App name for helper windows e.g. Adobe Photoshop 2021
 installedAppName="$4"
-# CC App bundle
+# CC App bundle e.g. /Applications/Adobe Photoshop 2021/Adobe Photoshop 2021.app
 installedAppBundle="$5"
 ############ Variables for Jamf Pro Parameters - End ###################
 
@@ -27,7 +27,7 @@ loggedInUserID=$(id -u "$loggedInUser")
 # Adobe Remote Update Manager binary
 rumBinary="/usr/local/bin/RemoteUpdateManager"
 # RUM log file
-rumLog="/var/tmp/SelfServiceAdobeCCUpdates.log"
+logFile="/Library/Logs/Bauer/AdobeUpdates/AdobeCCUpdates_SelfService.log"
 # jamfHelper
 jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
 # Helper Icon
@@ -52,9 +52,9 @@ function killAdobe ()
 if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
     echo "No user logged in"
 else
-    # Get all user Adobe Launch Agents/Daemons PIDs
+    # Get all user Adobe Launch Agents PIDs
     userPIDs=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
-    # Kill all user Adobe Launch Agents/Daemons
+    # Kill all processes
     if [[ "$userPIDs" != "" ]]; then
         while IFS= read -r line; do
             kill -9 "$line" 2>/dev/null
@@ -135,12 +135,12 @@ function installUpdates ()
 # Install in progress Jamf Helper
 jamfHelperInstallInProgress
 # Install all available updates and output result to the log
-"$rumBinary" --action=install > "$rumLog"
+"$rumBinary" --action=install > "$logFile"
 # Kill install in progress helper
 killall -13 "jamfHelper" >/dev/null 2>&1
 sleep 2
 # Read the log file to check which updates installed successfully for use in a jamf Helper window
-updatesInstalled=$(sed -n '/Following Updates were successfully installed*/,/\*/p' $rumLog \
+updatesInstalled=$(sed -n '/Following Updates were successfully installed*/,/\*/p' $logFile \
     | sed 's/Following Updates were successfully installed :/*/g' | grep -v "*" \
     | sed 's/AEFT/After\ Effects/g' \
     | sed 's/FLPR/Animate/g' \
@@ -162,6 +162,8 @@ updatesInstalled=$(sed -n '/Following Updates were successfully installed*/,/\*/
     | sed 's/SPRK/XD/g' \
     | sed 's/ACR/Camera\ Raw/g' \
     | sed 's/COSY/CoreSync/g' \
+    | sed 's/CCXP/CCXProcess/g' \
+    | sed 's/COMP/Color\ Profiles/g' \
     | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
     | sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
     | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
@@ -191,17 +193,26 @@ else
         # jamf Helper for update check
         jamfHelperCheckUpdates
         # Remove previous log
-        if [[ -f "$rumLog" ]]; then
-            rm -f "$rumLog"
-            if [[ -f "$rumLog" ]]; then
+        if [[ -f "$logFile" ]]; then
+            rm -f "$logFile"
+            if [[ -f "$logFile" ]]; then
                 echo "Previous log file removal failed, info displayed in jamfHelper windows will be incorrect" 
             fi
         fi
-        # Create log file, check for available updates and output results to the log
-        touch "$rumLog"
-        "$rumBinary" --action=list > "$rumLog"
+        # Create the log directory if required
+        if [[ ! -d "/Library/Logs/Bauer/AdobeUpdates" ]]; then
+            mkdir -p "/Library/Logs/Bauer/AdobeUpdates"
+        fi
+        # Create log file
+        touch "$logFile"
+        {
+        echo "Script started at: $(date +"%H-%M-%S (%d-%m-%Y)")"
+        echo "Checking for updates..."
+        echo "--------------------------------------------------"
+        } >> "$logFile"
+        "$rumBinary" --action=list > "$logFile"
         # Read the log file to check which updates are available for install for use in a jamf Helper window
-        updatesAvailable=$(sed -n '/Following*/,/\*/p' $rumLog \
+        updatesAvailable=$(sed -n '/Following*/,/\*/p' $logFile \
             | sed 's/Following Updates are applicable on the system :/*/g'  | grep -v "*" \
             | sed 's/Following Acrobat\/\Reader updates are applicable on the system :/*/g' | grep -v "*" \
             | sed 's/AEFT/After\ Effects/g' \
@@ -222,15 +233,17 @@ else
             | sed 's/PPRO/Premiere\ Pro/g' \
             | sed 's/RUSH/Premiere\ Rush/g' \
             | sed 's/SPRK/XD/g' \
-            | sed 's/ACR/Camera Raw/g' \
+            | sed 's/ACR/Camera\ Raw/g' \
             | sed 's/COSY/CoreSync/g' \
+            | sed 's/CCXP/CCXProcess/g' \
+            | sed 's/COMP/Color\ Profiles/g' \
             | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
     	    | sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
             | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
             | sed 's/[()]//g' | sed 's/osx10-64//g' | sed 's/osx10//g' | sed 's/\// /g' \
             | grep -v "*")
         # Check if any updates are required
-        updatesCheck=$(cat "$rumLog")
+        updatesCheck=$(cat "$logFile")
         if [[ "$updatesCheck" =~ "Following" ]]; then
             echo "Updates available"
             # Updates installing helper
@@ -259,5 +272,4 @@ else
         exit 1
     fi
 fi
-
 exit 0

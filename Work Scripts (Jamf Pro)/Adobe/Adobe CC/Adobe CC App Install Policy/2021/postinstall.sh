@@ -52,9 +52,9 @@ function killAdobe ()
 if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
     echo "No user logged in"
 else
-    # Get all user Adobe Launch Agents/Daemons PIDs
+    # Get all user Adobe Launch Agents PIDs
     userPIDs=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
-    # Kill all user Adobe Launch Agents/Daemons
+    # Kill all processes
     if [[ "$userPIDs" != "" ]]; then
         while IFS= read -r line; do
             kill -9 "$line" 2>/dev/null
@@ -162,6 +162,8 @@ updatesInstalled=$(sed -n '/Following Updates were successfully installed*/,/\*/
     | sed 's/SPRK/XD/g' \
     | sed 's/ACR/Camera\ Raw/g' \
     | sed 's/COSY/CoreSync/g' \
+    | sed 's/CCXP/CCXProcess/g' \
+    | sed 's/COMP/Color\ Profiles/g' \
     | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
     | sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
     | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
@@ -231,7 +233,10 @@ else
             | sed 's/PPRO/Premiere\ Pro/g' \
             | sed 's/RUSH/Premiere\ Rush/g' \
             | sed 's/SPRK/XD/g' \
-            | sed 's/ACR/Camera Raw/g' \
+            | sed 's/ACR/Camera\ Raw/g' \
+            | sed 's/COSY/CoreSync/g' \
+            | sed 's/CCXP/CCXProcess/g' \
+            | sed 's/COMP/Color\ Profiles/g' \
             | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
     	    | sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
             | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
@@ -267,5 +272,4 @@ else
         exit 1
     fi
 fi
-
 exit 0
