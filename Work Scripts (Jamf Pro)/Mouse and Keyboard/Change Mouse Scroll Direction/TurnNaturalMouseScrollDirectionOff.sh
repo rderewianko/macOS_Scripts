@@ -6,12 +6,34 @@
 ########################################################################
 # If a change is made it does not apply until the next logon session
 
+# Before any variables are defined or any actions are taken, complete a few checks
+echo "Checking all requirements are met..."
+# Check a normal user is logged in
+loggedInUser=$(stat -f %Su /dev/console)
+if [[ "$loggedInUser" == "_mbsetupuser" ]] || [[ "$loggedInUser" == "root" ]] || [[ "$loggedInUser" == "" ]]; then
+    while [[ "$loggedInUser" == "_mbsetupuser" ]] || [[ "$loggedInUser" == "root" ]] || [[ "$loggedInUser" == "" ]]; do
+        sleep 2
+        loggedInUser=$(stat -f %Su /dev/console)
+    done
+fi
+# Check Finder is running
+finderProcess=$(pgrep -x "Finder")
+until [[ "$finderProcess" != "" ]]; do
+    sleep 2
+    finderProcess=$(pgrep -x "Finder")
+done
+# Check the Dock is running
+dockProcess=$(pgrep -x "Dock")
+until [[ "$dockProcess" != "" ]]; do
+    sleep 2
+    dockProcess=$(pgrep -x "Dock")
+done
+echo "All requirements met"
+
 ########################################################################
 #                            Variables                                 #
 ########################################################################
 
-# Get the logged in user
-loggedInUser=$(stat -f %Su /dev/console)
 # Get the logged in users ID
 loggedInUserID=$(id -u "$loggedInUser")
 
