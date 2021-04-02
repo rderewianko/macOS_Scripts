@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 ########################################################################
 #      Download the latest Latest Google Chrome Enterprise Package     #
@@ -12,7 +12,7 @@
 # Chrome download URL with terms accepted
 downloadURL="https://dl.google.com/chrome/mac/stable/accept_tos%3Dhttps%253A%252F%252Fwww.google.com%252Fintl%252Fen_ph%252Fchrome%252Fterms%252F%26_and_accept_tos%3Dhttps%253A%252F%252Fpolicies.google.com%252Fterms/googlechrome.pkg"
 # Set the package name
-pkgFile="UK_Google_Chrome.pkg"
+pkgFile="Global_Google_Chrome.pkg"
 # Download directory
 downloadDir="/private/var/tmp/ChromeDownload"
 
@@ -49,7 +49,7 @@ else
     echo "Google Chrome not currently installed"
 fi
 # Download Google Chrome Enterprise package
-echo "Downloading Enterprise package for Google Chrome..."
+echo "Downloading Google Chrome Enterprise package..."
 curl -s -o "${downloadDir}/${pkgFile}" "$downloadURL"
 # Wait for a few seconds before the install
 sleep 2
