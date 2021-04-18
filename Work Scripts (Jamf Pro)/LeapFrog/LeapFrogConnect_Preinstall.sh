@@ -11,8 +11,8 @@
 #                            Variables                                 #
 ########################################################################
 
-# Content array
-contentArray=( "/Applications/LeapFrog\ Connect\ for\ LeapStart\ Interactive\ Learning\ System.app" \
+# LeapFrog Content (App, kext etc)
+leapfrogContent=( "/Applications/LeapFrog\ Connect\ for\ LeapStart\ Interactive\ Learning\ System.app" \
 "/Library/Application\ Support/LeapFrog" "/Library/Extensions/LfConnectDriver.kext" )
 
 ########################################################################
@@ -21,7 +21,7 @@ contentArray=( "/Applications/LeapFrog\ Connect\ for\ LeapStart\ Interactive\ Le
 
 echo "Removing all previous LeapFrog Connect content..."
 # Remove all existing content to allow reinstallation
-for content in ${(Q)${(z)contentArray}}; do
+for content in ${(Q)${(z)leapfrogContent}}; do
     rm -rf "$content" 2>/dev/null
     echo "Removed ${content}"
 done
