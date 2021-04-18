@@ -15,7 +15,7 @@
 cleanerTool="/private/var/tmp/Adobe Creative Cloud Cleaner Tool.app/Contents/MacOS/Adobe Creative Cloud Cleaner Tool"
 # Check for Adobe CS5-CS5.5 Apps
 adobeCSApps=$(find /Applications/Adobe\ *CS5* -type d -maxdepth 0 2>/dev/null | wc -l)
-# Array listing CS5 directories. This is not the full list when CS5 is installed but some are also used for CC so have been excluded
+# CS5 directories. This is not the full list when CS5 is installed but some are also used for CC so have been excluded
 adobeCS5Folders=( "/Applications/Adobe Acrobat 9 Pro" "/Applications/Adobe Acrobat X Pro" "/Applications/Adobe After Effects CS5" \
 "/Applications/Adobe Bridge CS5" "/Applications/Adobe Contribute CS5" "/Applications/Adobe Device Central CS5" "/Applications/Adobe Dreamweaver CS5" \
 "/Applications/Adobe Encore CS5" "/Applications/Adobe Extension Manager CS5" "/Applications/Adobe Fireworks CS5" "/Applications/Adobe Flash Builder 4" \
@@ -28,7 +28,7 @@ adobeCS5Folders=( "/Applications/Adobe Acrobat 9 Pro" "/Applications/Adobe Acrob
 "/Library/Application Support/Synthetic Aperture Adobe CS5 Bundle" "/Library/Frameworks/Adobe AIR.framework" "/Library/Internet Plug-Ins/Flash Player.plugin" \
 "/Library/Internet Plug-Ins/npContributeMac.bundle" "/Library/QuickTime/SoundboothScoreCodec.component" "/Library/ScriptingAdditions/Adobe Unit Types.osax" \
 "/Library/Application Support/Adobe/Common/dynamiclink/CS5/dynamiclinkmanager.app" "/Library/Application Support/Adobe/CS5ServiceManager/CS5ServiceManager.app" )
-# Array listing CS5 files
+# CS5 files
 adobeCS5Files=("/Library/Fonts/ACaslonPro-Bold.otf" "/Library/Fonts/ACaslonPro-BoldItalic.otf" "/Library/Fonts/ACaslonPro-Italic.otf" \
 "/Library/Fonts/ACaslonPro-Regular.otf" "/Library/Fonts/ACaslonPro-Semibold.otf" "/Library/Fonts/ACaslonPro-SemiboldItalic.otf" "/Library/Fonts/AdobeArabic-Bold.otf" \
 "/Library/Fonts/AdobeArabic-BoldItalic.otf" "/Library/Fonts/AdobeArabic-Italic.otf" "/Library/Fonts/AdobeArabic-Regular.otf" \
@@ -62,7 +62,7 @@ adobeCS5Files=("/Library/Fonts/ACaslonPro-Bold.otf" "/Library/Fonts/ACaslonPro-B
 "/Library/Preferences/com.adobe.InDesign.7.0.3.plist" "/Library/Preferences/com.adobe.Contribute.6.0.plist" "/Library/Preferences/com.adobe.CSXS2Preferences.plist" \
 "/Library/Preferences/com.adobe.Dreamweaver.11.plist" "/Library/Preferences/com.adobe.Fireworks.11.0.0.plist" "/Library/Preferences/com.adobe.Illustrator.15.0.0.plist" \
 "/Library/Preferences/com.adobe.InDesign.7.0.plist" "/Library/Preferences/com.apple.mediaio.DeviceSettings.plist" )
-# Array listing CS5.5 directories. This is not the full list when CS5 is installed but some are also used for CC so have been excluded
+# CS5.5 directories. This is not the full list when CS5 is installed but some are also used for CC so have been excluded
 adobeCS55Folders=("/Applications/Adobe Acrobat X Pro" "/Applications/Adobe After Effects CS5.5" "/Applications/Adobe Audition CS5.5" "/Applications/Adobe Bridge CS5.1" \
 "/Applications/Adobe Contribute CS5.1" "/Applications/Adobe Device Central CS5.5" "/Applications/Adobe Dreamweaver CS5.5" "/Applications/Adobe Encore CS5.1" \
 "/Applications/Adobe Extension Manager CS5.5" "/Applications/Adobe Fireworks CS5.1" "/Applications/Adobe Flash Builder 4.5" "/Applications/Adobe Flash Catalyst CS5.5" \
@@ -76,7 +76,7 @@ adobeCS55Folders=("/Applications/Adobe Acrobat X Pro" "/Applications/Adobe After
 "/Applications/Utilities/Adobe Application Manager/LWA/AAM Registration Notifier.app" "/Applications/Utilities/Adobe Application Manager/LWA/adobe_licutil.app" \
 "/Applications/Utilities/Adobe Application Manager/UWA/AAM Updates Notifier.app" "/Applications/Utilities/Adobe Application Manager/core/Adobe Application Manager.app" \
 "/Applications/Utilities/Adobe Application Manager/DWA/Setup.app" "/Applications/Utilities/Adobe Application Manager/DWA/resources/uninstall/Uninstall Product.app" )
-# Array listing CS5.5 files
+# CS5.5 files
 adobeCS55Files=("/Library/Fonts/ACaslonPro-Bold.otf" "/Library/Fonts/ACaslonPro-BoldItalic.otf" "/Library/Fonts/ACaslonPro-Italic.otf" \
 "/Library/Fonts/ACaslonPro-Regular.otf" "/Library/Fonts/ACaslonPro-Semibold.otf" "/Library/Fonts/ACaslonPro-SemiboldItalic.otf" \
 "/Library/Fonts/AdobeArabic-Bold.otf" "/Library/Fonts/AdobeArabic-BoldItalic.otf" "/Library/Fonts/AdobeArabic-Italic.otf" \

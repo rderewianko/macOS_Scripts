@@ -17,7 +17,7 @@ cleanerTool="/private/var/tmp/Adobe Creative Cloud Cleaner Tool.app/Contents/Mac
 removeAcrobatX="/Applications/Adobe Acrobat X Pro/Adobe Acrobat Pro.app/Contents/Support/Acrobat Uninstaller.app/Contents/MacOS/RemoverTool"
 # Check for Adobe CS6 Apps
 adobeCSApps=$(find /Applications/Adobe\ *CS6* -type d -maxdepth 0 2>/dev/null | wc -l)
-# Array listing CS6 directories. This is not the full list when CS6 is installed but some are also used for CC so have been excluded
+# CS6 directories. This is not the full list when CS6 is installed but some are also used for CC so have been excluded
 adobeCSFolders=( "/Applications/Adobe After Effects CS6" "/Applications/Adobe Audition CS6" "/Applications/Adobe Bridge CS6" \
 "/Applications/Adobe Dreamweaver CS6" "/Applications/Adobe Encore CS6" "/Applications/Adobe Extension Manager CS6" "/Applications/Adobe Fireworks CS6" \
 "/Applications/Adobe Flash Builder 4.6" "/Applications/Adobe Flash CS6" "/Applications/Adobe Illustrator CS6" "/Applications/Adobe InDesign CS6" \
@@ -42,7 +42,7 @@ adobeCSFolders=( "/Applications/Adobe After Effects CS6" "/Applications/Adobe Au
 "/Applications/Utilities/Adobe Application Manager/P7/adobe_licutil.app" "/Applications/Utilities/Adobe Application Manager/UWA/AAM Updates Notifier.app" \
 "/Applications/Utilities/Adobe Application Manager/D6/Setup.app" "/Applications/Utilities/Adobe Application Manager/core/AAMLauncherUtil.app" \
 "/Applications/Utilities/Adobe Application Manager/DWA/Setup.app" )
-# Array listing CS6 files
+# CS6 files
 adobeCSFiles=( "/private/etc/mach_init_per_user.d/com.adobe.SwitchBoard.monitor.plist" "/private/var/root/Library/Application Support/Adobe/OOBE/opm.db" \
 "/Library/Preferences/com.adobe.Fireworks.12.0.0.plist" "/Library/Preferences/com.adobe.PDFAdminSettings.plist" \
 "/Library/LaunchAgents/com.adobe.AAM.Updater-1.0.plist" "/Library/LaunchDaemons/com.adobe.SwitchBoard.plist" "/Library/Preferences/com.adobe.CSXS.3.plist" \
