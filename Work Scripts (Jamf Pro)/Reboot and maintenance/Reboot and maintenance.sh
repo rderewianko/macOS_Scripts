@@ -171,9 +171,9 @@ fi
 # If a user is logged in, display a message and allow one deferral
 if [[ "$loggedInUser" != "" ]] && [[ "$upTime" -ge "6" ]]; then
 	# Create a reboot timer file for the deferral
-	if [[ ! -f "/Users/Shared/.rebootTimer.txt" ]]; then
-		echo "1" > "/Users/Shared/.rebootTimer.txt"
-		rebootTimer=$(cat "/Users/Shared/.rebootTimer.txt")
+	if [[ ! -f "/private/tmp/.rebootTimer.txt" ]]; then
+		echo "1" > "/private/tmp/.rebootTimer.txt"
+		rebootTimer=$(cat "/private/tmp/.rebootTimer.txt")
 		if [[ "$upTime" -ge "6" ]] && [[ "$rebootTimer" -gt "0" ]]; then
 			echo "Current uptime: ${upTime} days"
 			echo "Reboot required!"
@@ -193,12 +193,12 @@ If you select Reboot Later, your next reminder will be tomorrow and the only opt
 				# Run all maintenance tasks
 				runMaintenanceTasks
 				# Delete reboot timer temp file
-				rm "/Users/Shared/.rebootTimer.txt"
+				rm "/private/tmp/.rebootTimer.txt"
 				echo "Rebooting to complete system maintenance..." 
 				shutdown -r +1 >/dev/null 2>&1
 			else
 				currentTimer=$((rebootTimer-1))
-    			echo "$currentTimer" > "/Users/Shared/.rebootTimer.txt"
+    			echo "$currentTimer" > "/private/tmp/.rebootTimer.txt"
 				echo "${loggedInUser} deferred the reboot"
 				exit 0
 			fi
@@ -223,7 +223,7 @@ Please ensure all of your work is saved before clicking the Reboot button.
 				# Run all maintenance tasks
 				runMaintenanceTasks
 				# Delete reboot timer temp file
-				rm "/Users/Shared/.rebootTimer.txt"
+				rm "/private/tmp/.rebootTimer.txt"
 				echo "Rebooting to complete system maintenance..."	
     			shutdown -r +1 >/dev/null 2>&1
 			fi
