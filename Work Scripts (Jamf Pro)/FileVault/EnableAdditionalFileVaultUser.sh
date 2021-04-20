@@ -333,6 +333,8 @@ else
 	else
 		# Kill in progress helper window
 		killall -13 jamfHelper 2>/dev/null
+		# Remove temp admin rights from the original FileVault enabled user
+		removeTempAdminRights
 		echo "Temp admin process failed"
 		jamfHelperAdminFailed
 		exit 1
