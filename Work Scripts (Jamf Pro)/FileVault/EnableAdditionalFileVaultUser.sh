@@ -331,6 +331,8 @@ else
 	if [[ "$adminUsers" =~ $fvEnabledUser ]]; then
 		echo "$fvEnabledUser is now an admin"
 	else
+		# Kill in progress helper window
+		killall -13 jamfHelper 2>/dev/null
 		echo "Temp admin process failed"
 		jamfHelperAdminFailed
 		exit 1
