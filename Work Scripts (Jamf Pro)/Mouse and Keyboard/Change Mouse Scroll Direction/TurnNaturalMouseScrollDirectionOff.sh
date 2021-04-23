@@ -6,34 +6,12 @@
 ########################################################################
 # If a change is made it does not apply until the next logon session
 
-# Before any variables are defined or any actions are taken, complete a few checks
-echo "Checking all requirements are met..."
-# Check a normal user is logged in
-loggedInUser=$(stat -f %Su /dev/console)
-if [[ "$loggedInUser" == "_mbsetupuser" ]] || [[ "$loggedInUser" == "root" ]] || [[ "$loggedInUser" == "" ]]; then
-    while [[ "$loggedInUser" == "_mbsetupuser" ]] || [[ "$loggedInUser" == "root" ]] || [[ "$loggedInUser" == "" ]]; do
-        sleep 2
-        loggedInUser=$(stat -f %Su /dev/console)
-    done
-fi
-# Check Finder is running
-finderProcess=$(pgrep -x "Finder")
-until [[ "$finderProcess" != "" ]]; do
-    sleep 2
-    finderProcess=$(pgrep -x "Finder")
-done
-# Check the Dock is running
-dockProcess=$(pgrep -x "Dock")
-until [[ "$dockProcess" != "" ]]; do
-    sleep 2
-    dockProcess=$(pgrep -x "Dock")
-done
-echo "All requirements met"
-
 ########################################################################
 #                            Variables                                 #
 ########################################################################
 
+# Get the logged in user
+loggedInUser=$(stat -f %Su /dev/console)
 # Get the logged in users ID
 loggedInUserID=$(id -u "$loggedInUser")
 
@@ -80,12 +58,18 @@ fi
 #                         Script starts here                           #
 ########################################################################
 
-# Check to see if a change needs to be made
-preCheck
-# Set Natural scroll direction to false
-runAsUser defaults write .GlobalPreferences com.apple.swipescrolldirection -bool false
-# Check the change has been implemented successfully
-postCheck
-# Kill System Preferences so that the change displays correctly
-pkill "System Preferences"
+# Confirm that a user is logged in
+if [[ "$loggedInUser" == "root" ]] || [[ "$loggedInUser" == "" ]]; then
+    echo "No one is home, exiting..."
+    exit 1
+else
+    # Check to see if a change needs to be made
+    preCheck
+    # Set Natural scroll direction to false
+    runAsUser defaults write .GlobalPreferences com.apple.swipescrolldirection -bool false
+    # Check the change has been implemented successfully
+    postCheck
+    # Kill System Preferences so that the change displays correctly
+    pkill "System Preferences"
+fi
 exit 0
