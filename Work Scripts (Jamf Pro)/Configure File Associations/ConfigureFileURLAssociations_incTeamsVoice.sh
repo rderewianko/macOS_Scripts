@@ -6,34 +6,12 @@
 ########################################################################
 # Edit Feb 2021
 
-# Before any variables are defined or any actions are taken, complete a few checks
-echo "Checking all requirements are met..."
-# Check a normal user is logged in
-loggedInUser=$(stat -f %Su /dev/console)
-if [[ "$loggedInUser" == "_mbsetupuser" ]] || [[ "$loggedInUser" == "root" ]] || [[ "$loggedInUser" == "" ]]; then
-    while [[ "$loggedInUser" == "_mbsetupuser" ]] || [[ "$loggedInUser" == "root" ]] || [[ "$loggedInUser" == "" ]]; do
-        sleep 2
-        loggedInUser=$(stat -f %Su /dev/console)
-    done
-fi
-# Check Finder is running
-finderProcess=$(pgrep -x "Finder")
-until [[ "$finderProcess" != "" ]]; do
-    sleep 2
-    finderProcess=$(pgrep -x "Finder")
-done
-# Check the Dock is running
-dockProcess=$(pgrep -x "Dock")
-until [[ "$dockProcess" != "" ]]; do
-    sleep 2
-    dockProcess=$(pgrep -x "Dock")
-done
-echo "All requirements met"
-
 ########################################################################
 #                            Variables                                 #
 ########################################################################
 
+# Get the logged in user
+loggedInUser=$(stat -f %Su /dev/console)
 # Get the logged in users ID
 loggedInUserID=$(id -u "$loggedInUser")
 # Self Service app
@@ -93,43 +71,49 @@ fi
 #                         Script starts here                           #
 ########################################################################
 
-# If Self Service is installed set the defaults
-if [[ -d "$ssApp" ]]; then
-    echo "Setting Self Service URL associations for ${loggedInUser}..."
-    runAsUser -H python -c "$ssDefaults"
-    commandResult="$?"
-    if [[ "$commandResult" -eq "0" ]]; then
-        echo "Self Service URL association set"
-    else
-        echo "Failed to set Self Service URL associations for ${loggedInUser}"
-    fi
+# Confirm that a user is logged in
+if [[ "$loggedInUser" == "root" ]] || [[ "$loggedInUser" == "" ]]; then
+    echo "No one is home, exiting..."
+    exit 1
 else
-    echo "Self Service not found, default associations not set"
-fi
-# if Outlook is installed set the defaults
-if [[ -d "$outlookApp" ]]; then
-    echo "Setting Microsoft Outlook file/URL associations for ${loggedInUser}..."
-    runAsUser -H python -c "$outlookDefaults"
-    commandResult="$?"
-    if [[ "$commandResult" -eq "0" ]]; then
-        echo "Microsoft Outlook now the default mail and calendar application"
+    # If Self Service is installed set the defaults
+    if [[ -d "$ssApp" ]]; then
+        echo "Setting Self Service URL associations for ${loggedInUser}..."
+        runAsUser -H python -c "$ssDefaults"
+        commandResult="$?"
+        if [[ "$commandResult" -eq "0" ]]; then
+            echo "Self Service URL association set"
+        else
+            echo "Failed to set Self Service URL associations for ${loggedInUser}"
+        fi
     else
-        echo "Failed to set default file and URL associations for ${loggedInUser}"
+        echo "Self Service not found, default associations not set"
     fi
-else
-    echo "Microsoft Outlook not found, default associations not set"
-fi
-# If Teams is installed set the defaults
-if [[ -d "$teamsApp" ]]; then
-    echo "Setting Microsoft Teams URL associations for ${loggedInUser}..."
-    runAsUser -H python -c "$teamsDefaults"
-    commandResult="$?"
-    if [[ "$commandResult" -eq "0" ]]; then
-        echo "Microsoft Teams now the default phone application"
+    # If Outlook is installed set the defaults
+    if [[ -d "$outlookApp" ]]; then
+        echo "Setting Microsoft Outlook file/URL associations for ${loggedInUser}..."
+        runAsUser -H python -c "$outlookDefaults"
+        commandResult="$?"
+        if [[ "$commandResult" -eq "0" ]]; then
+            echo "Microsoft Outlook now the default mail and calendar application"
+        else
+            echo "Failed to set default file and URL associations for ${loggedInUser}"
+        fi
     else
-        echo "Failed to set Microsoft Teams default URL associations for ${loggedInUser}"
+        echo "Microsoft Outlook not found, default associations not set"
     fi
-else
-    echo "Microsoft Teams not found, default associations not set"
+    # If Teams is installed set the defaults
+    if [[ -d "$teamsApp" ]]; then
+        echo "Setting Microsoft Teams URL associations for ${loggedInUser}..."
+        runAsUser -H python -c "$teamsDefaults"
+        commandResult="$?"
+        if [[ "$commandResult" -eq "0" ]]; then
+            echo "Microsoft Teams now the default phone application"
+        else
+            echo "Failed to set Microsoft Teams default URL associations for ${loggedInUser}"
+        fi
+    else
+        echo "Microsoft Teams not found, default associations not set"
+    fi
 fi
 exit 0
