@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 ########################################################################
-#      Download the latest Latest Google Chrome Enterprise Package     #
+#   Download and Install the Latest Google Chrome Enterprise Package   #
 ################### Written by Phil Walker Aug 2020 ####################
 ########################################################################
 
