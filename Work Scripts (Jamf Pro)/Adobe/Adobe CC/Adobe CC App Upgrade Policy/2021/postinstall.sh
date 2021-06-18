@@ -30,7 +30,7 @@ fi
 # Helper Icon Problem
 helperIconProblem="/System/Library/CoreServices/Problem Reporter.app/Contents/Resources/ProblemReporter.icns"
 # Helper Title
-helperTitle="Message from Bauer IT"
+helperTitle="Message From Bauer Technology"
 # Helper heading
 helperHeading="     Upgrade to ${installedAppName}     "
 

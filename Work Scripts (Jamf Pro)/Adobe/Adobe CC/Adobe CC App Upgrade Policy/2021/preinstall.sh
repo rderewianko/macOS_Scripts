@@ -46,7 +46,7 @@ fi
 # Helper icon Download
 helperIconDownload="/System/Library/CoreServices/Install in Progress.app/Contents/Resources/Installer.icns"
 # Helper title
-helperTitle="Message from Bauer IT"
+helperTitle="Message From Bauer Technology"
 # Helper heading
 helperHeading="     Upgrade to ${appNameForInstall}     "
 
