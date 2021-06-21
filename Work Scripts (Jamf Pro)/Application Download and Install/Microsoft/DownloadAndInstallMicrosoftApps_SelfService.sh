@@ -20,7 +20,7 @@ linkID="$4"
 # 525133 - Office 2019 for Mac SKUless download (aka Office 365)
 # 2009112 - Office 365 for Mac Business Pro SKUless download (aka Office 365 with Teams)
 # 830196 - AutoUpdate download
-# 2093438 - Edge (Enterprise Stable)
+# 2093504 - Edge (Enterprise Stable)
 # 2093294 - Edge (Enterprise Beta)
 # 2093292 - Edge (Enterprise Dev)
 # 525135 - Excel 2019 SKUless download
