@@ -23,7 +23,7 @@ function launchDaemonStatus()
 # Get the status of the Launch Daemon
 checkLaunchD=$(launchctl list | grep "NoMADLoginAD.AuthCheck" | awk '{print $3}')
 if [[ "$checkLaunchD" == "com.bauer.NoMADLoginAD.AuthCheck" ]]; then
-    echo "NoMAD Login AD auth check Launch Daemon currently boostrapped"
+    echo "NoMAD Login AD auth check Launch Daemon currently bootstrapped"
     echo "Booting out the Launch Daemon..."
     launchctl bootout system "$launchDaemon"
     sleep 2
