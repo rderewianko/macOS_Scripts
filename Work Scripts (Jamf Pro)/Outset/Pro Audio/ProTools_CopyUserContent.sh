@@ -42,7 +42,7 @@ if [[ ! -e "$logFile" ]]; then
 fi
 # redirect both standard output and standard error to the log
 exec >> "$logFile" 2>&1
-echo "Script started at: $(date +"%Y-%m-%d_%H-%M-%S")"
+echo "Script started at: $(date +%d-%m-%Y\ %T)"
 # Copy all user settings
 if [[ -d "/usr/local/ProAudioUserContent/Pro Tools" ]]; then
     echo "------------------------------------------------------------"
@@ -60,5 +60,5 @@ else
     echo "Pro Tools user content not found, unable to complete copy"
     echo "Reinstall the Pro Tools Bundle"
 fi
-echo "Script completed at: $(date +"%Y-%m-%d_%H-%M-%S")"
+echo "Script completed at: $(date +%d-%m-%Y\ %T)"
 exit 0
