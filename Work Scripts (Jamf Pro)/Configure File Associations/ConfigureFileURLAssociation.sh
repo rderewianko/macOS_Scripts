@@ -62,7 +62,7 @@ fi
 # Confirm that a user is logged in
 if [[ "$loggedInUser" == "root" ]] || [[ "$loggedInUser" == "" ]]; then
     echo "No one is home, exiting..."
-    exit 1
+    exit 0
 else
     # If Self Service is installed set the defaults
     if [[ -d "$ssApp" ]]; then
