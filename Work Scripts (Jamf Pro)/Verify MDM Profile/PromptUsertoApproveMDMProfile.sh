@@ -16,6 +16,8 @@ sleepTime="$4"
 ############ Variables for Jamf Pro Parameters - End ###################
 # Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
+# Profiles installed
+profileCheck=$(profiles list)
 # User approval status
 profileStatus=$(profiles status -type enrollment | grep "Approved" | awk '{print $3,$4,$5}')
 # Jamf binary
@@ -32,6 +34,12 @@ else
     if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
         echo "No user logged in, will try again tomorrow"
     else
+        if [[ "$profileCheck" =~ "There are no" ]]; then
+            # Make sure the MDM profile is installed
+            "$jamfBinary" mdm
+            # Allow time for the majority of configuration profiles to install
+            sleep "$sleepTime"
+        fi
         # If Self Service is not already open, open it
         if [[ $(pgrep "Self Service") == "" ]]; then
             su -l "$loggedInUser" -c "open -F /Applications/Self\ Service.app"
