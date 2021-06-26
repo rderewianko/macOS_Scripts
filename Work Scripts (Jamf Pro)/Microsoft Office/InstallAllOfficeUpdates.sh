@@ -14,10 +14,10 @@
 
 # Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
-
+# Get the logged in users ID
+loggedInUserID=$(id -u "$loggedInUser")
 # MAU command line tool
 mauCLI="/Library/Application Support/Microsoft/MAU2.0/Microsoft AutoUpdate.app/Contents/MacOS/msupdate"
-
 # Application IDs - Could be changed to Jamf Pro Parameters
 wordAppID="MSWD2019"
 excelAppID="XCEL2019"
@@ -40,6 +40,16 @@ datetime=$(date +%d-%m-%Y\ %T)
 #                            Functions                                 #
 ########################################################################
 
+function runAsUser ()
+{  
+# Run commands as the logged in user
+if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
+    echo "No user logged in, unable to run commands as a user"
+else
+    launchctl asuser "$loggedInUserID" sudo -u "$loggedInUser" "$@"
+fi
+}
+
 # Check if MAU 3.18 or later command-line updates are available
 function checkMAUInstall () 
 {
@@ -52,7 +62,7 @@ fi
 # Check if we are allowed to send Apple Events to MAU
 function checkAppleEvents () 
 {
-mauResult=$(sudo -u "$loggedInUser" "$mauCLI" --config 2>/dev/null | grep "No result returned from Update Assistant")
+mauResult=$(runAsUser "$mauCLI" --config 2>/dev/null | grep "No result returned from Update Assistant")
 if [[ "$mauResult" = *"No result returned from Update Assistant"* ]]; then
 	echo "ERROR: Cannot send Apple Events to MAU. Check privacy settings!"
 	exit 1
@@ -86,9 +96,9 @@ fi
 # Check whether its safe to close Excel because it has no open unsaved documents
 function closeExcel () 
 {
-excelState=$(sudo -u "$loggedInUser" pgrep "Microsoft Excel")
+excelState=$(runAsUser pgrep "Microsoft Excel")
 if [ ! "$excelState" == "" ]; then
-	dirtyDocs=$(sudo -u "$loggedInUser" defaults read com.microsoft.Excel NumTotalBookDirty)
+	dirtyDocs=$(runAsUser defaults read com.microsoft.Excel NumTotalBookDirty)
 	if [ "$dirtyDocs" == "0" ]; then
 		echo "$datetime"
 		echo "Closing Excel as no unsaved documents are open"
@@ -100,8 +110,8 @@ fi
 # Flush any existing MAU sessions
 function flushDaemon () 
 {
-sudo -u "$loggedInUser" defaults write com.microsoft.autoupdate.fba ForceDisableMerp -bool TRUE
-sudo -u "$loggedInUser" pkill -HUP "Microsoft Update Assistant"
+runAsUser defaults write com.microsoft.autoupdate.fba ForceDisableMerp -bool TRUE
+runAsUser pkill -HUP "Microsoft Update Assistant"
 }
 
 # Call 'msupdate' and update the target applications
@@ -114,7 +124,7 @@ echo "$datetime"
 # Install updates for apps listed
 #sudo -u "$loggedInUser" "$mauCLI" --install --apps "$1" --wait 600
 # Install all updates available
-sudo -u "$loggedInUser" "$mauCLI" --install --wait 600
+runAsUser "$mauCLI" --install --wait 600
 }
 
 ########################################################################
