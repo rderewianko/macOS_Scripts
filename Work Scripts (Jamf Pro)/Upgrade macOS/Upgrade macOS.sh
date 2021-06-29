@@ -1,47 +1,50 @@
-#!/bin/bash
+#!/bin/zsh
 
 ########################################################################
 #                Upgrade macOS - Self Service Policy                   #
 ################# Written by Phil Walker August 2019 ###################
 ########################################################################
-# Edited July 2020
+# Edit July 2020
+# Edit Mar 2021
 
 ########################################################################
 #                            Variables                                 #
 ########################################################################
 
 ############ Variables for Jamf Pro Parameters - Start #################
-osInstallerLocation="$4" #The path the to Mac OS installer is pulled in from the policy for flexability e.g /Applications/Install macOS Catalina.app SPACES ARE PRESERVED
-requiredSpace="$5" #In GB how many are requried to compelte the update
-osName="$6" #The nice name for jamfHelper e.g. macOS Catalina.
+# macOS installer path
+osInstallerLocation="$4"
+# Required disk space (GB)
+requiredSpace="$5"
+# OS name for jamfHelper windows
+osName="$6"
 
 ##DEBUG
-#osInstallerLocation="/Applications/Install macOS Catalina.app"
-#requiredSpace="15"
-#osName="macOS Catalina"
+#osInstallerLocation="/Applications/Install macOS Big Sur.app"
+#requiredSpace="36"
+#osName="macOS Big Sur"
 ############ Variables for Jamf Pro Parameters - End ###################
 
 # Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
+# Check the logged in user has a local account
+mobileAccount=$(dscl . -read /Users/"$loggedInUser" OriginalNodeName 2>/dev/null)
 # Mac model
-macModelFull=$(system_profiler SPHardwareDataType | grep "Model Name" | sed 's/Model Name: //' | xargs)
-# OS Version
-osFull=$(sw_vers -productVersion)
-# Path to NoMAD Login AD bundle
-noLoADBundle="/Library/Security/SecurityAgentPlugins/NoMADLoginAD.bundle"
-# Check the logged in user is a local account
-mobileAccount=$(dscl . read /Users/"$loggedInUser" OriginalNodeName 2>/dev/null)
-# Jamf Helper variables
+macModel=$(sysctl -n hw.model)
+macModelFull=$(system_profiler SPHardwareDataType | grep "Model Name" | sed 's/Model Name://' | xargs)
+# OS version
+osVersion=$(sw_vers -productVersion)
+# jamfHelper
 jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
-# Icons
+# jamfHelper Icons
 helperIcon="${osInstallerLocation}/Contents/Resources/InstallAssistant.icns"
 helperIconProblem="/System/Library/CoreServices/Problem Reporter.app/Contents/Resources/ProblemReporter.icns"
-# Title
-helperTitle="Message from Bauer IT"
-# Headings
+# jamfHelper Title
+helperTitle="Message From Bauer Technology"
+# jamfHelper Headings
 helperHeading="Please wait as we prepare your computer for ${osName}..."
 helperHeadingError="Oops... Something went wrong!"
-# Descriptions
+# jamfHelper Descriptions
 helperDescription="This process will take approximately 5-10 minutes. Please do not open any Documents or Applications
 Once completed your computer will reboot and begin the upgrade.
 
@@ -59,43 +62,31 @@ Please contact the IT Service Desk for assistance"
 #                            Functions                                 #
 ########################################################################
 
-function jamfHelperNoPower ()
+function helperNoPower ()
 {
 "$jamfHelper" -windowType utility -icon "$helperIconProblem" -title "$helperTitle" -heading "No power found - upgrade cannot continue!" \
 -description "Please connect a power cable and try again." -button1 "Retry" -defaultButton 1
 }
 
-function jamfHelperNoMADLoginADMissing ()
-{
-"$jamfHelper" -windowType utility -icon "$helperIconProblem" -title "$helperTitle" -heading "NoMAD Login AD not installed - upgrade cannot continue!" \
--description "Please contact the IT Service Desk on 0345 058 4444 before attempting this upgrade again." -button1 "Close" -defaultButton 1
-}
-
-function jamfHelperMobileAccount ()
+function helperMobileAccount ()
 {
 "$jamfHelper" -windowType utility -icon "$helperIconProblem" -title "$helperTitle" -heading "Mobile account detected - upgrade cannot continue!" \
 -description "To resolve this issue a logout/login is required.
 
 In 30 seconds you will be automatically logged out of your current session.
-Please log back in to your Mac, launch the Self Service app and run the ${osName} Upgrade.
+Please log back in to your Mac, launch the Self Service app and run the ${osName} upgrade again.
 
 If you have any further issues please contact the IT Service Desk on 0345 058 4444." -timeout 30 -button1 "Logout" -defaultButton 1
 }
 
-function jamfHelperFVMobileAccounts ()
+function helperNoSpace ()
 {
-"$jamfHelper" -windowType utility -icon "$helperIconProblem" -title "$helperTitle" -heading "Mobile account detected - upgrade cannot continue!" \
--description "Please contact the IT Service Desk on 0345 058 4444 before attempting this upgrade again." -button1 "Close" -defaultButton 1
-}
-
-function jamfHelperNoSpace ()
-{
-HELPER_SPACE=$(
+helperSpace=$(
 "$jamfHelper" -windowType utility -icon "$helperIconProblem" -title "$helperTitle" -heading "Not enough free space found - upgrade cannot continue!" \
--description "Please ensure you have at least ${requiredSpace}GB of Free Space
+-description "Please ensure you have at least ${requiredSpace}GB of free space
 Available Space : ${freeSpace}GB
 
-Please delete files and emtpy yout trash to free up additional space.
+Please delete files and empty your trash to free up additional space.
 
 If you continue to experience this issue, please contact the IT Service Desk on 0345 058 4444." -button1 "Retry" -button2 "Quit" -defaultButton 1
 )
@@ -130,83 +121,65 @@ fi
 function checkPower ()
 {
 # Check if the device is on AC power or has over 90% battery power
-pwrAdapter=$(/usr/bin/pmset -g ps)
-batteryPercentage=$(/usr/bin/pmset -g ps | grep -i "InternalBattery" | awk '{print $3}' | cut -c1-3 | sed 's/%//g')
+pwrAdapter=$(pmset -g ps)
+batteryPercentage=$(pmset -g ps | awk '/InternalBattery/{print $3}' | sed 's/%//g; s/;//g')
 if [[ "$pwrAdapter" =~ "AC Power" ]] || [[ "$batteryPercentage" -ge "90" ]]; then
     pwrStatus="OK"
-	echo "Power Check: OK - AC Power Detected"
+	echo "Power Check: OK - AC Power or above 90% battery detected"
 else
 	pwrStatus="ERROR"
-	echo "Power Check: ERROR - No AC Power Detected"
+	echo "Power Check: ERROR - AC Power not detected"
 fi
 }
 
 function checkSpace ()
 {
-# Check if free space > 15GB
-freeSpace=$(/usr/sbin/diskutil info / | grep "Free Space" | awk '{print $4}')
-if [[ -z "$freeSpace" ]]; then
-    freeSpace="5"
-fi
-
+# Check disk space
+freeSpace=$(diskutil info / | grep "Free Space" | awk '{print $4}')
 if [[ ${freeSpace%.*} -ge ${requiredSpace} ]]; then
 	spaceStatus="OK"
-	echo "Disk Check: OK - ${freeSpace%.*}GB Free Space Detected"
+	echo "Disk Check: OK - ${freeSpace%.*}GB of free space detected"
 else
 	spaceStatus="ERROR"
-	echo "Disk Check: ERROR - ${freeSpace%.*}GB Free Space Detected"
+	echo "Disk Check: ERROR - ${freeSpace%.*}GB of free space detected"
 fi
 }
 
-function checkNoMADLoginAD ()
+function checkAccountStatus ()
 {
-# Make sure NoMAD Login AD is installed and the logged in user has a local account
-echo "${macModelFull} running ${osFull}, confirming that NoMAD Login AD is installed..."
-if [[ ! -d "$noLoADBundle" ]]; then
-    if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
-        echo "NoMAD Login AD not installed, Aborting OS Upgrade"
-        exit 1
+# Check FileVault and account status
+if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
+    fileVaultStatus=$(fdesetup status | awk '/FileVault is/{print $3}' | tr -d .)
+    if [[ "$fileVaultStatus" == "Off" ]]; then
+        echo "FileVault off, skipping user account checks"
     else
-        echo "NoMAD Login AD not installed, aborting OS Upgrade"
-        jamfHelperNoMADLoginADMissing
-        exit 1
+        echo "FileVault is on, checking that all FileVault enabled users have local accounts..."
+        allUsers=$(dscl . -list /Users | grep -v "^_\|casadmin\|daemon\|nobody\|root\|admin\|jamfcloudadmin")
+        for user in $allUsers; do
+            fileVaultUser=$(fdesetup list | grep "$user" | awk  -F, '{print $1}')
+            if [[ "$fileVaultUser" == "$user" ]]; then
+                fvMobileAccount=$(dscl . -read /Users/"$user" OriginalNodeName 2>/dev/null)
+                if [[ "$fvMobileAccount" == "" ]]; then
+                    echo "${user} is a FileVault enabled user with a local account"
+                else
+                    echo "${user} is a FileVault enabled user with a mobile account, aborting upgrade!"
+                    echo "Please contact ${user} and ask them to login to demobilise their account before attempting the upgrade again"
+                    exit 1
+                fi
+            fi
+        done
     fi
 else
-    echo "NoMAD Login AD installed"
-    if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
-        fileVaultStatus=$(fdesetup status | sed -n 1p)
-        if [[ "$fileVaultStatus" =~ "Off" ]]; then
-            echo "FileVault off, carry on with OS upgrade"
-        else
-            echo "FileVault is on, checking that all FileVault enabled users have local accounts"
-            allUsers=$(dscl . -list /Users | grep -v "^_\|casadmin\|daemon\|nobody\|root\|admin")
-            for user in $allUsers; do
-                fileVaultUser=$(fdesetup list | grep "$user" | awk  -F, '{print $1}')
-                if [[ "$fileVaultUser" == "$user" ]]; then
-                    fvMobileAccount=$(dscl . read /Users/"$user" OriginalNodeName 2>/dev/null)
-                    if [[ "$fvMobileAccount" == "" ]]; then
-                        echo "$user is a FileVault enabled user with a local account"
-                    else
-                        echo "$user is a FileVault enabled user with a mobile account, aborting upgrade!"
-                        echo "Please contact $user and ask them to login to demobilise their account before attempting the upgrade again"
-                        jamfHelperFVMobileAccounts
-                        exit 1
-                    fi
-                fi
-            done
-        fi
+    echo "Confirming that ${loggedInUser} has a local account..."
+    if [[ "$mobileAccount" == "" ]]; then
+        echo "${loggedInUser} has a local account"
     else
-        echo "Confirming that $loggedInUser has a local account..."
-        if [[ "$mobileAccount" == "" ]]; then
-            echo "$loggedInUser has a local account, carry on with OS Upgrade"
-        else
-            echo "$loggedInUser has a mobile account, aborting OS Upgrade"
-            echo "Advising $loggedInUser via a jamfHelper that they will be logged out in 30 seconds as a logout/login is required"
-            jamfHelperMobileAccount
-            echo "Returning to the login window to demobilise the account on next login..."
-            killall loginwindow
-            exit 1
-        fi
+        echo "${loggedInUser} has a mobile account, aborting OS upgrade"
+        echo "Advising ${loggedInUser} via a jamfHelper that they will be logged out in 30 seconds as a logout/login is required"
+        helperMobileAccount
+        echo "Returning to the login window to demobilise the account on next login..."
+        killall -HUP loginwindow
+        exit 1
     fi
 fi
 }
@@ -217,60 +190,63 @@ fi
 ########################################################################
 
 # Clear any jamfHelper windows
-killall jamfHelper 2>/dev/null
-
-echo "Starting upgrade to $osName with $osInstallerLocation"
-echo "$requiredSpace GB will be required to complete."
-
-# Check the installer is downloaded if it's not there throw a jamf helper message
+killall -13 "jamfHelper" >/dev/null 2>&1
+echo "${macModelFull} running ${osVersion}, starting upgrade to ${osName}"
+echo "Free space required: ${requiredSpace} GB"
+# Check the installer was downloaded, if it's not there throw a jamfHelper message
 if [[ ! -d "$osInstallerLocation" ]]; then
-    echo "No Installer found!"
+    echo "${osName} installer not found!"
 	"$jamfHelper" -windowType utility -icon "$helperIconProblem" -title "$helperTitle" -heading "$helperHeadingError" -description "$helperDescriptionError" -button1 "OK" -defaultButton 1 &
     exit 1
 else
-    echo "Installer found"
+    echo "${osName} installer found: ${osInstallerLocation}"
 fi
-
-
-echo "Current logged in user is $loggedInUser"
-# Check NoMAD Login AD is installed and the logged in user has a local account
-checkNoMADLoginAD
-# Check power status
-checkPower
-while ! [[  ${pwrStatus} == "OK" ]]; do
-    echo "No Power"
-    jamfHelperNoPower
-    sleep 5
+echo "Logged in user: ${loggedInUser}"
+# Check users have local accounts
+checkAccountStatus
+# Check power status for MacBooks only
+if [[ "$macModel" =~ "MacBook" ]]; then
     checkPower
-done
-
-# Check the Mac meets the space Requirements
+    until [[ "$pwrStatus" == "OK" ]]; do
+        echo "No Power"
+        helperNoPower
+        sleep 5
+        checkPower
+    done
+fi
+# Check the Mac meets the space requirements
 checkSpace
-while ! [[  ${spaceStatus} == "OK" ]]; do
-    echo "Not enough Space"
-    jamfHelperNoSpace
-    if [[ "$HELPER_SPACE" == "2" ]]; then
+until [[ "$spaceStatus" == "OK" ]]; do
+    echo "Not enough disk space"
+    helperNoSpace
+    if [[ "$helperSpace" == "2" ]]; then
         echo "User clicked quit at lack of space message"
         exit 1
     fi
     sleep 5
     checkSpace
 done
-
+# All checks passed, start the upgrade
 echo "--------------------------"
-echo "Passed all Checks"
+echo "All checks passed"
 echo "--------------------------"
 # Quit all open Apps
-echo "Killing all Microsoft Apps to avoid MS Error Reporting launching"
-ps -ef | grep Microsoft | grep -v grep | awk '{print $2}' | xargs kill -9
-echo "Killing all other open applications for $loggedInUser"
-killall -u "$loggedInUser"
+echo "Closing all Microsoft Apps..."
+microsftApps=( "Microsoft\ Edge" "Microsoft\ Excel" "Microsoft\ OneNote" "Microsoft\ Outlook" \
+"Microsoft\ PowerPoint" "Microsoft Remote Desktop" "Microsoft\ Word" )
+for app in ${(Q)${(z)microsftApps}}; do
+    pkill -HUP "$app" >/dev/null 2>&1
+done
+# Forcing close any remaining Microsoft apps
+pkill -f "Microsoft"
+echo "Closing all other open applications..."
+killall -u "$loggedInUser" >/dev/null 2>&1
 # Launch jamfHelper
 echo "Launching jamfHelper..."
 "$jamfHelper" -windowType utility -icon "$helperIcon" -title "$helperTitle" -heading "$helperHeading" -description "$helperDescription" &
-# Begin Upgrade
+# Add recon to startup script
 addReconOnBoot
+# Start upgrade
 echo "Launching startosinstall..."
 "$osInstallerLocation"/Contents/Resources/startosinstall --agreetolicense --nointeraction
-sleep 3
 exit 0
