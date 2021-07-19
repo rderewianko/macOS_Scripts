@@ -24,6 +24,12 @@ downloadDir="/private/var/tmp/OBSDownload"
 appName="OBS.app"
 # Volume name
 dmgName="obs.dmg"
+# Get the logged in user
+loggedInUser=$(stat -f %Su /dev/console)
+# Get the logged in users ID
+loggedInUserID=$(id -u "$loggedInUser")
+# User preferences directory
+userPrefDir="/Users/${loggedInUser}/Library/Application Support/obs-studio"
 # jamf Helper
 jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
 # Helper icon Download
@@ -39,13 +45,49 @@ helperIconProblem="/System/Library/CoreServices/Problem Reporter.app/Contents/Re
 #                            Functions                                 #
 ########################################################################
 
+function runAsUser ()
+{  
+# Run commands as the logged in user
+if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
+    echo "No user logged in, unable to run commands as a user"
+else
+    launchctl asuser "$loggedInUserID" sudo -u "$loggedInUser" "$@"
+fi
+}
+
+function userPrefs ()
+{
+if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
+    echo "No user logged in, unable to set user preferences"
+else
+    if [[ -d "$userPrefDir" ]]; then
+        echo "User preferences already set, nothing will be changed"
+    else
+        runAsUser mkdir -p "$userPrefDir"
+        if [[ -d "$userPrefDir" ]]; then
+            runAsUser echo "[General]" >> "${userPrefDir}/global.ini"
+            runAsUser echo "LicenseAccepted=true" >> "${userPrefDir}/global.ini"
+            runAsUser echo "EnableAutoUpdates=false" >> "${userPrefDir}/global.ini"
+            postCheck=$(cat "${userPrefDir}/global.ini" | grep "EnableAutoUpdates=false")
+            if [[ "$postCheck" == "EnableAutoUpdates=false" ]]; then
+                echo "Default user preferences set"
+            else
+                echo "Failed to set default user preferences, auto updates will need to be manually disabled"
+            fi
+        else
+            echo "Failed to create user preference directory, unable to set default preferences"
+        fi
+    fi
+fi
+}
+
 function jamfHelperDownloadInProgress ()
 {
 # Download in progress helper window
 "$jamfHelper" -windowType utility -icon "$helperIconDownload" -title "$helperTitle" \
 -heading "$helperHeading" -alignHeading natural -description "Downloading and Installing ${helperAppName}...
 
-            ⏱ Download time will vary ⏱" -alignDescription natural &
+⏱ Download time will vary ⏱" -alignDescription natural &
 }
 
 function jamfHelperInstallComplete ()
@@ -140,6 +182,8 @@ if [[ -f "${downloadDir}/${dmgName}" ]]; then
         else
             echo "Successfully installed OBS Studio ${latestInstallVer}"
         fi
+        # Set the default user preferences - disable auto updates
+        userPrefs
     else
         echo "Failed to install OBS Studio!"
         # Kill previous helper and show a failure helper
