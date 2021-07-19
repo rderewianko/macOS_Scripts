@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 ########################################################################
-#             Create Required Directories for Waves Central            #
+#Set User Preferences and Create Required Directories for Waves Central#
 #################### Written by Phil Walker May 2021 ###################
 ########################################################################
 
@@ -44,6 +44,12 @@ else
     "/Users/${loggedInUser}/Library/Application\ Support/Waves\ Audio/Waves\ Central" \
     "/Users/${loggedInUser}/Library/Application\ Support/Waves\ Audio/Waves\ Central/Logs" )
     userDirs2=( "/Users/${loggedInUser}/Library/Application\ Support/Waves\ Central" "/Users/${loggedInUser}/Library/Preferences/Waves\ Preferences" )
+    # Logfile
+    logFile="/Library/Logs/Bauer/Outset/WavesCentral_UserPrefsAndDirectories_${loggedInUser}.log"
+    # Create the log file if required
+    if [[ ! -e "$logFile" ]]; then
+        touch "$logFile"
+    fi
 fi
 }
 
@@ -255,19 +261,15 @@ done
 if [[ ! -d "/Library/Logs/Bauer/Outset" ]]; then
     mkdir -p "/Library/Logs/Bauer/Outset"
 fi
-# Create the log file if required
-if [[ ! -e "$logFile" ]]; then
-    touch "$logFile"
-fi
-# redirect both standard output and standard error to the log
-exec >> "$logFile" 2>&1
-echo "Script started at: $(date +"%Y-%m-%d_%H-%M-%S")"
 loggedInUserStatus
 if [[ "$loggedInUser" == "" ]]; then
     echo "Directories will be created but correct permissions cannot be set"
     echo "Waves Central will prompt for admin on first launch to set correct permissions"
     createLibraryDirectories
 else
+    # redirect both standard output and standard error to the log
+    exec >> "$logFile" 2>&1
+    echo "Script started at: $(date +"%Y-%m-%d_%H-%M-%S")"
     echo "${loggedInUser} is logged in"
     createLibraryDirectories
     createUserDirectories
