@@ -17,22 +17,25 @@
 # Microsoft fwlink (permalink) product ID e.g. "2009112" for Office 365 Business Pro
 linkID="$4"
 # 525133 - Office 2019 for Mac SKUless download (aka Office 365)
-# 2009112 - Office 365 for Mac Business Pro SKUless download (aka Office 365 with Teams)
+# 2009112 - Office 2019 for Mac BusinessPro SKUless download (aka Office 365 with Teams)
+# 871743 - Office 2016 for Mac SKUless download
 # 830196 - AutoUpdate download
-# 2093504 - Edge (Enterprise Stable)
-# 2093294 - Edge (Enterprise Beta)
-# 2093292 - Edge (Enterprise Dev)
+# 2093504 - Edge (Stable)
 # 525135 - Excel 2019 SKUless download
+# 871750 - Excel 2016 SKUless download
 # 869655 - InTune Company Portal download
 # 823060 - OneDrive download
 # 820886 - OneNote download
 # 525137 - Outlook 2019 SKUless download
+# 871753 - Outlook 2016 SKUless download
 # 525136 - PowerPoint 2019 SKUless download
+# 871751 - PowerPoint 2016 SKUless download
 # 868963 - Remote Desktop
 # 800050 - SharePoint Plugin download
 # 832978 - Skype for Business download
 # 869428 - Teams
 # 525134 - Word 2019 SKUless download
+# 871748 - Word 2016 SKUless download
 # Friendly name for DEPNotify
 appName="$5"
 # Path for installed application e.g /Applications/Microsoft Outlook.app (For Office only check for Outlook)
