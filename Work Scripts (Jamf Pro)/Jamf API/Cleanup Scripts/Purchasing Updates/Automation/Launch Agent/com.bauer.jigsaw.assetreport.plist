@@ -12,16 +12,7 @@
 	</array>
 	<key>RunAtLoad</key>
 	<false/>
-	<key>StartCalendarInterval</key>
-	<array>
-		<dict>
-			<key>Hour</key>
-			<integer>9</integer>
-		</dict>
-		<dict>
-			<key>Hour</key>
-			<integer>13</integer>
-		</dict>
-	</array>
+	<key>StartInterval</key>
+	<integer>3600</integer>
 </dict>
 </plist>
