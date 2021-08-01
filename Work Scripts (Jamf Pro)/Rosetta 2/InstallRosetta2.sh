@@ -20,8 +20,10 @@ macModelFull=$(system_profiler SPHardwareDataType | grep "Model Name" | sed 's/M
 intelCPU=$(sysctl -n machdep.cpu.brand_string | grep -o "Intel")
 # CPU brand
 cpuBrand=$(sysctl -n machdep.cpu.brand_string)
+# Rosetta 2 Launch Daemon (Pre 11.5)
+launchDaemonOld="/Library/Apple/System/Library/LaunchDaemons/com.apple.oahd.plist"
 # Rosetta 2 Launch Daemon
-launchDaemon="/Library/Apple/System/Library/LaunchDaemons/com.apple.oahd.plist"
+launchDaemon="/System/Library/LaunchDaemons/com.apple.oahd.plist"
 
 ########################################################################
 #                         Script starts here                           #
@@ -41,10 +43,9 @@ if is-at-least "$minReqOS" "$osVersion"; then
         echo "Rosetta 2 required"
         # Check Rosetta Launch Daemon. If no Launch Daemon is found,
         # perform a non-interactive install of Rosetta 2
-        if [[ ! -f "$launchDaemon" ]]; then
+        if [[ ! -f "$launchDaemon" ]] && [[ ! -f "$launchDaemonOld" ]]; then
             softwareupdate --install-rosetta --agree-to-license
-            installResult="$?"
-            if [[ "$installResult" -eq "0" ]]; then
+            if [[ -f "$launchDaemon" ]] || [[ -f "$launchDaemonOld" ]]; then
         	    echo "Rosetta 2 has been successfully installed"
             else
         	    echo "Rosetta 2 installation failed!"
