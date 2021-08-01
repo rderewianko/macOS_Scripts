@@ -109,10 +109,10 @@ else
                 killall -13 jamfHelper 2>/dev/null
                 echo "Opening Filevault Reissue..."
                 # App must be run as root or another admin user
-                "$appBinary" &
                 echo "Waiting for user interaction..."
                 echo "If after 5 minutes the app is closed an inventory update will be run"
                 echo "If the app is still open it will be automatically closed and the policy will run again tomorrow"
+                "$appBinary"
             else
                 echo "Required content not found"
                 cleanUp
