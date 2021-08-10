@@ -17,8 +17,8 @@
 
 ############ Variables for Jamf Pro Parameters - Start #################
 # Encrypted credentials
-encryptedAPIUsername="U2FsdGVkX1/rGOgjSIDlkrq3op5LNoxONdwLfnMKctc47NdVDbdz7TNbk7SuShxe" # defined in the policy
-encryptedAPIPassword="U2FsdGVkX18DoVF8RQ2skZBXjQAlSvzy9/nCltxVx45BLkMwFFl9t6RiaFUng0zy" # defined in the policy
+encryptedAPIUsername="" # defined in the policy
+encryptedAPIPassword="" # defined in the policy
 # Jamf Pro URL
 jamfProURL="https://bauermediagroup.jamfcloud.com" # defined in the policy
 ############ Variables for Jamf Pro Parameters - End ###################
@@ -59,8 +59,8 @@ pkill "Self Service"
 # Jamf Helper to advise of the restart
 jamfHelperRestart
 # Decrypt the username and password
-apiUsername=$(decryptString "$encryptedAPIUsername" 'eb18e8234880e592' '7cafbabd1a820642169c2785')
-apiPassword=$(decryptString "$encryptedAPIPassword" '03a1517c450dac91' 'ec3d487180a37ab671f872dd')
+apiUsername=$(decryptString "$encryptedAPIUsername" '' '')
+apiPassword=$(decryptString "$encryptedAPIPassword" '' '')
 # create base64-encoded credentials
 encodedCredentials=$(printf "$apiUsername:$apiPassword" | iconv -t ISO-8859-1 | base64 -i -)
 # generate an authorization bearer token
